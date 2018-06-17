@@ -1,10 +1,10 @@
 {
-  "name": "chrono",
+  "name": "remindmebot",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "npm run eslint && babel-node --presets es2015 --plugins transform-object-rest-spread  app.js",
+    "start": "npm run eslint && babel-node --presets es2015 --plugins transform-object-rest-spread app.js",
     "test": "jest",
     "eslint": "./node_modules/.bin/eslint ."
   },
@@ -14,7 +14,9 @@
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.17",
     "telegraf": "^3.21.2",
-    "timemachine": "^0.3.0"
+    "timemachine": "^0.3.0",
+    "winston": "^2.4.2",
+    "winston-papertrail": "^1.0.5"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",

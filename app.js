@@ -9,11 +9,31 @@ const
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
     config = require("./config.json"),
-    moment = require("moment-timezone");
+    moment = require("moment-timezone"),
+    winston = require('winston');
+
+
+function listToMatrix(list, n) {
+    // split into rows of 7s
+    let listOfLists = [];
+    let index = 0;
+    while(index < list.length) {
+        listOfLists.push(list.slice(index, index += n));
+    }
+    return listOfLists;
+}
+
+require('winston-papertrail').Papertrail;
+
+var winstonPapertrail = new winston.transports.Papertrail(config.papertrail);
+
+var logger = new winston.Logger({
+    transports: [winstonPapertrail]
+});
 
 const EDIT_TIME_SCENE = new Scene('EDIT_TIME_SCENE');
 EDIT_TIME_SCENE.enter(ctx => {
-    ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
 });
 EDIT_TIME_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
@@ -26,7 +46,6 @@ EDIT_TIME_SCENE.on('text', ctx => {
     } catch(err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
-
     UserManager.updateReminderDate(userId, reminderId, reminderDate, remindUser.bind(null, userId, reminder));
     replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
@@ -63,8 +82,7 @@ bot.use(stage.middleware());
 const HELP_TEXT = `1- /timezone to set your timezone
 2- /list to list all of your reminders
 3- /help for help
-4- /features for all the features of the bot
-5- Use /remindme to make reminders.
+4- Use /remindme to make reminders.
 
 General formula is: /remindme [date/time] to/that [anything].
 <b>Don't forget the "to" or "that"</b>
@@ -85,7 +103,6 @@ function getReminderMarkup(reminder) {
 
 function remindUser(userId, reminder) {
     const SNOOZE_MAP = {
-        "30S": 30*1000,
         '15M': 15*60*1000,
         "30M": 30*60*1000,
         "1H": 60*60*1000,
@@ -95,7 +112,7 @@ function remindUser(userId, reminder) {
     let markup = Extra.HTML().markup((m) => {
         return m.inlineKeyboard(Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminder.getId()}`)));
     });
-    bot.telegram.sendMessage(String(userId), reminder.getText() + '\n' + 'Remind me again in:', markup);
+    bot.telegram.sendMessage(String(userId), reminder.getText() + '\n\n' + 'Remind me again in:', markup);
 }
 
 function replyWithConfirmation(ctx, reminder, replyToMessageId) {
@@ -108,17 +125,20 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
 }
 
 bot.command('start', ctx => {
+    logger.info(`${ctx.chat.id}: start`);
     UserManager.addUser(ctx.chat.id, ctx.chat.username);
     ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT);
 });
 
 bot.command('help', ctx => {
+    logger.info(`${ctx.chat.id}: help`);
     ctx.replyWithHTML(HELP_TEXT);
 });
 
 bot.command('remindme', ctx => {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
+
     if(!UserManager.getUserTimezone(userId)) {
         return ctx.reply("You need to set a timezone first with /timezone");
     }
@@ -128,12 +148,13 @@ bot.command('remindme', ctx => {
 
     try {
         var {reminderText, reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
     } catch(err) {
+        logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID`);
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
     
     let reminder = new Reminder(reminderText, reminderDate);
-    
     UserManager.addReminderForUser(userId, reminder, remindUser.bind(null, userId, reminder));
     return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
 });
@@ -143,6 +164,7 @@ bot.command('remindme', ctx => {
  * SNOOZE_<period in milliseconds>_<reminder id>
  */
 bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let userId = ctx.chat.id;
     let period = ctx.match[1];
     let reminderId = ctx.match[2];
@@ -159,6 +181,7 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
  * DELETE_<reminder id>
  */
 bot.action(/DELETE_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
@@ -166,48 +189,26 @@ bot.action(/DELETE_([^_]+)/, ctx => {
 });
 
 /**
- * edit format is the following:
- * EDIT_<reminder id>
- */
-bot.action(/EDIT_([^_]+)/, ctx => {
-    let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
-    let markup = Extra.HTML().markup((m) => {
-        return m.inlineKeyboard([m.callbackButton("Time", `EDIT-TIME_${reminder.getId()}`), m.callbackButton("Text", `EDIT-TEXT_${reminder.getId()}`)]);
-    });
-    ctx.answerCbQuery();
-    return ctx.reply("Do you want to edit the time or the text?", markup);
-});
-
-bot.action(/EDIT-TIME_([^_]+)/, ctx => {
-    UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
-    ctx.scene.enter("EDIT_TIME_SCENE");
-    ctx.answerCbQuery();
-});
-
-bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
-    UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
-    ctx.scene.enter("EDIT_TEXT_SCENE");
-    ctx.answerCbQuery();
-});
-
-/**
  * view format is the following:
  * VIEW_<reminder id>
  */
 bot.action(/VIEW_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     let timezone = UserManager.getUserTimezone(ctx.chat.id);
 
     let markup = getReminderMarkup(reminder);
     ctx.answerCbQuery();
-    return ctx.reply(reminder.getFormattedReminder(timezone), markup);
+    return ctx.reply(reminder.getFormattedReminder(timezone, false), markup);
 });
 
 bot.command('timezone', ctx => {
     let userId = ctx.chat.id;
     let timezone = ctx.message.text.split(" ")[1];
+
     if(!moment.tz.zone(timezone)) {
+        logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         return ctx.replyWithHTML(`You need to specify a valid timezone.
 
 <b>Examples:</b>
@@ -215,6 +216,7 @@ bot.command('timezone', ctx => {
 • <code>/timezone Africa/Cairo</code>
 You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`);
     }
+    logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
     UserManager.setUserTimezone(userId, timezone);
     return ctx.reply("Ok your timezone now is " + timezone + ".");
 });
@@ -222,11 +224,12 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
 bot.command('list', ctx => {
     let userId = ctx.chat.id;
     let reminders = UserManager.getUserSortedFutureReminders(userId);
+    logger.info(`${ctx.chat.id}: list, they have: ${reminders.length} reminders`);
     let timezone = UserManager.getUserTimezone(userId);
     let list = [];
     let i = 1;
     for(let reminder of reminders) {
-        list.push(`<b>${i++})</b> ${reminder.getFormattedReminder(timezone)}`);
+        list.push(`<b>${i++})</b> ${reminder.getFormattedReminder(timezone, true)}`);
     }
     let markup = Extra.HTML().markup((m) => {
         let listOfButtons = [];
@@ -234,14 +237,8 @@ bot.command('list', ctx => {
         for(let reminder of reminders) {
             listOfButtons.push(m.callbackButton(String(i++), `VIEW_${reminder.getId()}`));
         }
-        // split into rows of 7s
-        let listOfListOfButtons = [];
-        let index = 0;
-        while(index < listOfButtons.length) {
-            listOfListOfButtons.push(listOfButtons.slice(index, index += 7));
-        }
 
-        return m.inlineKeyboard(listOfListOfButtons);
+        return m.inlineKeyboard(listToMatrix(listOfButtons, 7));
     });
 
     if(!list.length) {
@@ -256,21 +253,67 @@ bot.command('list', ctx => {
 });
 
 bot.hears(/.*sahmudi.*/i, ctx => {
-    ctx.reply("I love dodo ❤️😍");
+    logger.info(`${ctx.chat.id}: sahmudi`);
+    return ctx.reply("I love dodo ❤️😍");
 });
 
-bot.command('features', ctx => {
-    ctx.replyWithHTML(`
-        Other than the list of commands in /help.
-
-        The bot lets you do more than that.
-
-        It lets you:
-        1- Snooze your reminders
-        2- Edit them
-    `);
+bot.command('about', ctx => {
+    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
 });
 
+bot.command('donate', ctx => {
+    let markup = Extra.HTML().markup((m) => {
+        let donations = [1, 3, 5, 10, 20, 50, 100];
+        let listOfButtons = donations.map(d => m.callbackButton(`${d}`, `DONATE_${d}`));
+
+        return m.inlineKeyboard(listToMatrix(listOfButtons, 3));
+    });
+    ctx.reply("How much would you like to donate?", markup);
+});
+
+bot.action(/DONATE_([^_]+)/, ctx => {
+    let donationAmount = parseFloat(ctx.match[1]) * 100;
+    ctx.answerCbQuery();
+
+    return ctx.replyWithInvoice({
+        'title': 'Donation',
+        'description': '100% of your donations go to the improvements of this bot',
+        'provider_token': config.invoiceToken,
+        'payload': 'none',
+        'start_parameter': 'idk',
+        'currency': 'USD',
+        'prices': [{label: 'Donation', amount: parseInt(donationAmount)}],
+
+    });
+});
+
+/**
+ * edit format is the following:
+ * EDIT_<reminder id>
+ */
+bot.action(/EDIT_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
+    let markup = Extra.HTML().markup((m) => {
+        return m.inlineKeyboard([m.callbackButton("Time", `EDIT-TIME_${reminder.getId()}`), m.callbackButton("Text", `EDIT-TEXT_${reminder.getId()}`)]);
+    });
+    ctx.answerCbQuery();
+    return ctx.reply("Do you want to edit the time or the text?", markup);
+});
+
+bot.action(/EDIT-TIME_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
+    ctx.scene.enter("EDIT_TIME_SCENE");
+    ctx.answerCbQuery();
+});
+
+bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
+    ctx.scene.enter("EDIT_TEXT_SCENE");
+    ctx.answerCbQuery();
+});
 
 function botStartup() {
     UserManager.getUsersFromStorage(remindUser);

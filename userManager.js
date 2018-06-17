@@ -55,8 +55,8 @@ module.exports = class UserManager {
     static deleteReminder(userId, reminderId) {
         if(UserManager.userExists(userId)) {
             users[userId].deleteReminder(reminderId);
+            updateStorage();
         }
-        updateStorage();
     }
 
     static setUserTemporaryStore(id, obj) {

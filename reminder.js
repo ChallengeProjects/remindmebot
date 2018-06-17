@@ -9,6 +9,23 @@ function generateGUID() {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
+/**
+ * setTimeout cant accept time that is > 2^31 - 1, this 
+ *  function uses setTimeout to keep calling itself after 2^31 - 1 milliseconds
+ *  until it can call setTimeout directly on the callback
+ * @param {Function} callback [description]
+ * @param {[type]}   time     [description]
+ */
+function _setTimeout(callback, time) {
+    const MAX_TIME = Math.pow(2, 31) - 1;
+    if(time > MAX_TIME) {
+        setTimeout(_setTimeout.bind(null, callback, time - MAX_TIME), MAX_TIME);
+    }
+    else {
+        setTimeout(callback, time);
+    }
+}
+
 module.exports = class Reminder {
     /**
      * constructor
@@ -23,7 +40,7 @@ module.exports = class Reminder {
     }
 
     setTimeout(callback) {
-        this.timeout = setTimeout(callback, this.getMilliSecondsFromNow());
+        this.timeout = _setTimeout(callback, this.getMilliSecondsFromNow());
     }
 
     clearTimeout() {
@@ -80,7 +97,7 @@ module.exports = class Reminder {
             return "at " + time;
         }
         else if(dateNow.isSame(dateThen, 'month')) {
-            return "on the " + dateThen.format("Do") + " at " + time;
+            return "on " + dateThen.format("dddd") + " the " + dateThen.format("Do") + " at " + time; // on Monday the 12th at 3:04 pm
         }
         else if(dateNow.isSame(dateThen, 'year')) {
             return "on " + dateThen.format("MM/DD") + " at " + time;
@@ -90,10 +107,10 @@ module.exports = class Reminder {
         }
     }
 
-    getFormattedReminder(timezone) {
+    getFormattedReminder(timezone, shortened) {
         let text = this.getText();
         if(text.length > 70) {
-            text = text.slice(0, 70) + "…";
+            text = shortened ? (text.slice(0, 70) + "…") : text;
         }
         return `<b>${this.getDateFormatted(timezone)}:</b>\n${text}`;
     }
