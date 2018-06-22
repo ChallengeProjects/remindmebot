@@ -1,6 +1,7 @@
+alias forever="./node_modules/forever/bin/forever"
 forever &> /dev/null
 if [[ $? != 0 ]]; then
-    echo "you need to install forever first"
+    echo "you need to npm install first"
 fi
 forever list | egrep remindmebot &> /dev/null
 if [[ $? == 0 ]]; then

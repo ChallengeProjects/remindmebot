@@ -32,17 +32,82 @@ function _splitReminderText(text) {
     };
 }
 
+function _getTimePartFromString(str) {
+    let atSegments = str.replace(/\b(on)\b/g, "at").split("at").filter(x => !!x.length);
+    for(let atSegment of atSegments) {
+        let words = atSegment.replace(/,/g, " ").split(" ").filter(x => !!x.length);
+
+        let flag = true;
+        for(let word of words) {
+            if(!word.match(/^[0-9:]+$/i) && !word.match(/^(am|pm)$/i)) {
+                flag = false;
+            }
+        }
+        if(flag) {
+            return "at " + atSegment.trim();
+        }
+    }
+
+    return null;
+}
+
+function _getDatePartFromString(str) {
+    let timePartFromString = _getTimePartFromString(str);
+    if(!timePartFromString) {
+        return str;
+    }
+
+    return str.replace(_getTimePartFromString(str), "").trim();
+}
+
+// function to get day part
+// function to get time part
+function _getTimesFromString(str) {
+    let times = [];
+    let timePartFromString = _getTimePartFromString(str);
+    console.log("timePartFromString=", timePartFromString);
+    //if nothing
+    if(!timePartFromString) {
+        return null;
+    }
+
+    // if no recurrence
+    if(timePartFromString.indexOf(",") == -1) {
+        return [timePartFromString];
+    }
+
+    // str = "3 4 pm " [3, 4, pm]
+    // str = "3 am, 4 pm" [3, am, 4, pm]
+    // remove the "at" then replace all commas by spaces then split by spaces to get all the words
+    let words = timePartFromString.split(" ").slice(1).join(" ").replace(/,/g, " ").split(" ").filter(x => !!x.length);
+    console.log("words=", words);
+    let tempArrayUntilMeridiem = [];
+    for(let word of words) {
+        // if this word is a meridiem then process it and clear it
+        if(word.match(/^(am|pm)$/i)) {
+            let meridiem = word;
+            for(let tempWord of tempArrayUntilMeridiem) {
+                times.push("at " + tempWord + " " + meridiem);
+            }
+            tempArrayUntilMeridiem = [];
+        }
+        else {
+            tempArrayUntilMeridiem.push(word);
+        }
+    }
+    
+    return times;
+}
+
 function _getDateFromOrdinal(str, userTimezone) {
-    let month = null, day = null, time = null, meridiem = null;
-    let monthDayOrdinalRegexMatch = str.match(/\b((january|february|march|april|may|june|july|august|september|october|november|december) )?the ([0-9]+)(st|nd|rd|th)( at ([0-9]+(:[0-9]+)?) (am|pm))?/i);
-    let indices = {month: 2, day: 3, time: 6, meridiem: 8};
+    let month = null, day = null;
+    let monthDayOrdinalRegexMatch = str.match(/\b((january|february|march|april|may|june|july|august|september|october|november|december) )?the ([0-9]+)(st|nd|rd|th)?\b/i);
+    let indices = {month: 2, day: 3};
     if(!monthDayOrdinalRegexMatch) {
         return null;
     }
-    month = monthDayOrdinalRegexMatch[indices.month],
-    day = monthDayOrdinalRegexMatch[indices.day],
-    time = monthDayOrdinalRegexMatch[indices.time],
-    meridiem = monthDayOrdinalRegexMatch[indices.meridiem];
+    month = monthDayOrdinalRegexMatch[indices.month];
+    day = monthDayOrdinalRegexMatch[indices.day];
 
     let newStr = "on";
     if(month){
@@ -54,23 +119,36 @@ function _getDateFromOrdinal(str, userTimezone) {
     if(day) {
         newStr += " " + day;
     }
-    if(time) {
-        newStr += " at " + time;
-        if(meridiem) {
-            newStr += " " + meridiem;
-        }
-    }
-    
+
     return newStr;
+}
+
+function _parseCustomDateFormats(str, userTimezone) {
+    // what happens if we dont have monthDay
+    let monthDay = _getDateFromOrdinal(_getDatePartFromString(str), userTimezone);
+    
+    let times = _getTimesFromString(str);
+    console.log("times=", times);
+    if(!times || times.length == 0) {
+        times = ["at 12 pm"];
+    }
+
+    return {
+        monthDay: monthDay,
+        time: times[0]
+    };
 }
 
 function getDate(text, userTimezone) {
     let {reminderText, reminderDateTimeText} = _splitReminderText(text);
 
-    let newStr = _getDateFromOrdinal(reminderDateTimeText, userTimezone);
+    let {monthDay, time} = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
     
-    if(newStr) {
-        reminderDateTimeText = newStr;
+    if(monthDay) {
+        reminderDateTimeText = "on " + monthDay;
+        if(time) {
+            reminderDateTimeText += " " + time;
+        }
     }
 
     let d = moment(chrono.parseDate(reminderDateTimeText));
@@ -81,7 +159,7 @@ function getDate(text, userTimezone) {
     else {
         parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     }
-    
+
     let currentDate = moment.tz(userTimezone);
 
     let result = chrono.parse(reminderDateTimeText)[0];
@@ -93,9 +171,9 @@ function getDate(text, userTimezone) {
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
 
-    // if user specified week day and it happens to be today
+    // if user specified week day and it happens to be today or in the past
     //  then they probably dont want it to be today (unless they specified the 'day')
-    if('weekday' in knownValues && 'day' in impliedValues && parsedDate.isSame(currentDate, 'day')) {
+    if('weekday' in knownValues && 'day' in impliedValues && currentDate.diff(parsedDate, 'days') >= 0) {
         parsedDate.add(7, 'day');
     }
 
