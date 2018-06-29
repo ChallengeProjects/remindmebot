@@ -4,7 +4,8 @@
   "description": "Telegram reminder bot.",
   "main": "app.js",
   "scripts": {
-    "start": "npm run eslint && babel-node --presets es2015 --plugins transform-object-rest-spread app.js",
+    "start": "npm run eslint && NODE_ENV=production ./node_modules/.bin/babel-node --presets es2015 --plugins transform-object-rest-spread app.js",
+    "startdev": "npm run eslint && NODE_ENV=development ./node_modules/.bin/babel-node --presets es2015 --plugins transform-object-rest-spread app.js",
     "test": "jest",
     "eslint": "./node_modules/.bin/eslint ."
   },

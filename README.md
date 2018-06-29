@@ -2,15 +2,24 @@
 
 
 * Create a bot with the BotFather
-* Create a [papertrail](https://papertrailapp.com/dashboard) account
-* create a `config.json` file with the following properties:
+* (optional) Create a [papertrail](https://papertrailapp.com/dashboard) account
+* create a `config.json` file with the following properties: (papertrail is optional, if its not there it will just log to stdout)
 
 ```
 {
-    "botToken": "<value>",
-    "papertrail": {
-        "host": "<value>",
-        "port": "<value>"
+    "production": {
+        "botToken": "<value>",
+        "papertrail": {
+            "host": "<value>",
+            "port": "<value>"
+        }
+    },
+    "development": {
+        "botToken": "<value>",
+        "papertrail": {
+            "host": "<value>",
+            "port": "<value>"
+        }
     }
 }
 ```
@@ -19,3 +28,6 @@
 
 ### Start
 `./startbot.sh`
+
+### Start development
+`./startbot.sh dev`

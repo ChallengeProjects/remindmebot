@@ -6,7 +6,6 @@ const
     Markup = require('telegraf/markup'),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
-    config = require("./config.json"),
     moment = require("moment-timezone"),
     bot = require('./bot.js'),
     logger = require("./logger.js");
@@ -183,7 +182,9 @@ bot.command('timezone', ctx => {
     let timezone = ctx.message.text.split(" ")[1];
 
     if(!timezone || !moment.tz.zone(timezone)) {
-        logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
+        if(timezone && !moment.tz.zone(timezone)) {
+            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
+        }
         return ctx.replyWithHTML(`You need to specify a valid timezone.
 
 <b>Examples:</b>
@@ -229,32 +230,6 @@ bot.command('list', ctx => {
 
 bot.command('about', ctx => {
     return ctx.replyWithHTML("This bot was created by @bubakazouba. The source is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
-});
-
-bot.command('donate', ctx => {
-    let markup = Extra.HTML().markup((m) => {
-        let donations = [1, 3, 5, 10, 20, 50, 100];
-        let listOfButtons = donations.map(d => m.callbackButton(`${d}`, `DONATE_${d}`));
-
-        return m.inlineKeyboard(listToMatrix(listOfButtons, 3));
-    });
-    ctx.reply("How much would you like to donate?", markup);
-});
-
-bot.action(/DONATE_([^_]+)/, ctx => {
-    let donationAmount = parseFloat(ctx.match[1]) * 100;
-    ctx.answerCbQuery();
-
-    return ctx.replyWithInvoice({
-        'title': 'Donation',
-        'description': '100% of your donations go to the improvements of this bot',
-        'provider_token': config.invoiceToken,
-        'payload': 'none',
-        'start_parameter': 'idk',
-        'currency': 'USD',
-        'prices': [{label: 'Donation', amount: parseInt(donationAmount)}],
-
-    });
 });
 
 /**

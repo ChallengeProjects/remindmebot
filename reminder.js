@@ -10,23 +10,6 @@ function generateGUID() {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
-/**
- * setTimeout cant accept time that is > 2^31 - 1, this 
- *  function uses setTimeout to keep calling itself after 2^31 - 1 milliseconds
- *  until it can call setTimeout directly on the callback
- * @param {Function} callback [description]
- * @param {[type]}   time     [description]
- */
-function _setTimeout(callback, time) {
-    const MAX_TIME = Math.pow(2, 31) - 1;
-    if(time > MAX_TIME) {
-        setTimeout(_setTimeout.bind(null, callback, time - MAX_TIME), MAX_TIME);
-    }
-    else {
-        setTimeout(callback, time);
-    }
-}
-
 module.exports = class Reminder {
     /**
      * constructor
@@ -45,8 +28,26 @@ module.exports = class Reminder {
         return this.userId;
     }
 
+
+    /**
+     * setTimeout cant accept time that is > 2^31 - 1, this 
+     *  function uses setTimeout to keep calling itself after 2^31 - 1 milliseconds
+     *  until it can call setTimeout directly on the callback
+     * @param {Function} callback [description]
+     * @param {[type]}   time     [description]
+     */
+    _setTimeout(callback, time) {
+        const MAX_TIME = Math.pow(2, 31) - 1;
+        if(time > MAX_TIME) {
+            this.timeout = setTimeout(this._setTimeout.bind(null, callback, time - MAX_TIME), MAX_TIME);
+        }
+        else {
+            this.timeout = setTimeout(callback, time);
+        }
+    }
+
     setTimeout() {
-        this.timeout = _setTimeout(() => {
+        this._setTimeout(() => {
             remindUser(this);
         }, this.getMilliSecondsFromNow());
     }
