@@ -1,4 +1,5 @@
-const moment = require('moment');
+const moment = require('moment'),
+    remindUser = require("./botutils.js").remindUser;
 
 function generateGUID() {
     function s4() {
@@ -32,15 +33,22 @@ module.exports = class Reminder {
      * @param {string}   text         text that should be sent to the user
      * @param {moment}   reminderDate date when user should be notified
      */
-    constructor(text, reminderDate) {
+    constructor(text, reminderDate, userId) {
         this.text = text;
         this.reminderDate = reminderDate;
         this.dateCreated = moment.utc();
         this.id = generateGUID();
+        this.userId = userId;
     }
 
-    setTimeout(callback) {
-        this.timeout = _setTimeout(callback, this.getMilliSecondsFromNow());
+    getUserId() {
+        return this.userId;
+    }
+
+    setTimeout() {
+        this.timeout = _setTimeout(() => {
+            remindUser(this);
+        }, this.getMilliSecondsFromNow());
     }
 
     clearTimeout() {
@@ -61,10 +69,10 @@ module.exports = class Reminder {
         this.text = text;
     }
 
-    updateDate(date, callback) {
+    updateDate(date) {
         this.clearTimeout();
         this.reminderDate = date;
-        this.setTimeout(callback);
+        this.setTimeout();
     }
 
     getText() {
@@ -77,34 +85,6 @@ module.exports = class Reminder {
 
     getDate() {
         return this.reminderDate;
-    }
-
-    getDateFormatted(timezone) {
-        let dateNow = moment.tz(timezone);
-        let dateThen = moment.tz(this.reminderDate, timezone);
-        // if minute is 0 then just give the hour
-        let time;
-
-        if(dateThen.format("mm") == "00") {
-            time = dateThen.format("h a");
-        }
-        else {
-            time = dateThen.format("h:mm a");
-        }
-
-        // if same day just give time
-        if(dateNow.isSame(dateThen, 'day')) {
-            return "at " + time;
-        }
-        else if(dateNow.isSame(dateThen, 'month')) {
-            return "on " + dateThen.format("dddd") + " the " + dateThen.format("Do") + " at " + time; // on Monday the 12th at 3:04 pm
-        }
-        else if(dateNow.isSame(dateThen, 'year')) {
-            return "on " + dateThen.format("MM/DD") + " at " + time;
-        }
-        else {
-            return "on " + dateThen.format("MM/DD/YYYY") + " at " + time;
-        }
     }
 
     getFormattedReminder(timezone, shortened) {
@@ -128,12 +108,44 @@ module.exports = class Reminder {
             text: this.text,
             dateCreated: this.dateCreated.valueOf(),
             reminderDate: this.reminderDate.valueOf(),
-            id: this.id
+            id: this.id,
+            userId: this.userId,
         };
     }
 
+    getDateFormatted(timezone) {
+        let dateNow = moment.tz(timezone);
+        let dateThen = moment.tz(this.reminderDate, timezone);
+        // if minute is 0 then just give the hour
+        let time;
+
+        if(dateThen.format("mm") == "00") {
+            time = dateThen.format("h a");
+        }
+        else {
+            time = dateThen.format("h:mm a");
+        }
+
+        // if same day just give time
+        if(dateNow.isSame(dateThen, 'day')) {
+            return "at " + time;
+        }
+        // if same month just give week day and month day
+        else if(dateNow.isSame(dateThen, 'month')) {
+            return "on " + dateThen.format("dddd") + " the " + dateThen.format("Do") + " at " + time; // on Monday the 12th at 3:04 pm
+        }
+        // if same year just give MM/DD
+        else if(dateNow.isSame(dateThen, 'year')) {
+            return "on " + dateThen.format("MM/DD") + " at " + time;
+        }
+        // else just give the full date
+        else {
+            return "on " + dateThen.format("MM/DD/YYYY") + " at " + time;
+        }
+    }
+
     static deserializeReminder(serializedReminderObject) {
-        let reminder = new Reminder(serializedReminderObject.text, moment(serializedReminderObject.reminderDate));
+        let reminder = new Reminder(serializedReminderObject.text, moment(serializedReminderObject.reminderDate), serializedReminderObject.userId);
         reminder.id = serializedReminderObject.id;
         reminder.dateCreated = moment(serializedReminderObject.dateCreated);
         return reminder;

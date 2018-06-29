@@ -12,7 +12,8 @@ TODOS:
 --------
 LATER:
 
-* make lists
+* make mac app for remindmebot
+* make lists be like skeddy
 * sync events with my google/ios calendar
 * /rate yro7 3l storebot
 * alfred workflow

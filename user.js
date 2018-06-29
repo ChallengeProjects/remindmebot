@@ -17,13 +17,13 @@ module.exports = class User {
         this.reminders[reminderId].updateText(text);
     }
 
-    updateReminderDate(reminderId, date, callback) {
-        this.reminders[reminderId].updateDate(date, callback);
+    updateReminderDate(reminderId, date) {
+        this.reminders[reminderId].updateDate(date);
     }
 
-    addReminder(reminder, callback) {
+    addReminder(reminder) {
         this.reminders[reminder.getId()] = reminder;
-        reminder.setTimeout(callback);
+        reminder.setTimeout();
     }
 
     deleteReminder(id) {

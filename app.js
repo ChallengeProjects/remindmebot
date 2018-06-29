@@ -2,15 +2,14 @@ const
     processTime = require('./processTime.js'),
     Reminder = require('./reminder.js'),
     UserManager = require("./userManager.js"),
-    Telegraf = require('telegraf'),
     Extra = require('telegraf/extra'),
     Markup = require('telegraf/markup'),
-    session = require('telegraf/session'),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
     config = require("./config.json"),
     moment = require("moment-timezone"),
-    winston = require('winston');
+    bot = require('./bot.js'),
+    logger = require("./logger.js");
 
 
 function listToMatrix(list, n) {
@@ -22,14 +21,6 @@ function listToMatrix(list, n) {
     }
     return listOfLists;
 }
-
-require('winston-papertrail').Papertrail;
-
-var winstonPapertrail = new winston.transports.Papertrail(config.papertrail);
-
-var logger = new winston.Logger({
-    transports: [winstonPapertrail]
-});
 
 const EDIT_TIME_SCENE = new Scene('EDIT_TIME_SCENE');
 EDIT_TIME_SCENE.enter(ctx => {
@@ -46,7 +37,7 @@ EDIT_TIME_SCENE.on('text', ctx => {
     } catch(err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
-    UserManager.updateReminderDate(userId, reminderId, reminderDate, remindUser.bind(null, userId, reminder));
+    UserManager.updateReminderDate(userId, reminderId, reminderDate);
     replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
 });
@@ -74,8 +65,6 @@ const stage = new Stage();
 stage.register(EDIT_TEXT_SCENE);
 stage.register(EDIT_TIME_SCENE);
 
-const bot = new Telegraf(config.botToken);
-bot.use(session());
 bot.use(stage.middleware());
 
 
@@ -99,20 +88,6 @@ function getReminderMarkup(reminder) {
     return Extra.HTML().markup((m) => {
         return m.inlineKeyboard([m.callbackButton("Edit", `EDIT_${reminder.getId()}`), m.callbackButton("Delete", `DELETE_${reminder.getId()}`)]);
     });
-}
-
-function remindUser(userId, reminder) {
-    const SNOOZE_MAP = {
-        '15M': 15*60*1000,
-        "30M": 30*60*1000,
-        "1H": 60*60*1000,
-        "3H": 3*60*60*1000,
-        "1D": 24*60*60*1000,
-    };
-    let markup = Extra.HTML().markup((m) => {
-        return m.inlineKeyboard(Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminder.getId()}`)));
-    });
-    bot.telegram.sendMessage(String(userId), reminder.getText() + '\n\n' + 'Remind me again in:', markup);
 }
 
 function replyWithConfirmation(ctx, reminder, replyToMessageId) {
@@ -154,8 +129,8 @@ bot.command('remindme', ctx => {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
     
-    let reminder = new Reminder(reminderText, reminderDate);
-    UserManager.addReminderForUser(userId, reminder, remindUser.bind(null, userId, reminder));
+    let reminder = new Reminder(reminderText, reminderDate, userId);
+    UserManager.addReminderForUser(userId, reminder);
     return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
 });
 
@@ -171,7 +146,7 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     let reminder = UserManager.getReminder(userId, reminderId);
 
     let snoozedReminder = reminder.getSnoozedReminder(parseInt(period));
-    UserManager.addReminderForUser(userId, snoozedReminder, remindUser.bind(null, userId, snoozedReminder));
+    UserManager.addReminderForUser(userId, snoozedReminder);
     ctx.answerCbQuery();
     return replyWithConfirmation(ctx, snoozedReminder, null);
 });
@@ -207,7 +182,7 @@ bot.command('timezone', ctx => {
     let userId = ctx.chat.id;
     let timezone = ctx.message.text.split(" ")[1];
 
-    if(!moment.tz.zone(timezone)) {
+    if(!timezone || !moment.tz.zone(timezone)) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         return ctx.replyWithHTML(`You need to specify a valid timezone.
 
@@ -250,11 +225,6 @@ bot.command('list', ctx => {
     let footer = '\n\nChoose number to view or edit:';
 
     ctx.reply("These are your reminders:\n" + body + footer, markup);
-});
-
-bot.hears(/.*sahmudi.*/i, ctx => {
-    logger.info(`${ctx.chat.id}: sahmudi`);
-    return ctx.reply("I love dodo ❤️😍");
 });
 
 bot.command('about', ctx => {
@@ -316,7 +286,7 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
 });
 
 function botStartup() {
-    UserManager.getUsersFromStorage(remindUser);
+    UserManager.getUsersFromStorage();
 }
 botStartup();
 bot.startPolling();

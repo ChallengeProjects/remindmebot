@@ -1,28 +1,19 @@
-/remindme every https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/EventKitProgGuide/CreatingRecurringEvents/CreatingRecurringEvents.html
-    type: daily, weekly, monthly
-    frequency: 1 (every 1), 2 (every 2)
-    option to disable everytime its there
-    3.1- sunday,monday,tuesday at 3 pm, 4pm
-    3.2- every month 1,2,3,$ at 3 pm
+1- processTime: keyword is "every"
+    parse recurring dates function()
+        1- week days "monday, tuesday" -> ["on monday", "on tuesday"]
+        2- ordinals 1st 2nd 3rd 24th..., first second third last
+        3- "day" -> "in 1 day"|||"hour" -> "in 1 hour"|| "week" -> "in 1 week"
+    return [date] x [time]
+2- handle serialization/deserialization
+3- handle setting timeout
+    1- loop over them see which is closest then use that
 
-if str.includes("every") {
-    reminderDateTimeText = "every sunday,monday at 3 pm";
-    date = processTime(reminderDateTimeText);
-    setTimeout(() => {
-        remindUser("test");
-        next sunday at 3 pm
-    }, date)
-}
-
-[sunday,monday] at [2 pm]
-sunday at 2 pm
-monday at 2 pm
-[sunday,monday] at [2,3] pm
-sunday at 2 pm
-sunday at 3 pm
-monday at 2 pm
-monday at 3 pm
-[sunday,monday] at [2 pm, 3 pm]
-
-
-enable/disable reminders
+4- disable reminder: cleartimeout
+    enable reminder: settimeout
+----
+later:
+2- frequency:
+    "every 2" = "every other"
+    every 2 days
+    every 2 mondays, tuesdays
+    every other 3rd of month

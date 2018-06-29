@@ -45,9 +45,9 @@ module.exports = class UserManager {
         
     }
 
-    static updateReminderDate(userId, reminderId, date, callback) {
+    static updateReminderDate(userId, reminderId, date) {
         if(UserManager.userExists(userId)) {
-            users[userId].updateReminderDate(reminderId, date, callback);
+            users[userId].updateReminderDate(reminderId, date);
             updateStorage();
         }
     }
@@ -78,9 +78,9 @@ module.exports = class UserManager {
         }
     }
 
-    static addReminderForUser(userId, reminder, callback) {
+    static addReminderForUser(userId, reminder) {
         if(UserManager.userExists(userId)) {
-            users[userId].addReminder(reminder, callback);
+            users[userId].addReminder(reminder);
             updateStorage();
         }
     }
@@ -94,7 +94,7 @@ module.exports = class UserManager {
         updateStorage();
     }
 
-    static getUsersFromStorage(remindUser) {
+    static getUsersFromStorage() {
         function deserializeUsers(usersSerialized) {
             let serializedUsers = JSON.parse(usersSerialized);
             let deserializedUsers = {};
@@ -120,7 +120,7 @@ module.exports = class UserManager {
             for(let reminderId in userReminders) {
                 let reminder = userReminders[reminderId];
                 if(!reminder.isInThePast()) {
-                    reminder.setTimeout(remindUser.bind(null, userId, reminder));
+                    reminder.setTimeout();
                 }
             }
         }

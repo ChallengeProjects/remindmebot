@@ -65,7 +65,7 @@ function _getDatePartFromString(str) {
 function _getTimesFromString(str) {
     let times = [];
     let timePartFromString = _getTimePartFromString(str);
-    console.log("timePartFromString=", timePartFromString);
+
     //if nothing
     if(!timePartFromString) {
         return null;
@@ -80,7 +80,7 @@ function _getTimesFromString(str) {
     // str = "3 am, 4 pm" [3, am, 4, pm]
     // remove the "at" then replace all commas by spaces then split by spaces to get all the words
     let words = timePartFromString.split(" ").slice(1).join(" ").replace(/,/g, " ").split(" ").filter(x => !!x.length);
-    console.log("words=", words);
+
     let tempArrayUntilMeridiem = [];
     for(let word of words) {
         // if this word is a meridiem then process it and clear it
@@ -128,7 +128,7 @@ function _parseCustomDateFormats(str, userTimezone) {
     let monthDay = _getDateFromOrdinal(_getDatePartFromString(str), userTimezone);
     
     let times = _getTimesFromString(str);
-    console.log("times=", times);
+
     if(!times || times.length == 0) {
         times = ["at 12 pm"];
     }
@@ -170,10 +170,10 @@ function getDate(text, userTimezone) {
 
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
-
     // if user specified week day and it happens to be today or in the past
     //  then they probably dont want it to be today (unless they specified the 'day')
-    if('weekday' in knownValues && 'day' in impliedValues && currentDate.diff(parsedDate, 'days') >= 0) {
+    //  dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
+    if('weekday' in knownValues && 'day' in impliedValues && parseInt(currentDate.format("DD")) - parseInt(parsedDate.format("DD")) >= 0) {
         parsedDate.add(7, 'day');
     }
 
