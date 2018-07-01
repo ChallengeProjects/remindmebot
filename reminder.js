@@ -1,5 +1,6 @@
 const moment = require('moment'),
-    remindUser = require("./botutils.js").remindUser;
+    remindUser = require("./botutils.js").remindUser,
+    ReminderDate = require("./reminderDate.js");
 
 function generateGUID() {
     function s4() {
@@ -13,8 +14,8 @@ function generateGUID() {
 module.exports = class Reminder {
     /**
      * constructor
-     * @param {string}   text         text that should be sent to the user
-     * @param {moment}   reminderDate date when user should be notified
+     * @param {string}       text          text that should be sent to the user
+     * @param {ReminderDate} reminderDate  reminderDate date when user should be notified
      */
     constructor(text, reminderDate, userId) {
         this.text = text;
@@ -22,6 +23,7 @@ module.exports = class Reminder {
         this.dateCreated = moment.utc();
         this.id = generateGUID();
         this.userId = userId;
+        this.enabled = true;
     }
 
     getUserId() {
@@ -39,7 +41,9 @@ module.exports = class Reminder {
     _setTimeout(callback, time) {
         const MAX_TIME = Math.pow(2, 31) - 1;
         if(time > MAX_TIME) {
-            this.timeout = setTimeout(this._setTimeout.bind(null, callback, time - MAX_TIME), MAX_TIME);
+            this.timeout = setTimeout(() => {
+                this._setTimeout(callback, time - MAX_TIME);
+            }, MAX_TIME);
         }
         else {
             this.timeout = setTimeout(callback, time);
@@ -47,9 +51,27 @@ module.exports = class Reminder {
     }
 
     setTimeout() {
-        this._setTimeout(() => {
-            remindUser(this);
-        }, this.getMilliSecondsFromNow());
+        if(!this.reminderDate.isRecurring()) {
+            this._setTimeout(() => {
+                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText()});
+            }, this.reminderDate.getMilliSecondsFromNow());
+        }
+        else {
+            this._setTimeout(() => {
+                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText()});
+                this.setTimeout(); // next time it will be called with the next date
+            }, this.reminderDate.getMilliSecondsFromNow());
+        }
+        
+    }
+
+    isEnabled() {
+        return this.enabled;
+    }
+
+    disable() {
+        this.clearTimeout();
+        this.enabled = false;
     }
 
     clearTimeout() {
@@ -58,12 +80,8 @@ module.exports = class Reminder {
         }
     }
 
-    getMilliSecondsFromNow() {
-        return (this.getDate().unix() - moment().unix()) * 1000;
-    }
-
     isInThePast() {
-        return this.getMilliSecondsFromNow() < 0;
+        return this.reminderDate.isInThePast();
     }
 
     updateText(text) {
@@ -108,45 +126,19 @@ module.exports = class Reminder {
         return {
             text: this.text,
             dateCreated: this.dateCreated.valueOf(),
-            reminderDate: this.reminderDate.valueOf(),
+            reminderDate: this.reminderDate.getSerializableObject(),
             id: this.id,
             userId: this.userId,
         };
     }
 
     getDateFormatted(timezone) {
-        let dateNow = moment.tz(timezone);
-        let dateThen = moment.tz(this.reminderDate, timezone);
-        // if minute is 0 then just give the hour
-        let time;
-
-        if(dateThen.format("mm") == "00") {
-            time = dateThen.format("h a");
-        }
-        else {
-            time = dateThen.format("h:mm a");
-        }
-
-        // if same day just give time
-        if(dateNow.isSame(dateThen, 'day')) {
-            return "at " + time;
-        }
-        // if same month just give week day and month day
-        else if(dateNow.isSame(dateThen, 'month')) {
-            return "on " + dateThen.format("dddd") + " the " + dateThen.format("Do") + " at " + time; // on Monday the 12th at 3:04 pm
-        }
-        // if same year just give MM/DD
-        else if(dateNow.isSame(dateThen, 'year')) {
-            return "on " + dateThen.format("MM/DD") + " at " + time;
-        }
-        // else just give the full date
-        else {
-            return "on " + dateThen.format("MM/DD/YYYY") + " at " + time;
-        }
+        return this.reminderDate.getDateFormatted(timezone);
     }
 
-    static deserializeReminder(serializedReminderObject) {
-        let reminder = new Reminder(serializedReminderObject.text, moment(serializedReminderObject.reminderDate), serializedReminderObject.userId);
+    static deserialize(serializedReminderObject) {
+        let reminderDate = ReminderDate.deserialize(serializedReminderObject.reminderDate);
+        let reminder = new Reminder(serializedReminderObject.text, reminderDate, serializedReminderObject.userId);
         reminder.id = serializedReminderObject.id;
         reminder.dateCreated = moment(serializedReminderObject.dateCreated);
         return reminder;

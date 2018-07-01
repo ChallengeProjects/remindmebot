@@ -99,7 +99,7 @@ module.exports = class UserManager {
             let serializedUsers = JSON.parse(usersSerialized);
             let deserializedUsers = {};
             for(let userId in serializedUsers) {
-                deserializedUsers[userId] = User.deserializeUser(serializedUsers[userId]);
+                deserializedUsers[userId] = User.deserialize(serializedUsers[userId]);
             }
 
             return deserializedUsers;

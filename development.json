@@ -1,0 +1,7 @@
+{
+    // Comments are supported
+    "uid": "remindmebotbeta",
+    "append": true,
+    "watch": true,
+    "script": "start.js"
+}

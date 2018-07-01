@@ -6,6 +6,9 @@ TODOS:
 3- middleware that runs before every call to check if user exists, if not it creates it
 4- include in README the telegram link for the bot and a screenshot
 5- post the bot somewhere else in telegram
+6- correct misspellings:
+    mintues: minutes
+    or find some library to do that
 
 
 

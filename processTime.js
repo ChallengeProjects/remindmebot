@@ -1,5 +1,6 @@
 const chrono = require('chrono-node-albinodrought'),
-    moment = require('moment-timezone');
+    moment = require('moment-timezone'),
+    ReminderDate = require("./reminderDate.js");
 
 /**
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
@@ -173,7 +174,7 @@ function getDate(text, userTimezone) {
     // if user specified week day and it happens to be today or in the past
     //  then they probably dont want it to be today (unless they specified the 'day')
     //  dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
-    if('weekday' in knownValues && 'day' in impliedValues && parseInt(currentDate.format("DD")) - parseInt(parsedDate.format("DD")) >= 0) {
+    if('weekday' in knownValues && 'day' in impliedValues && (parsedDate.isBefore(currentDate) || parsedDate.isSame(currentDate, 'day'))) {
         parsedDate.add(7, 'day');
     }
 
@@ -186,7 +187,7 @@ function getDate(text, userTimezone) {
 
     return {
         reminderText: reminderText,
-        reminderDate: parsedDate
+        reminderDate: new ReminderDate({date: parsedDate})
     };
 }
 /*

@@ -1,3 +1,12 @@
+#!/bin/bash
+
+# quit if eslint fails
+npm run eslint
+if [[ $? != 0 ]]; then
+    echo "eslint failed, startbot.sh exiting..."
+    exit 1
+fi
+
 environment=$1
 
 prod="false"
@@ -10,6 +19,7 @@ if [[ $environment == "" || $environment == "prod" || $environment == "productio
 fi
 
 alias forever="./node_modules/forever/bin/forever"
+shopt -s expand_aliases
 forever &> /dev/null
 if [[ $? != 0 ]]; then
     echo "you need to npm install first"
@@ -20,8 +30,8 @@ if [[ $? == 0 ]]; then
 fi
 
 if [[ $prod == "true" ]]; then
-    forever start --minUptime 2000 --spinSleepTime 3000 -a --uid "$uid" -c "npm start" .
+    NODE_ENV=production forever start production.json --minUptime 2000 --spinSleepTime 3000
 else
     # only watch in dev environment
-    forever start -w --minUptime 2000 --spinSleepTime 3000 -a --uid "$uid" -c "npm run startdev" .
+    NODE_ENV=development forever start development.json --minUptime 2000 --spinSleepTime 3000
 fi    

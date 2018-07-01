@@ -72,10 +72,10 @@ module.exports = class User {
         };
     }
 
-    static deserializeUser(serializedUserObject) {
+    static deserialize(serializedUserObject) {
         let deserializedReminders = {};
         for(let reminderId in serializedUserObject.reminders) {
-            deserializedReminders[reminderId] = Reminder.deserializeReminder(serializedUserObject.reminders[reminderId]);
+            deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId]);
         }
 
         let deserializedUser = new User(serializedUserObject.id, serializedUserObject.username, serializedUserObject.timezone);

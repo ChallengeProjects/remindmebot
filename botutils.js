@@ -1,7 +1,7 @@
 const bot = require("./bot.js"),
     Extra = require('telegraf/extra');
 
-function remindUser(reminder) {
+function remindUser({userId, reminderId, reminderText}) {
     const SNOOZE_MAP = {
         '15M': 15*60*1000,
         "30M": 30*60*1000,
@@ -10,9 +10,9 @@ function remindUser(reminder) {
         "1D": 24*60*60*1000,
     };
     let markup = Extra.HTML().markup((m) => {
-        return m.inlineKeyboard(Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminder.getId()}`)));
+        return m.inlineKeyboard(Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminderId}`)));
     });
-    bot.telegram.sendMessage(String(reminder.getUserId()), reminder.getText() + '\n\n' + 'Remind me again in:', markup);
+    bot.telegram.sendMessage(String(userId), reminderText + '\n\n' + 'Remind me again in:', markup);
 }
 
 module.exports = {
