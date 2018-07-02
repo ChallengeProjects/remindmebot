@@ -21,6 +21,14 @@ module.exports = class User {
         this.reminders[reminderId].updateDate(date);
     }
 
+    enableReminder(reminderId) {
+        this.reminders[reminderId].enable();
+    }
+
+    disableReminder(reminderId) {
+        this.reminders[reminderId].disable();
+    }
+
     addReminder(reminder) {
         this.reminders[reminder.getId()] = reminder;
         reminder.setTimeout();

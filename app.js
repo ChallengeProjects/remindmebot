@@ -8,7 +8,8 @@ const
     Scene = require('telegraf/scenes/base'),
     moment = require("moment-timezone"),
     bot = require('./bot.js'),
-    logger = require("./logger.js");
+    logger = require("./logger.js"),
+    ReminderDate = require("./reminderDate.js");
 
 
 function listToMatrix(list, n) {
@@ -81,11 +82,24 @@ General formula is: /remindme [date/time] to/that [anything].
     • /remindme in 5 minutes to check on the oven
     • /remindme on wednesday to pickup the kids from school
     • /remindme on january 5th that today is my birthday!
+
+<i>You can also do /r instead of /remindme</i>
 `;
 
 function getReminderMarkup(reminder) {
     return Extra.HTML().markup((m) => {
-        return m.inlineKeyboard([m.callbackButton("Edit", `EDIT_${reminder.getId()}`), m.callbackButton("Delete", `DELETE_${reminder.getId()}`)]);
+        let buttons = [
+            m.callbackButton("Edit", `EDIT_${reminder.getId()}`),
+            m.callbackButton("Delete", `DELETE_${reminder.getId()}`)
+        ];
+        if(reminder.isRecurring() && reminder.isEnabled()) {
+            buttons.push(m.callbackButton("Disable", `DISABLE_${reminder.getId()}`));
+        }
+        else if(reminder.isRecurring && !reminder.isEnabled()) {
+            buttons.push(m.callbackButton("Enable", `ENABLE_${reminder.getId()}`));
+        }
+
+        return m.inlineKeyboard(buttons);
     });
 }
 
@@ -109,7 +123,7 @@ bot.command('help', ctx => {
     ctx.replyWithHTML(HELP_TEXT);
 });
 
-bot.command('remindme', ctx => {
+let remindmeCallBack = (ctx) => {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
 
@@ -128,10 +142,13 @@ bot.command('remindme', ctx => {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
     
-    let reminder = new Reminder(reminderText, reminderDate, userId);
+    let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
     UserManager.addReminderForUser(userId, reminder);
     return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
-});
+};
+
+bot.command('remindme', remindmeCallBack);
+bot.command('r', remindmeCallBack);
 
 /**
  * snooze format is the following:
@@ -229,7 +246,7 @@ bot.command('list', ctx => {
 });
 
 bot.command('about', ctx => {
-    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
+    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
 });
 
 /**
@@ -248,6 +265,10 @@ bot.action(/EDIT_([^_]+)/, ctx => {
 
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    if(UserManager.getReminder(ctx.chat.id, ctx.match[1]).isRecurring()) {
+        ctx.answerCbQuery();
+        return ctx.reply("Sorry you cant edit time of recurring reminders");
+    }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TIME_SCENE");
     ctx.answerCbQuery();
@@ -258,6 +279,24 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TEXT_SCENE");
     ctx.answerCbQuery();
+});
+
+/**
+ * edit format is the following:
+ * (DISABLE|ENABLE)_<reminder id>
+ */
+bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+
+    let shouldEnable = ctx.match[1] == "ENABLE";
+    if(shouldEnable) {
+        UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
+    }
+    else {
+        UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
+    }
+    ctx.answerCbQuery();
+    return ctx.reply(`Reminder ${shouldEnable ? "enabled" : "disabled"}.`);
 });
 
 function botStartup() {

@@ -31,6 +31,20 @@ module.exports = class UserManager {
         }
     }
 
+    static enableReminder(userId, reminderId) {
+        if(UserManager.userExists(userId)) {
+            users[userId].enableReminder(reminderId);
+            updateStorage();
+        }
+    }
+
+    static disableReminder(userId, reminderId) {
+        if(UserManager.userExists(userId)) {
+            users[userId].disableReminder(reminderId);
+            updateStorage();
+        }
+    }
+
     static getReminder(userId, reminderId) {
         if(UserManager.userExists(userId)) {
             return users[userId].getReminder(reminderId);
@@ -119,7 +133,7 @@ module.exports = class UserManager {
 
             for(let reminderId in userReminders) {
                 let reminder = userReminders[reminderId];
-                if(!reminder.isInThePast()) {
+                if(!reminder.isInThePast() && reminder.isEnabled()) {
                     reminder.setTimeout();
                 }
             }

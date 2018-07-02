@@ -1,5 +1,6 @@
 const moment = require('moment'),
-    processTime = require("./processTime.js");
+    processTime = require('./processTime.js');
+
 module.exports = class ReminderDate {
     /**
      * reminder date constructor
@@ -40,7 +41,7 @@ module.exports = class ReminderDate {
             throw 'No recurring dates';
         }
 
-        let sortedDates = this.recurringDates.map(rd => processTime.getDate(rd + " to test").reminderDate)
+        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", "America/Los_Angeles").reminderDate.date)
             .sort((a, b) => a.unix() - b.unix());
 
         return sortedDates[0];
@@ -63,6 +64,10 @@ module.exports = class ReminderDate {
     }
 
     getDateFormatted(timezone) {
+        if(this.isRecurring()) {
+            return "recurring reminder:" + JSON.stringify(this.recurringDates);
+        }
+        
         let dateNow = moment.tz(timezone);
         let dateThen = moment.tz(this.date, timezone);
         // if minute is 0 then just give the hour
@@ -96,7 +101,7 @@ module.exports = class ReminderDate {
     
     getSerializableObject() {
         return {
-            date: this.date.valueOf(),
+            date: this.date ? this.date.valueOf() : undefined,
             recurringDates: this.recurringDates
         };
     }

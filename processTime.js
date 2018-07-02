@@ -1,10 +1,10 @@
 const chrono = require('chrono-node-albinodrought'),
     moment = require('moment-timezone'),
-    ReminderDate = require("./reminderDate.js");
+    commonTypos = require("./commonTypos.json");
 
 /**
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
- * @return {}      [description]
+ * @return {reminderText: <text>, reminderDateTimeText: <datetime/time interval>}      
  */
 function _splitReminderText(text) {
     text = text.trim();
@@ -79,8 +79,11 @@ function _getTimesFromString(str) {
 
     // str = "3 4 pm " [3, 4, pm]
     // str = "3 am, 4 pm" [3, am, 4, pm]
-    // remove the "at" then replace all commas by spaces then split by spaces to get all the words
-    let words = timePartFromString.split(" ").slice(1).join(" ").replace(/,/g, " ").split(" ").filter(x => !!x.length);
+    let words = timePartFromString.split(" ")
+        .slice(1).join(" ")    // remove the "at"
+        .replace(/and/ig, " ") // replace "and" with " "
+        .replace(/,/g, " ")    // replace "," with " "
+        .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
 
     let tempArrayUntilMeridiem = [];
     for(let word of words) {
@@ -140,8 +143,59 @@ function _parseCustomDateFormats(str, userTimezone) {
     };
 }
 
+function _parseRecurringDates(reminderDateTimeText) {
+    let recurringDates;
+    let times = _getTimesFromString(reminderDateTimeText);
+    let dateText = _getDatePartFromString(reminderDateTimeText);
+    if(!dateText.match(/\bevery\b/i)) {
+        return null;
+    }
+
+    let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
+    // add plural
+    units = [...units, ...units.map(u => u+'s')];
+    let unitMatch = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'i'));
+    let dates = [];
+    if(unitMatch) {
+        let frequency = unitMatch[1] ? parseInt(unitMatch[1].trim()) : 1;
+        let unit = unitMatch[2];
+        dates.push(`in ${frequency} ${unit}`);
+    }
+
+    if(!dates) {
+        return null;
+    }
+
+    if(!times) {
+        recurringDates = dates;
+    }
+    else {
+        for(let date of dates) {
+            for(let time of times) {
+                recurringDates.push(date + " " + time);
+            }
+        }
+    }
+
+    return recurringDates;
+}
+
+function correctSpellingForDateTimeText(reminderDateTimeText) {
+    for(let correctWord in commonTypos) {
+        for(let incorrectWord of commonTypos[correctWord]) {
+            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
+        }
+    }
+    return reminderDateTimeText;
+}
+
 function getDate(text, userTimezone) {
     let {reminderText, reminderDateTimeText} = _splitReminderText(text);
+    reminderDateTimeText = correctSpellingForDateTimeText(reminderDateTimeText);
+    let recurringDates = _parseRecurringDates(reminderDateTimeText);
+    if(recurringDates) {
+        return {reminderDate: {recurringDates: recurringDates}, reminderText: reminderText};
+    }
 
     let {monthDay, time} = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
     
@@ -162,7 +216,6 @@ function getDate(text, userTimezone) {
     }
 
     let currentDate = moment.tz(userTimezone);
-
     let result = chrono.parse(reminderDateTimeText)[0];
 
     if(!result) {
@@ -179,7 +232,7 @@ function getDate(text, userTimezone) {
     }
 
     // if the date is in the past
-    if(currentDate.isAfter(parsedDate)) {
+    if(parsedDate.isBefore(currentDate)) {
         if('day' in impliedValues) {
             parsedDate.add(1, 'day');
         }
@@ -187,7 +240,7 @@ function getDate(text, userTimezone) {
 
     return {
         reminderText: reminderText,
-        reminderDate: new ReminderDate({date: parsedDate})
+        reminderDate: {date: parsedDate}
     };
 }
 /*

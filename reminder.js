@@ -30,6 +30,10 @@ module.exports = class Reminder {
         return this.userId;
     }
 
+    isRecurring() {
+        return this.reminderDate.isRecurring();
+    }
+
 
     /**
      * setTimeout cant accept time that is > 2^31 - 1, this 
@@ -53,12 +57,12 @@ module.exports = class Reminder {
     setTimeout() {
         if(!this.reminderDate.isRecurring()) {
             this._setTimeout(() => {
-                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText()});
+                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
             }, this.reminderDate.getMilliSecondsFromNow());
         }
         else {
             this._setTimeout(() => {
-                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText()});
+                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
                 this.setTimeout(); // next time it will be called with the next date
             }, this.reminderDate.getMilliSecondsFromNow());
         }
@@ -67,6 +71,11 @@ module.exports = class Reminder {
 
     isEnabled() {
         return this.enabled;
+    }
+
+    enable() {
+        this.setTimeout();
+        this.enabled = true;
     }
 
     disable() {
@@ -111,7 +120,8 @@ module.exports = class Reminder {
         if(text.length > 70) {
             text = shortened ? (text.slice(0, 70) + "…") : text;
         }
-        return `<b>${this.getDateFormatted(timezone)}:</b>\n${text}`;
+        let disabledText = !this.isEnabled() ? "[Disabled]" : "";
+        return `<b>${disabledText} ${this.getDateFormatted(timezone)}:</b>\n${text}`;
     }
 
     getId() {
@@ -129,6 +139,7 @@ module.exports = class Reminder {
             reminderDate: this.reminderDate.getSerializableObject(),
             id: this.id,
             userId: this.userId,
+            enabled: this.enabled,
         };
     }
 
@@ -141,6 +152,7 @@ module.exports = class Reminder {
         let reminder = new Reminder(serializedReminderObject.text, reminderDate, serializedReminderObject.userId);
         reminder.id = serializedReminderObject.id;
         reminder.dateCreated = moment(serializedReminderObject.dateCreated);
+        reminder.enabled = serializedReminderObject.enabled;
         return reminder;
     }
 };
