@@ -1,5 +1,4 @@
-const
-    processTime = require('./processTime.js'),
+const processTime = require('./processTime.js'),
     Reminder = require('./reminder.js'),
     UserManager = require("./userManager.js"),
     Extra = require('telegraf/extra'),
@@ -95,7 +94,7 @@ function getReminderMarkup(reminder) {
         if(reminder.isRecurring() && reminder.isEnabled()) {
             buttons.push(m.callbackButton("Disable", `DISABLE_${reminder.getId()}`));
         }
-        else if(reminder.isRecurring && !reminder.isEnabled()) {
+        else if(reminder.isRecurring() && !reminder.isEnabled()) {
             buttons.push(m.callbackButton("Enable", `ENABLE_${reminder.getId()}`));
         }
 
@@ -104,12 +103,11 @@ function getReminderMarkup(reminder) {
 }
 
 function replyWithConfirmation(ctx, reminder, replyToMessageId) {
-    let timezone = UserManager.getUserTimezone(ctx.chat.id);
     let markup = getReminderMarkup(reminder);
     if(replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
-    return ctx.reply('Alright I will remind you ' + reminder.getDateFormatted(timezone), markup);
+    return ctx.reply('Alright I will remind you ' + reminder.getDateFormatted(), markup);
 }
 
 bot.command('start', ctx => {
@@ -187,11 +185,10 @@ bot.action(/VIEW_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
-    let timezone = UserManager.getUserTimezone(ctx.chat.id);
 
     let markup = getReminderMarkup(reminder);
     ctx.answerCbQuery();
-    return ctx.reply(reminder.getFormattedReminder(timezone, false), markup);
+    return ctx.reply(reminder.getFormattedReminder(false), markup);
 });
 
 bot.command('timezone', ctx => {
@@ -199,7 +196,7 @@ bot.command('timezone', ctx => {
     let timezone = ctx.message.text.split(" ")[1];
 
     if(!timezone || !moment.tz.zone(timezone)) {
-        if(timezone && !moment.tz.zone(timezone)) {
+        if(timezone) {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         }
         return ctx.replyWithHTML(`You need to specify a valid timezone.
@@ -217,12 +214,14 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
 bot.command('list', ctx => {
     let userId = ctx.chat.id;
     let reminders = UserManager.getUserSortedFutureReminders(userId);
+    if(!reminders) {
+        return ctx.reply("You need to /start first");
+    }
     logger.info(`${ctx.chat.id}: list, they have: ${reminders.length} reminders`);
-    let timezone = UserManager.getUserTimezone(userId);
     let list = [];
     let i = 1;
     for(let reminder of reminders) {
-        list.push(`<b>${i++})</b> ${reminder.getFormattedReminder(timezone, true)}`);
+        list.push(`<b>${i++})</b> ${reminder.getFormattedReminder(true)}`);
     }
     let markup = Extra.HTML().markup((m) => {
         let listOfButtons = [];
@@ -238,7 +237,7 @@ bot.command('list', ctx => {
         return ctx.reply("You have no reminders");
     }
 
-    let body = list.join("\n------------\n");
+    let body = list.join("\n——————————————\n");
 
     let footer = '\n\nChoose number to view or edit:';
 

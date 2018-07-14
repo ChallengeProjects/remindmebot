@@ -1,6 +1,7 @@
 const chrono = require('chrono-node-albinodrought'),
     moment = require('moment-timezone'),
-    commonTypos = require("./commonTypos.json");
+    commonTypos = require("./commonTypos.json"),
+    timemachine = require('timemachine');
 
 /**
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
@@ -36,11 +37,12 @@ function _splitReminderText(text) {
 function _getTimePartFromString(str) {
     let atSegments = str.replace(/\b(on)\b/g, "at").split("at").filter(x => !!x.length);
     for(let atSegment of atSegments) {
-        let words = atSegment.replace(/,/g, " ").split(" ").filter(x => !!x.length);
+        let words = atSegment.replace(/,/g, " ").replace(/([0-9]+)(am|pm)/g, "$1 $2").split(" ").filter(x => !!x.length);
 
         let flag = true;
         for(let word of words) {
-            if(!word.match(/^[0-9:]+$/i) && !word.match(/^(am|pm)$/i)) {
+            // each word has to either be a number with colons in between or "am" "pm" or "and"
+            if(!word.match(/^[0-9:]+$/i) && !word.match(/^(am|pm|and)$/i)) {
                 flag = false;
             }
         }
@@ -73,7 +75,7 @@ function _getTimesFromString(str) {
     }
 
     // if no recurrence
-    if(timePartFromString.indexOf(",") == -1) {
+    if(timePartFromString.indexOf(",") == -1 && !timePartFromString.match(/\band\b/i)) {
         return [timePartFromString];
     }
 
@@ -81,7 +83,8 @@ function _getTimesFromString(str) {
     // str = "3 am, 4 pm" [3, am, 4, pm]
     let words = timePartFromString.split(" ")
         .slice(1).join(" ")    // remove the "at"
-        .replace(/and/ig, " ") // replace "and" with " "
+        .replace(/([0-9]+)(am|pm)/g, "$1 $2") // seperate numbers joined with am/pm
+        .replace(/\band\b/ig, " ") // replace "and" with " "
         .replace(/,/g, " ")    // replace "," with " "
         .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
 
@@ -144,22 +147,32 @@ function _parseCustomDateFormats(str, userTimezone) {
 }
 
 function _parseRecurringDates(reminderDateTimeText) {
-    let recurringDates;
+    let recurringDates = [];
     let times = _getTimesFromString(reminderDateTimeText);
     let dateText = _getDatePartFromString(reminderDateTimeText);
+    dateText = dateText.replace(/,/g, ' ');
+
     if(!dateText.match(/\bevery\b/i)) {
         return null;
     }
 
+    // try to parse units
     let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
-    // add plural
-    units = [...units, ...units.map(u => u+'s')];
+    units = [...units, ...units.map(u => u+'s')]; // add plural
     let unitMatch = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'i'));
     let dates = [];
     if(unitMatch) {
         let frequency = unitMatch[1] ? parseInt(unitMatch[1].trim()) : 1;
         let unit = unitMatch[2];
         dates.push(`in ${frequency} ${unit}`);
+    }
+
+    // try to parse week days
+    let weekDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    for(let weekDay of weekDays) {
+        if(dateText.match(new RegExp(`\\b${weekDay}\\b`, 'i'))) {
+            dates.push(`on ${weekDay}`);
+        }
     }
 
     if(!dates) {
@@ -206,28 +219,26 @@ function getDate(text, userTimezone) {
         }
     }
 
+    timemachine.config({dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss")});
     let d = moment(chrono.parseDate(reminderDateTimeText));
-    let parsedDate;
-    if(reminderDateTimeText.trim().startsWith("in")) {
-        parsedDate = moment.tz(d, userTimezone);
-    }
-    else {
-        parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
-    }
-
-    let currentDate = moment.tz(userTimezone);
     let result = chrono.parse(reminderDateTimeText)[0];
+    let currentDate = moment.tz(userTimezone);
+    timemachine.reset();
 
     if(!result) {
         throw 'Could not parse';
     }
-
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
-    // if user specified week day and it happens to be today or in the past
+
+    let parsedDate;
+    parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+    
+    // if user specified week day and it happens to be /*today*/ or in the past
     //  then they probably dont want it to be today (unless they specified the 'day')
     //  dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
-    if('weekday' in knownValues && 'day' in impliedValues && (parsedDate.isBefore(currentDate) || parsedDate.isSame(currentDate, 'day'))) {
+    // if('weekday' in knownValues && 'day' in impliedValues && (parsedDate.isBefore(currentDate) || parsedDate.isSame(currentDate, 'day'))) {
+    if('weekday' in knownValues && 'day' in impliedValues && parsedDate.isBefore(currentDate)) {
         parsedDate.add(7, 'day');
     }
 
@@ -237,7 +248,7 @@ function getDate(text, userTimezone) {
             parsedDate.add(1, 'day');
         }
     }
-
+    console.log("parsedDate=", parsedDate);
     return {
         reminderText: reminderText,
         reminderDate: {date: parsedDate}

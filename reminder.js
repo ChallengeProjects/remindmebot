@@ -26,6 +26,10 @@ module.exports = class Reminder {
         this.enabled = true;
     }
 
+    setTimezone(timezone) {
+        this.timezone = timezone;
+    }
+
     getUserId() {
         return this.userId;
     }
@@ -55,16 +59,17 @@ module.exports = class Reminder {
     }
 
     setTimeout() {
+        console.log("settimeout = ", this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
         if(!this.reminderDate.isRecurring()) {
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
-            }, this.reminderDate.getMilliSecondsFromNow());
+            }, this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
         }
         else {
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
                 this.setTimeout(); // next time it will be called with the next date
-            }, this.reminderDate.getMilliSecondsFromNow());
+            }, this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
         }
         
     }
@@ -90,7 +95,7 @@ module.exports = class Reminder {
     }
 
     isInThePast() {
-        return this.reminderDate.isInThePast();
+        return this.reminderDate.isInThePast(this.timezone.getTimezone());
     }
 
     updateText(text) {
@@ -115,13 +120,13 @@ module.exports = class Reminder {
         return this.reminderDate;
     }
 
-    getFormattedReminder(timezone, shortened) {
+    getFormattedReminder(shortened) {
         let text = this.getText();
         if(text.length > 70) {
             text = shortened ? (text.slice(0, 70) + "…") : text;
         }
         let disabledText = !this.isEnabled() ? "[Disabled]" : "";
-        return `<b>${disabledText} ${this.getDateFormatted(timezone)}:</b>\n${text}`;
+        return `<b>${disabledText} ${this.getDateFormatted(this.timezone.getTimezone())}:</b>\n${text}`;
     }
 
     getId() {
@@ -143,16 +148,21 @@ module.exports = class Reminder {
         };
     }
 
-    getDateFormatted(timezone) {
-        return this.reminderDate.getDateFormatted(timezone);
+    getDateFormatted() {
+        return this.reminderDate.getDateFormatted(this.timezone.getTimezone());
     }
 
-    static deserialize(serializedReminderObject) {
+    static deserialize(serializedReminderObject, timezone) {
         let reminderDate = ReminderDate.deserialize(serializedReminderObject.reminderDate);
         let reminder = new Reminder(serializedReminderObject.text, reminderDate, serializedReminderObject.userId);
         reminder.id = serializedReminderObject.id;
         reminder.dateCreated = moment(serializedReminderObject.dateCreated);
         reminder.enabled = serializedReminderObject.enabled;
+        reminder.setTimezone(timezone);
+
+        if(!reminder.isInThePast() && reminder.isEnabled()) {
+            reminder.setTimeout();
+        }
         return reminder;
     }
 };

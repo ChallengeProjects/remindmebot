@@ -126,21 +126,5 @@ module.exports = class UserManager {
             console.error('couldnt deserialize users', err);
             users = {};
         }
-
-        function setRemindersForUser(userId) {
-            let user = users[userId];
-            let userReminders = user.getReminders();
-
-            for(let reminderId in userReminders) {
-                let reminder = userReminders[reminderId];
-                if(!reminder.isInThePast() && reminder.isEnabled()) {
-                    reminder.setTimeout();
-                }
-            }
-        }
-
-        for(let userId in users) {
-            setRemindersForUser(userId);
-        }
     }
 };

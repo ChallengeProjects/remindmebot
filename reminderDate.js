@@ -1,5 +1,10 @@
 const moment = require('moment'),
-    processTime = require('./processTime.js');
+    processTime = require('./processTime.js'),
+    timemachine = require("timemachine");
+// I don't know why I need this here, but I do
+//   without it, "sometimes" moment().unix() would return 0 in this file
+timemachine.reset();
+
 
 module.exports = class ReminderDate {
     /**
@@ -36,40 +41,54 @@ module.exports = class ReminderDate {
      * loops over all recurring dates and finds the closest one
      * @return {moment} next recurring date
      */
-    _getNextRecurringDate() {
+    _getNextRecurringDate(timezone) {
         if(!this.isRecurring()) {
             throw 'No recurring dates';
         }
 
-        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", "America/Los_Angeles").reminderDate.date)
+        console.log("recurringDates=", this.recurringDates);
+        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", timezone).reminderDate.date)
             .sort((a, b) => a.unix() - b.unix());
 
+        console.log("sortedDates=", sortedDates);
         return sortedDates[0];
     }
 
-    isInThePast() {
-        return this.getMilliSecondsFromNow() < 0;
+    isInThePast(timezone) {
+        if(this.isRecurring()) {
+            return false;
+        }
+        // console.log(`isInThePast: msFromNow: ${this.getMilliSecondsFromNow(timezone)}, momentnow:${moment().unix()}, date: ${new Date().getTime()/1000}`);
+        return this.getMilliSecondsFromNow(timezone) < 0;
     }
 
-    getMilliSecondsFromNow() {
+    getMilliSecondsFromNow(timezone) {
         let date;
         if(this.isRecurring()) {
-            date = this._getNextRecurringDate();
+            date = this._getNextRecurringDate(timezone);
         }
         else {
             date = this.getDate();
         }
 
+        console.log("getMilliSecondsFromNow: date=", date.unix(), "now=", moment().unix());
         return (date.unix() - moment().unix()) * 1000;
     }
 
     getDateFormatted(timezone) {
         if(this.isRecurring()) {
-            return "recurring reminder:" + JSON.stringify(this.recurringDates);
+            let date = this._getNextRecurringDate(timezone);
+            let nextTime = this._getDateFormatted(date, timezone);
+            return `next time: ${nextTime}, all times: ${JSON.stringify(this.recurringDates)}`;
         }
-        
+        else {
+            return this._getDateFormatted(this.date, timezone);
+        }
+    }
+
+    _getDateFormatted(date, timezone) {
         let dateNow = moment.tz(timezone);
-        let dateThen = moment.tz(this.date, timezone);
+        let dateThen = moment.tz(date, timezone);
         // if minute is 0 then just give the hour
         let time;
 
