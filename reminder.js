@@ -59,17 +59,18 @@ module.exports = class Reminder {
     }
 
     setTimeout() {
-        console.log("settimeout = ", this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
+        let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
+        console.log("text= ", this.getText(), "settimeout = ", time);
         if(!this.reminderDate.isRecurring()) {
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
-            }, this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
+            }, time);
         }
         else {
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
                 this.setTimeout(); // next time it will be called with the next date
-            }, this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone()));
+            }, time);
         }
         
     }

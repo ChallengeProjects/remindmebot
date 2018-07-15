@@ -1,7 +1,8 @@
 const chrono = require('chrono-node-albinodrought'),
     moment = require('moment-timezone'),
     commonTypos = require("./commonTypos.json"),
-    timemachine = require('timemachine');
+    timemachine = require('timemachine'),
+    logger = require("./logger.js");
 
 /**
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
@@ -222,8 +223,9 @@ function getDate(text, userTimezone) {
     timemachine.config({dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss")});
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
-    let currentDate = moment.tz(userTimezone);
     timemachine.reset();
+    let currentDate = moment.tz(userTimezone);
+    logger.info('1: currentDate=', currentDate);
 
     if(!result) {
         throw 'Could not parse';
@@ -233,6 +235,7 @@ function getDate(text, userTimezone) {
 
     let parsedDate;
     parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+    logger.info('2: parsedDate=', parsedDate, "currentDate=", currentDate);
     
     // if user specified week day and it happens to be /*today*/ or in the past
     //  then they probably dont want it to be today (unless they specified the 'day')
@@ -244,11 +247,12 @@ function getDate(text, userTimezone) {
 
     // if the date is in the past
     if(parsedDate.isBefore(currentDate)) {
+        logger.info("going to add 1 day because parseDate is before currentDate");
         if('day' in impliedValues) {
             parsedDate.add(1, 'day');
         }
     }
-    console.log("parsedDate=", parsedDate);
+
     return {
         reminderText: reminderText,
         reminderDate: {date: parsedDate}

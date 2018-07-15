@@ -82,6 +82,8 @@ General formula is: /remindme [date/time] to/that [anything].
     • /remindme on wednesday to pickup the kids from school
     • /remindme on january 5th that today is my birthday!
 
+You can also make recurring reminders: /help_with_recurring_reminders
+
 <i>You can also do /r instead of /remindme</i>
 `;
 
@@ -246,6 +248,18 @@ bot.command('list', ctx => {
 
 bot.command('about', ctx => {
     return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
+});
+
+bot.command('/help_with_recurring_reminders', ctx=> {
+    return ctx.replyWithHTML(`
+To setup recurring reminders:
+/remindme every day at 9 am and 9 pm to take my medicine
+/remindme every sunday at 10 am to do my laundry
+/remindme every monday,wednesday,friday at 5 pm to leave at 6 from work to pick up the kids
+/remindme every 2 hours to check my email
+
+keyword is <b>every</b>
+    `);
 });
 
 /**
