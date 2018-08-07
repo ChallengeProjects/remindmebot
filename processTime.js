@@ -220,11 +220,28 @@ function getDate(text, userTimezone) {
         }
     }
 
+    let currentDate = moment.tz(userTimezone);
     timemachine.config({dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss")});
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
+    if('meridiem' in result.start.impliedValues) {
+        let timePart = _getTimePartFromString(reminderDateTimeText);
+        let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
+        let textWitham = reminderDateTimeText.replace(timePart, timePart + " am");
+        console.log("textWithpm=", textWithpm, "|||| textWitham=", textWitham);
+        let dpm = moment(chrono.parseDate(textWithpm));
+        let dam = moment(chrono.parseDate(textWitham));
+        console.log(dpm, dam);
+        if(dam.isBefore(dpm) && !dam.isBefore(currentDate)) {
+            d = dam;
+            result = chrono.parse(textWitham)[0];
+        }
+        else {
+            d = dpm;
+            result = chrono.parse(textWithpm)[0];
+        }
+    }
     timemachine.reset();
-    let currentDate = moment.tz(userTimezone);
     logger.info('1: currentDate=', currentDate);
 
     if(!result) {

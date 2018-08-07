@@ -36,7 +36,7 @@ EDIT_TIME_SCENE.on('text', ctx => {
     } catch(err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
     }
-    UserManager.updateReminderDate(userId, reminderId, reminderDate);
+    UserManager.updateReminderDate(userId, reminderId, new ReminderDate(reminderDate));
     replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
 });

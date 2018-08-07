@@ -19,7 +19,7 @@ module.exports = class Reminder {
      */
     constructor(text, reminderDate, userId) {
         this.text = text;
-        this.reminderDate = reminderDate;
+        this.setReminderDate(reminderDate);
         this.dateCreated = moment.utc();
         this.id = generateGUID();
         this.userId = userId;
@@ -96,6 +96,10 @@ module.exports = class Reminder {
     }
 
     isInThePast() {
+        if(!this.reminderDate) {
+            console.log("reminder date doesnt exist", this.getText());
+            return true;
+        }
         return this.reminderDate.isInThePast(this.timezone.getTimezone());
     }
 
@@ -103,9 +107,16 @@ module.exports = class Reminder {
         this.text = text;
     }
 
+    setReminderDate(date) {
+        if(!date || !(date instanceof ReminderDate)) {
+            console.log("reminderDate is not of type ReminderDate: ", date, this.getText());
+        }
+        this.reminderDate = date;
+    }
+
     updateDate(date) {
         this.clearTimeout();
-        this.reminderDate = date;
+        this.setReminderDate(date);
         this.setTimeout();
     }
 
@@ -135,7 +146,10 @@ module.exports = class Reminder {
     }
 
     getSnoozedReminder(snoozePeriodInMilliSeconds) {
-        return new Reminder(this.text, moment(moment().valueOf() + snoozePeriodInMilliSeconds));
+        let snoozedReminderDate = new ReminderDate({
+            date: moment(moment().valueOf() + snoozePeriodInMilliSeconds)
+        });
+        return new Reminder(this.text, snoozedReminderDate, this.getUserId());
     }
 
     getSerializableObject() {
