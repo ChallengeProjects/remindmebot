@@ -225,19 +225,30 @@ function getDate(text, userTimezone) {
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
     if('meridiem' in result.start.impliedValues) {
+        // get text
         let timePart = _getTimePartFromString(reminderDateTimeText);
         let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
         let textWitham = reminderDateTimeText.replace(timePart, timePart + " am");
-        console.log("textWithpm=", textWithpm, "|||| textWitham=", textWitham);
-        let dpm = moment(chrono.parseDate(textWithpm));
-        let dam = moment(chrono.parseDate(textWitham));
-        console.log(dpm, dam);
-        if(dam.isBefore(dpm) && !dam.isBefore(currentDate)) {
-            d = dam;
+        
+        // compute am and pm
+        let parsedDatePM = moment.tz(moment(chrono.parseDate(textWithpm)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+        let parsedDateAM = moment.tz(moment(chrono.parseDate(textWitham)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+        
+        // fix dates before choosing
+        if(parsedDateAM.isBefore(currentDate)) {
+            parsedDateAM.add(1, 'day');
+        }
+        
+        if(parsedDatePM.isBefore(currentDate)) {
+            parsedDatePM.add(1, 'day');
+        }
+        
+        if(parsedDateAM.isBefore(parsedDatePM)) {
+            d = parsedDateAM;
             result = chrono.parse(textWitham)[0];
         }
         else {
-            d = dpm;
+            d = parsedDatePM;
             result = chrono.parse(textWithpm)[0];
         }
     }

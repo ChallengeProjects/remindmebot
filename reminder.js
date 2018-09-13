@@ -1,6 +1,12 @@
 const moment = require('moment'),
     remindUser = require("./botutils.js").remindUser,
-    ReminderDate = require("./reminderDate.js");
+    ReminderDate = require("./reminderDate.js"),
+    processTime = require('./processTime.js'),
+    timemachine = require("timemachine");
+// not sure if i need this here, but I had to use it in reminderDate.js
+//  I don't know why need it there, but I do
+//   without it, "sometimes" moment().unix() would return 0 in reminderDate.js
+timemachine.reset();
 
 function generateGUID() {
     function s4() {
@@ -24,6 +30,7 @@ module.exports = class Reminder {
         this.id = generateGUID();
         this.userId = userId;
         this.enabled = true;
+        this.timeouts = [];
     }
 
     setTimezone(timezone) {
@@ -49,30 +56,38 @@ module.exports = class Reminder {
     _setTimeout(callback, time) {
         const MAX_TIME = Math.pow(2, 31) - 1;
         if(time > MAX_TIME) {
-            this.timeout = setTimeout(() => {
+            this.timeouts.push(setTimeout(() => {
                 this._setTimeout(callback, time - MAX_TIME);
-            }, MAX_TIME);
+            }, MAX_TIME));
         }
         else {
-            this.timeout = setTimeout(callback, time);
+            this.timeouts.push(setTimeout(callback, time));
         }
     }
 
     setTimeout() {
-        let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
-        console.log("text= ", this.getText(), "settimeout = ", time);
         if(!this.reminderDate.isRecurring()) {
+            let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
+            console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
             }, time);
         }
         else {
-            this._setTimeout(() => {
-                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
-                this.setTimeout(); // next time it will be called with the next date
-            }, time);
-        }
-        
+            console.log("setTimeout: Recurring: text= ", this.getText());
+            for(let dateString of this.reminderDate.getDates()) {
+                this.setTimeoutOneDate(dateString);
+            }
+        }   
+    }
+
+    setTimeoutOneDate(dateString) {
+        let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDate.date;
+        console.log("\tsetTimeoutOneDate: date= ", date);
+        this._setTimeout(() => {
+            remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
+            this.setTimeoutOneDate(dateString);
+        }, (date.unix() - moment().unix()) * 1000);
     }
 
     isEnabled() {
@@ -90,8 +105,8 @@ module.exports = class Reminder {
     }
 
     clearTimeout() {
-        if(this.timeout) {
-            clearTimeout(this.timeout);
+        for(let timeout of this.timeouts) {
+            clearTimeout(timeout);
         }
     }
 
@@ -109,7 +124,7 @@ module.exports = class Reminder {
 
     setReminderDate(date) {
         if(!date || !(date instanceof ReminderDate)) {
-            console.log("reminderDate is not of type ReminderDate: ", date, this.getText());
+            console.log("ERROR: reminderDate is not of type ReminderDate: ", date, this.getText());
         }
         this.reminderDate = date;
     }
