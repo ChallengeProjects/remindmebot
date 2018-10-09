@@ -29,6 +29,15 @@ module.exports = class ReminderDate {
         return !!this.recurringDates;
     }
 
+    valueOf() {
+        if(this.date) {
+            return this.date.valueOf();
+        }
+        else {
+            return this._getNextRecurringDate.valueOf();
+        }
+    }
+
     getDate() {
         return this.date;
     }
@@ -71,7 +80,7 @@ module.exports = class ReminderDate {
             date = this.getDate();
         }
 
-        console.log("getMilliSecondsFromNow: date=", date.unix(), "now=", moment().unix());
+        // console.log("getMilliSecondsFromNow: date=", date.unix(), "now=", moment().unix());
         return (date.unix() - moment().unix()) * 1000;
     }
 
@@ -126,14 +135,16 @@ module.exports = class ReminderDate {
     }
 
     static deserialize(serializedReminderDateObject) {
-        // one time thing
+        // remove this after all the data has been fixed
+        // (Definitely fixed in beta not sure about prod)
+        // <one time thing>
         if(typeof serializedReminderDateObject == typeof 3) {
             let x = new ReminderDate({
                 date: moment(serializedReminderDateObject)
             });
             return x;
         }
-        // end one time thing
+        // </one time thing>
 
         let date = undefined;
         if(serializedReminderDateObject.date) {

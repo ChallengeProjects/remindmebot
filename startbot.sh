@@ -9,13 +9,17 @@ fi
 
 environment=$1
 
-prod="false"
-uid="remindmebotbeta"
-NODE_ENV="development"
-if [[ $environment == "" || $environment == "prod" || $environment == "production" ]]; then
+if [[ $environment == "prod" || $environment == "production" ]]; then
     prod="true"
     uid="remindmebotprod"
     NODE_ENV="production"
+elif [[ $environment == "test" || $environment == "beta" || $environment == "dev" || $environment == "development" ]]; then
+    prod="false"
+    uid="remindmebotbeta"
+    NODE_ENV="development"
+else
+    echo "provide prod or beta for environment"
+    exit 1
 fi
 
 alias forever="./node_modules/forever/bin/forever"
@@ -26,9 +30,11 @@ if [[ $? != 0 ]]; then
 fi
 forever list | egrep $uid &> /dev/null
 if [[ $? == 0 ]]; then
+    echo "stopping the forever process"
     forever stop "$uid" &> /dev/null
 fi
 
+echo "starting the forever process"
 if [[ $prod == "true" ]]; then
     NODE_ENV=production forever start production.json --minUptime 2000 --spinSleepTime 3000
 else

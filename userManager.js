@@ -1,6 +1,7 @@
 const User = require('./user.js'),
     fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    sendMessageToUser = require("./botutils.js").sendMessageToUser;
 
 let users = {}; // id:user
 
@@ -25,9 +26,9 @@ module.exports = class UserManager {
         }
     }
 
-    static getUserSortedFutureReminders(id) {
+    static getUserSortedFutureReminders(id, searchTerm) {
         if(UserManager.userExists(id)) {
-            return users[id].getSortedFutureReminders();
+            return users[id].getSortedFutureReminders(searchTerm);
         }
     }
 
@@ -108,7 +109,7 @@ module.exports = class UserManager {
         updateStorage();
     }
 
-    static getUsersFromStorage() {
+    static loadUsersDataFromStorage() {
         function deserializeUsers(usersSerialized) {
             let serializedUsers = JSON.parse(usersSerialized);
             let deserializedUsers = {};
@@ -126,5 +127,17 @@ module.exports = class UserManager {
             console.error('couldnt deserialize users', err);
             users = {};
         }
+    }
+
+    static sendFeatureUpdates() { 
+        let updatesText = fs.readFileSync(path.resolve(__dirname, 'updates.txt')).toString("utf8");
+        if(updatesText.length == 0) {
+            return;
+        }
+        for(let userId in users) {
+            sendMessageToUser({userId: userId, text: updatesText});
+        }
+
+        fs.writeFileSync(path.resolve(__dirname, 'updates.txt'), '');
     }
 };

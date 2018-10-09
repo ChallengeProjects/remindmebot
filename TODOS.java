@@ -1,26 +1,35 @@
 TODOS:
+    listing:
+        design first i need 3 things: pagniation, split recurring from non recurring, hide/show disabled
+        pagination
+        split recurring from non recurring
+        hide/show disabled
+        editMessage
+        editMessageText
+        editMessageCaption
+        editMessageMedia
+        editMessageReplyMarkup
+        editMessageLiveLocation
+----------------------
 0- fix the bug i have down there "second problem"
-1- dont show the list of times, just show the next time
-2- 7war skeddy, pagination and switch view
-3- split by: recurring and hide disabled with an option to toggle
-4- process ordinals in recurring reminders (also strings "first" "second")
-5- add my bot in the channel
-6- sync with google calendar
+1- process ordinals in recurring reminders (also strings "first" "second")
 --------
 LATER:
-
-* unit tests
-* use google maps for location
-* make it a messenger bot
+* use google maps for location for timezone
+* unit tests just for parsing
 * include in README the telegram link for the bot and a screenshot
 * move the edit stuff in another module, refactor everything
 * middleware that runs before every call to check if user exists, if not it creates it
+* send message wrapper if bot blocked me i should delete them
+* sync events with my google/ios calendar
+* unit tests for everything else other than parsing
+* tre2a a3ml beiha zorar a2ol feih im leaving, aw ana raye7 davis aw ana fe target, wa7ot lists lel 7agat dih
+* franco: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
+* make it a messenger bot
 * make mac app for remindmebot
------
 * /rate yro7 3l storebot
 * alfred workflow
 * donate
-* sync events with my google/ios calendar
 * docker for the whole thing
 * install redis or memcached
 -----

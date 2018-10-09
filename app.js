@@ -20,6 +20,29 @@ function listToMatrix(list, n) {
     }
     return listOfLists;
 }
+const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
+CUSTOM_SNOOZE_SCENE.enter(ctx => {
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
+});
+
+CUSTOM_SNOOZE_SCENE.on('text', ctx => {
+    let userId = ctx.chat.id;
+    let reminderId = UserManager.getUserTemporaryStore(userId);
+    let reminder = UserManager.getReminder(userId, reminderId);
+    let reminderText = reminder.getText();
+
+    let utterance = "/remindme " + ctx.message.text + " to nothing";
+
+    try {
+        var {reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+    } catch(err) {
+        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
+    }
+    let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
+    UserManager.addReminderForUser(userId, newReminder);
+    replyWithConfirmation(ctx, newReminder, null);
+    return ctx.scene.leave();
+});
 
 const EDIT_TIME_SCENE = new Scene('EDIT_TIME_SCENE');
 EDIT_TIME_SCENE.enter(ctx => {
@@ -63,12 +86,14 @@ EDIT_TEXT_SCENE.command('cancel', ctx => {
 const stage = new Stage();
 stage.register(EDIT_TEXT_SCENE);
 stage.register(EDIT_TIME_SCENE);
+stage.register(CUSTOM_SNOOZE_SCENE);
 
 bot.use(stage.middleware());
 
 
 const HELP_TEXT = `1- /timezone to set your timezone
 2- /list to list all of your reminders
+    * You can do "/list work" to only list reminders the contain the word "work"
 3- /help for help
 4- Use /remindme to make reminders.
 
@@ -78,13 +103,11 @@ General formula is: /remindme [date/time] to/that [anything].
 <b>Examples:</b>
     • /remindme at 2 pm to do my homework
     • /remindme tomorrow at 5 pm to do my homework
-    • /remindme in 5 minutes to check on the oven
+    • /r in five minutes to check on the oven
     • /remindme on wednesday to pickup the kids from school
-    • /remindme on january 5th that today is my birthday!
+    • remind me on january 5th that today is my birthday!
 
 You can also make recurring reminders: /help_with_recurring_reminders
-
-<i>You can also do /r instead of /remindme</i>
 `;
 
 function getReminderMarkup(reminder) {
@@ -147,9 +170,19 @@ let remindmeCallBack = (ctx) => {
     return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
 };
 
+bot.hears(/remind me(.*)/i, (ctx) => {
+    ctx.message.text = `/remindme ${ctx.match[1]}`;
+    remindmeCallBack(ctx);
+});
+
 bot.command('remindme', remindmeCallBack);
 bot.command('r', remindmeCallBack);
 
+bot.action(/CUSTOM_SNOOZE_([^_]+)/, ctx => {
+    UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
+    ctx.scene.enter("CUSTOM_SNOOZE_SCENE");
+    ctx.answerCbQuery();
+});
 /**
  * snooze format is the following:
  * SNOOZE_<period in milliseconds>_<reminder id>
@@ -215,7 +248,9 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
 
 bot.command('list', ctx => {
     let userId = ctx.chat.id;
-    let reminders = UserManager.getUserSortedFutureReminders(userId);
+    let searchTerm = ctx.message.text.split(" ")[1];
+
+    let reminders = UserManager.getUserSortedFutureReminders(userId, searchTerm);
     if(!reminders) {
         return ctx.reply("You need to /start first");
     }
@@ -232,7 +267,8 @@ bot.command('list', ctx => {
             listOfButtons.push(m.callbackButton(String(i++), `VIEW_${reminder.getId()}`));
         }
 
-        return m.inlineKeyboard(listToMatrix(listOfButtons, 7));
+        const NUMBER_OF_BUTTONS_PER_ROW = 7;
+        return m.inlineKeyboard(listToMatrix(listOfButtons, NUMBER_OF_BUTTONS_PER_ROW));
     });
 
     if(!list.length) {
@@ -250,7 +286,7 @@ bot.command('about', ctx => {
     return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
 });
 
-bot.command('/help_with_recurring_reminders', ctx=> {
+bot.command('help_with_recurring_reminders', ctx=> {
     return ctx.replyWithHTML(`
 To setup recurring reminders:
 /remindme every day at 9 am and 9 pm to take my medicine
@@ -312,8 +348,11 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     return ctx.reply(`Reminder ${shouldEnable ? "enabled" : "disabled"}.`);
 });
 
+
 function botStartup() {
-    UserManager.getUsersFromStorage();
+    UserManager.loadUsersDataFromStorage();
+    bot.startPolling();
+    UserManager.sendFeatureUpdates();
 }
+
 botStartup();
-bot.startPolling();

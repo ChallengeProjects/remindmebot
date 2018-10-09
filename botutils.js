@@ -11,16 +11,22 @@ function remindUser({userId, reminderId, reminderText, isRecurring}) {
         "1W": 7*24*60*60*1000
     };
     let markup = Extra.HTML().markup((m) => {
-        let buttons = Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminderId}`));
+        let buttonsRow1 = Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminderId}`));
+        let buttonsRow2 = [m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`), m.callbackButton('Delete', `DELETE_${reminderId}`)];
+
         if(isRecurring) {
             // add another array for another row
-            buttons = [buttons, [m.callbackButton('Disable', `DISABLE_${reminderId}`)]];
+            buttonsRow2.push(m.callbackButton('Disable', `DISABLE_${reminderId}`));
         }
-        return m.inlineKeyboard(buttons);
+        return m.inlineKeyboard([buttonsRow1, buttonsRow2]);
     });
     bot.telegram.sendMessage(String(userId), reminderText + '\n\n' + 'Remind me again in:', markup);
 }
 
+function sendMessageToUser({userId, text}) {
+    bot.telegram.sendMessage(String(userId), text);
+}
 module.exports = {
-    remindUser: remindUser
+    remindUser: remindUser,
+    sendMessageToUser: sendMessageToUser
 };

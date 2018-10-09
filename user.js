@@ -48,10 +48,17 @@ module.exports = class User {
         }
     }
 
-    getSortedFutureReminders() {
-        return Object.values(this.reminders)
+    getSortedFutureReminders(searchTerm) {
+        let intermediateResult = Object.values(this.reminders)
             .filter(reminder => !reminder.isInThePast())
             .sort((r1, r2) => r1.getDate().valueOf() - r2.getDate().valueOf());
+        if(searchTerm) {
+            return intermediateResult
+                .filter(reminder => reminder.text.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        else {
+            return intermediateResult;
+        }
     }
 
     getReminder(id) {

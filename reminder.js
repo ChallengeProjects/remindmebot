@@ -68,13 +68,13 @@ module.exports = class Reminder {
     setTimeout() {
         if(!this.reminderDate.isRecurring()) {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
-            console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
+            // console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
             this._setTimeout(() => {
                 remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
             }, time);
         }
         else {
-            console.log("setTimeout: Recurring: text= ", this.getText());
+            // console.log("setTimeout: Recurring: text= ", this.getText());
             for(let dateString of this.reminderDate.getDates()) {
                 this.setTimeoutOneDate(dateString);
             }
@@ -83,7 +83,7 @@ module.exports = class Reminder {
 
     setTimeoutOneDate(dateString) {
         let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDate.date;
-        console.log("\tsetTimeoutOneDate: date= ", date);
+        // console.log("\tsetTimeoutOneDate: date= ", date);
         this._setTimeout(() => {
             remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
             this.setTimeoutOneDate(dateString);
@@ -152,8 +152,14 @@ module.exports = class Reminder {
         if(text.length > 70) {
             text = shortened ? (text.slice(0, 70) + "…") : text;
         }
+
+        let formattedDate = this.getDateFormatted(this.timezone.getTimezone());
+        if(formattedDate.length > 70) {
+            formattedDate = shortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
+        }
+        
         let disabledText = !this.isEnabled() ? "[Disabled]" : "";
-        return `<b>${disabledText} ${this.getDateFormatted(this.timezone.getTimezone())}:</b>\n${text}`;
+        return `<b>${disabledText} ${formattedDate}:</b>\n${text}`;
     }
 
     getId() {
