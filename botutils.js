@@ -1,7 +1,12 @@
 const bot = require("./bot.js"),
     Extra = require('telegraf/extra');
 
-function remindUser({userId, reminderId, reminderText, isRecurring}) {
+function remindUser(reminder) {
+    let reminderId = reminder.getId();
+    let userId = reminder.getUserId();
+    let reminderText = reminder.getText();
+    let isRecurring = reminder.isRecurring();
+
     const SNOOZE_MAP = {
         '15M': 15*60*1000,
         "30M": 30*60*1000,
@@ -12,15 +17,17 @@ function remindUser({userId, reminderId, reminderText, isRecurring}) {
     };
     let markup = Extra.HTML().markup((m) => {
         let buttonsRow1 = Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminderId}`));
-        let buttonsRow2 = [m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`), m.callbackButton('Delete', `DELETE_${reminderId}`)];
+        let buttonsRow2 = [m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`)];
 
         if(isRecurring) {
-            // add another array for another row
+            buttonsRow2.push(m.callbackButton('Delete', `DELETE_${reminderId}`));
             buttonsRow2.push(m.callbackButton('Disable', `DISABLE_${reminderId}`));
         }
         return m.inlineKeyboard([buttonsRow1, buttonsRow2]);
     });
-    bot.telegram.sendMessage(String(userId), reminderText + '\n\n' + 'Remind me again in:', markup);
+
+    let isRecurringText = isRecurring ? "🔄⏱" : "⏱";
+    bot.telegram.sendMessage(String(userId), isRecurringText + " " + reminderText + '\n\n' + 'Remind me again in:', markup);
 }
 
 function sendMessageToUser({userId, text}) {

@@ -26,9 +26,9 @@ module.exports = class UserManager {
         }
     }
 
-    static getUserSortedFutureReminders(id, searchTerm) {
+    static getUserSortedFutureReminders(id, searchTerm, isRecurring) {
         if(UserManager.userExists(id)) {
-            return users[id].getSortedFutureReminders(searchTerm);
+            return users[id].getSortedFutureReminders(searchTerm, isRecurring);
         }
     }
 
@@ -129,13 +129,18 @@ module.exports = class UserManager {
         }
     }
 
+    
     static sendFeatureUpdates() { 
+        if (!fs.existsSync('updates.txt')) {
+            return;
+        }
         let updatesText = fs.readFileSync(path.resolve(__dirname, 'updates.txt')).toString("utf8");
         if(updatesText.length == 0) {
             return;
         }
+        let header = "**Bot updates:** \n\n";
         for(let userId in users) {
-            sendMessageToUser({userId: userId, text: updatesText});
+            sendMessageToUser({userId: userId, text: header + updatesText});
         }
 
         fs.writeFileSync(path.resolve(__dirname, 'updates.txt'), '');

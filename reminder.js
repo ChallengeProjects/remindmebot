@@ -70,23 +70,23 @@ module.exports = class Reminder {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
             // console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
             this._setTimeout(() => {
-                remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: false});
+                remindUser(this);
             }, time);
         }
         else {
             // console.log("setTimeout: Recurring: text= ", this.getText());
             for(let dateString of this.reminderDate.getDates()) {
-                this.setTimeoutOneDate(dateString);
+                this._setTimeoutOneDate(dateString);
             }
         }   
     }
 
-    setTimeoutOneDate(dateString) {
+    _setTimeoutOneDate(dateString) {
         let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDate.date;
-        // console.log("\tsetTimeoutOneDate: date= ", date);
+        // console.log("\t_setTimeoutOneDate: date= ", date);
         this._setTimeout(() => {
-            remindUser({userId: this.getUserId(), reminderId: this.getId(), reminderText: this.getText(), isRecurring: true});
-            this.setTimeoutOneDate(dateString);
+            remindUser(this);
+            this._setTimeoutOneDate(dateString);
         }, (date.unix() - moment().unix()) * 1000);
     }
 

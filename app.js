@@ -8,18 +8,10 @@ const processTime = require('./processTime.js'),
     moment = require("moment-timezone"),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
-    ReminderDate = require("./reminderDate.js");
+    ReminderDate = require("./reminderDate.js"),
+    listcommand = require("./botfunctions/listcommand.js");
 
 
-function listToMatrix(list, n) {
-    // split into rows of 7s
-    let listOfLists = [];
-    let index = 0;
-    while(index < list.length) {
-        listOfLists.push(list.slice(index, index += n));
-    }
-    return listOfLists;
-}
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
 CUSTOM_SNOOZE_SCENE.enter(ctx => {
     return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
@@ -89,6 +81,7 @@ stage.register(EDIT_TIME_SCENE);
 stage.register(CUSTOM_SNOOZE_SCENE);
 
 bot.use(stage.middleware());
+listcommand.addToBot(bot);
 
 
 const HELP_TEXT = `1- /timezone to set your timezone
@@ -132,18 +125,19 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
     if(replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
-    return ctx.reply('Alright I will remind you ' + reminder.getDateFormatted(), markup);
+    let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
+    return ctx.reply(isRecurringText  + ' Alright I will remind you ' + reminder.getDateFormatted(), markup);
 }
 
 bot.command('start', ctx => {
     logger.info(`${ctx.chat.id}: start`);
     UserManager.addUser(ctx.chat.id, ctx.chat.username);
-    ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT);
+    return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT);
 });
 
 bot.command('help', ctx => {
     logger.info(`${ctx.chat.id}: help`);
-    ctx.replyWithHTML(HELP_TEXT);
+    return ctx.replyWithHTML(HELP_TEXT);
 });
 
 let remindmeCallBack = (ctx) => {
@@ -246,44 +240,8 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
     return ctx.reply("Ok your timezone now is " + timezone + ".");
 });
 
-bot.command('list', ctx => {
-    let userId = ctx.chat.id;
-    let searchTerm = ctx.message.text.split(" ")[1];
-
-    let reminders = UserManager.getUserSortedFutureReminders(userId, searchTerm);
-    if(!reminders) {
-        return ctx.reply("You need to /start first");
-    }
-    logger.info(`${ctx.chat.id}: list, they have: ${reminders.length} reminders`);
-    let list = [];
-    let i = 1;
-    for(let reminder of reminders) {
-        list.push(`<b>${i++})</b> ${reminder.getFormattedReminder(true)}`);
-    }
-    let markup = Extra.HTML().markup((m) => {
-        let listOfButtons = [];
-        let i = 1;
-        for(let reminder of reminders) {
-            listOfButtons.push(m.callbackButton(String(i++), `VIEW_${reminder.getId()}`));
-        }
-
-        const NUMBER_OF_BUTTONS_PER_ROW = 7;
-        return m.inlineKeyboard(listToMatrix(listOfButtons, NUMBER_OF_BUTTONS_PER_ROW));
-    });
-
-    if(!list.length) {
-        return ctx.reply("You have no reminders");
-    }
-
-    let body = list.join("\n——————————————\n");
-
-    let footer = '\n\nChoose number to view or edit:';
-
-    ctx.reply("These are your reminders:\n" + body + footer, markup);
-});
-
 bot.command('about', ctx => {
-    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests!");
+    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests or bug reports!");
 });
 
 bot.command('help_with_recurring_reminders', ctx=> {

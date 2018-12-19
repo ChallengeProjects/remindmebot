@@ -48,9 +48,9 @@ module.exports = class User {
         }
     }
 
-    getSortedFutureReminders(searchTerm) {
+    getSortedFutureReminders(searchTerm, isRecurring) {
         let intermediateResult = Object.values(this.reminders)
-            .filter(reminder => !reminder.isInThePast())
+            .filter(reminder => !reminder.isInThePast() && reminder.isRecurring() == isRecurring)
             .sort((r1, r2) => r1.getDate().valueOf() - r2.getDate().valueOf());
         if(searchTerm) {
             return intermediateResult

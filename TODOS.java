@@ -1,20 +1,14 @@
 TODOS:
-    listing:
-        design first i need 3 things: pagniation, split recurring from non recurring, hide/show disabled
-        pagination
-        split recurring from non recurring
-        hide/show disabled
-        editMessage
-        editMessageText
-        editMessageCaption
-        editMessageMedia
-        editMessageReplyMarkup
-        editMessageLiveLocation
 ----------------------
-0- fix the bug i have down there "second problem"
-1- process ordinals in recurring reminders (also strings "first" "second")
+1- fix the bot restart problem with "in 1 month" "second problem"
+2- [easy] set end for reminder, /remindme every 2 hours until 10 pm
+3- add random reminder /remindme every [3-7] hours
+4- bug fel bot: remindme on 01/01 3amalha 2018
+5- search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
+6- [easy] take text -> ask when u want to be reminded
 --------
 LATER:
+* process ordinals in recurring reminders (also strings "first" "second")
 * use google maps for location for timezone
 * unit tests just for parsing
 * include in README the telegram link for the bot and a screenshot
