@@ -20,8 +20,8 @@ function remindUser(reminder) {
         let buttonsRow2 = [m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`)];
 
         if(isRecurring) {
-            buttonsRow2.push(m.callbackButton('Delete', `DELETE_${reminderId}`));
-            buttonsRow2.push(m.callbackButton('Disable', `DISABLE_${reminderId}`));
+            buttonsRow2.push(m.callbackButton('🗑️', `DELETE_${reminderId}`));
+            buttonsRow2.push(m.callbackButton('🚫', `DISABLE_${reminderId}`));
         }
         return m.inlineKeyboard([buttonsRow1, buttonsRow2]);
     });

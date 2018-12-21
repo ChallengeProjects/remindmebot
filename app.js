@@ -9,7 +9,8 @@ const processTime = require('./processTime.js'),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
     ReminderDate = require("./reminderDate.js"),
-    listcommand = require("./botfunctions/listcommand.js");
+    listcommand = require("./botfunctions/listcommand.js"),
+    helpcommand = require("./botfunctions/helpcommand.js");
 
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
@@ -33,6 +34,10 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
     UserManager.addReminderForUser(userId, newReminder);
     replyWithConfirmation(ctx, newReminder, null);
+    return ctx.scene.leave();
+});
+
+CUSTOM_SNOOZE_SCENE.command('cancel', ctx => {
     return ctx.scene.leave();
 });
 
@@ -82,38 +87,20 @@ stage.register(CUSTOM_SNOOZE_SCENE);
 
 bot.use(stage.middleware());
 listcommand.addToBot(bot);
-
-
-const HELP_TEXT = `1- /timezone to set your timezone
-2- /list to list all of your reminders
-    * You can do "/list work" to only list reminders the contain the word "work"
-3- /help for help
-4- Use /remindme to make reminders.
-
-General formula is: /remindme [date/time] to/that [anything].
-<b>Don't forget the "to" or "that"</b>
-
-<b>Examples:</b>
-    • /remindme at 2 pm to do my homework
-    • /remindme tomorrow at 5 pm to do my homework
-    • /r in five minutes to check on the oven
-    • /remindme on wednesday to pickup the kids from school
-    • remind me on january 5th that today is my birthday!
-
-You can also make recurring reminders: /help_with_recurring_reminders
-`;
+helpcommand.addToBot(bot);
 
 function getReminderMarkup(reminder) {
     return Extra.HTML().markup((m) => {
         let buttons = [
-            m.callbackButton("Edit", `EDIT_${reminder.getId()}`),
-            m.callbackButton("Delete", `DELETE_${reminder.getId()}`)
+            m.callbackButton("✏️⏱", `EDIT-TIME_${reminder.getId()}`),
+            m.callbackButton("✏️📖", `EDIT-TEXT_${reminder.getId()}`),
+            m.callbackButton("🗑️", `DELETE_${reminder.getId()}`)
         ];
         if(reminder.isRecurring() && reminder.isEnabled()) {
-            buttons.push(m.callbackButton("Disable", `DISABLE_${reminder.getId()}`));
+            buttons.push(m.callbackButton("🚫", `DISABLE_${reminder.getId()}`));
         }
         else if(reminder.isRecurring() && !reminder.isEnabled()) {
-            buttons.push(m.callbackButton("Enable", `ENABLE_${reminder.getId()}`));
+            buttons.push(m.callbackButton("✅", `ENABLE_${reminder.getId()}`));
         }
 
         return m.inlineKeyboard(buttons);
@@ -128,17 +115,6 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
     return ctx.reply(isRecurringText  + ' Alright I will remind you ' + reminder.getDateFormatted(), markup);
 }
-
-bot.command('start', ctx => {
-    logger.info(`${ctx.chat.id}: start`);
-    UserManager.addUser(ctx.chat.id, ctx.chat.username);
-    return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT);
-});
-
-bot.command('help', ctx => {
-    logger.info(`${ctx.chat.id}: help`);
-    return ctx.replyWithHTML(HELP_TEXT);
-});
 
 let remindmeCallBack = (ctx) => {
     let userId = ctx.chat.id;
@@ -201,9 +177,14 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
 bot.action(/DELETE_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
+    let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
+    if(!reminder) {
+        return ctx.editMessageText("Reminder was already deleted.")
+    }
+    let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
-    return ctx.reply("Reminder deleted");
+    return ctx.editMessageText(`🗑️ Reminder deleted: "${reminderText}"`);
 });
 
 /**
@@ -240,39 +221,13 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
     return ctx.reply("Ok your timezone now is " + timezone + ".");
 });
 
-bot.command('about', ctx => {
-    return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests or bug reports!");
-});
-
-bot.command('help_with_recurring_reminders', ctx=> {
-    return ctx.replyWithHTML(`
-To setup recurring reminders:
-/remindme every day at 9 am and 9 pm to take my medicine
-/remindme every sunday at 10 am to do my laundry
-/remindme every monday,wednesday,friday at 5 pm to leave at 6 from work to pick up the kids
-/remindme every 2 hours to check my email
-
-keyword is <b>every</b>
-    `);
-});
-
-/**
- * edit format is the following:
- * EDIT_<reminder id>
- */
-bot.action(/EDIT_([^_]+)/, ctx => {
-    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
-    let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
-    let markup = Extra.HTML().markup((m) => {
-        return m.inlineKeyboard([m.callbackButton("Time", `EDIT-TIME_${reminder.getId()}`), m.callbackButton("Text", `EDIT-TEXT_${reminder.getId()}`)]);
-    });
-    ctx.answerCbQuery();
-    return ctx.reply("Do you want to edit the time or the text?", markup);
-});
-
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
-    if(UserManager.getReminder(ctx.chat.id, ctx.match[1]).isRecurring()) {
+    let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
+    if(!reminder) {
+        return ctx.reply("Can't edit reminder. Reminder was deleted");
+    }
+    if(reminder.isRecurring()) {
         ctx.answerCbQuery();
         return ctx.reply("Sorry you cant edit time of recurring reminders");
     }
@@ -283,6 +238,10 @@ bot.action(/EDIT-TIME_([^_]+)/, ctx => {
 
 bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
+    if(!reminder) {
+        return ctx.reply("Can't edit reminder. Reminder was deleted");
+    }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TEXT_SCENE");
     ctx.answerCbQuery();
@@ -298,12 +257,14 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     let shouldEnable = ctx.match[1] == "ENABLE";
     if(shouldEnable) {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
+        ctx.answerCbQuery();
+        return ctx.reply("✅ Reminder enabled.");
     }
     else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
+        ctx.answerCbQuery();
+        return ctx.reply("🚫 Reminder disabled.");
     }
-    ctx.answerCbQuery();
-    return ctx.reply(`Reminder ${shouldEnable ? "enabled" : "disabled"}.`);
 });
 
 

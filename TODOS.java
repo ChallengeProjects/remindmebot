@@ -1,11 +1,22 @@
 TODOS:
 ----------------------
+>>pagination: show << page 1,2,3,4,5 >>
+0- option to edit time for recurring reminders
+0- reminder list
+    - how to make a list reminder:
+    - when shown/edited, show these options
+        - add
+        - remove
+        - clear
+        - change title
+0- I should stop loading into memory all reminders in the past
 1- fix the bot restart problem with "in 1 month" "second problem"
-2- [easy] set end for reminder, /remindme every 2 hours until 10 pm
-3- add random reminder /remindme every [3-7] hours
-4- bug fel bot: remindme on 01/01 3amalha 2018
-5- search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
-6- [easy] take text -> ask when u want to be reminded
+2- [easy] take text -> ask when u want to be reminded
+3- [easy] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
+4- [easy] set end for reminder, /remindme every 2 hours until 10 pm
+5- add random reminder /remindme every [3-7] hours
+6- bug fel bot: remindme on 01/01 3amalha 2018
+7- search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
 --------
 LATER:
 * process ordinals in recurring reminders (also strings "first" "second")
@@ -17,10 +28,9 @@ LATER:
 * send message wrapper if bot blocked me i should delete them
 * sync events with my google/ios calendar
 * unit tests for everything else other than parsing
-* tre2a a3ml beiha zorar a2ol feih im leaving, aw ana raye7 davis aw ana fe target, wa7ot lists lel 7agat dih
-* franco: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
+* franco arabic: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
 * make it a messenger bot
-* make mac app for remindmebot
+* mac app for remindmebot
 * /rate yro7 3l storebot
 * alfred workflow
 * donate

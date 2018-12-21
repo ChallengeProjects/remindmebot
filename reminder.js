@@ -139,6 +139,10 @@ module.exports = class Reminder {
         return this.text;
     }
 
+    getShortenedText() {
+        return this.getText().slice(0, 70) + "…";
+    }
+
     getDateCrated() {
         return this.dateCreated;
     }
@@ -147,15 +151,12 @@ module.exports = class Reminder {
         return this.reminderDate;
     }
 
-    getFormattedReminder(shortened) {
-        let text = this.getText();
-        if(text.length > 70) {
-            text = shortened ? (text.slice(0, 70) + "…") : text;
-        }
+    getFormattedReminder(isShortened) {
+        let text = isShortened ? this.getShortenedText() : this.getText();
 
         let formattedDate = this.getDateFormatted(this.timezone.getTimezone());
         if(formattedDate.length > 70) {
-            formattedDate = shortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
+            formattedDate = isShortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
         }
         
         let disabledText = !this.isEnabled() ? "[Disabled]" : "";
