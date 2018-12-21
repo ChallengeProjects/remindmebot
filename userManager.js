@@ -5,13 +5,16 @@ const User = require('./user.js'),
 
 let users = {}; // id:user
 
+const USERS_FILE_PATH = path.resolve(__dirname, 'users.json');
+const UPDATES_FILE_PATH = path.resolve(__dirname, 'updates.txt');
+
 function updateStorage() {
     let serializedUsers = {};
     for(let userId in users) {
         serializedUsers[userId] = users[userId].getSerializableObject();
     }
 
-    fs.writeFileSync(path.resolve(__dirname, 'users.json'), JSON.stringify(serializedUsers));
+    fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(serializedUsers));
 }
 
 
@@ -121,20 +124,19 @@ module.exports = class UserManager {
         }
 
         try {
-            let serializedUsers = fs.readFileSync(path.resolve(__dirname, 'users.json'));
+            let serializedUsers = fs.readFileSync(USERS_FILE_PATH);
             users = deserializeUsers(serializedUsers);
         } catch(err) {
             console.error('couldnt deserialize users', err);
             users = {};
         }
     }
-
     
     static sendFeatureUpdates() { 
         if (!fs.existsSync('updates.txt')) {
             return;
         }
-        let updatesText = fs.readFileSync(path.resolve(__dirname, 'updates.txt')).toString("utf8");
+        let updatesText = fs.readFileSync(UPDATES_FILE_PATH).toString("utf8");
         if(updatesText.length == 0) {
             return;
         }
@@ -143,6 +145,6 @@ module.exports = class UserManager {
             sendMessageToUser({userId: userId, text: header + updatesText});
         }
 
-        fs.writeFileSync(path.resolve(__dirname, 'updates.txt'), '');
+        fs.writeFileSync(UPDATES_FILE_PATH, '');
     }
 };

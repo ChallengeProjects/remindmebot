@@ -84,7 +84,9 @@ module.exports = class User {
     getSerializableObject() {
         let serializableReminderObject = {};
         for(let reminderId in this.reminders) {
-            serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
+            if(!this.reminders[reminderId].isInThePast()) {
+                serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
+            }
         }
         let serializableTimezoneObject;
         if(this.timezone) {

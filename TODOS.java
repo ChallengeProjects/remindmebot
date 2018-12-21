@@ -1,41 +1,41 @@
 TODOS:
 ----------------------
->>pagination: show << page 1,2,3,4,5 >>
-0- option to edit time for recurring reminders
-0- reminder list
+1- [20 minutes] option to edit time for recurring reminders
+2- [1 hour] reminder list
     - how to make a list reminder:
     - when shown/edited, show these options
         - add
         - remove
         - clear
         - change title
-0- I should stop loading into memory all reminders in the past
-1- fix the bot restart problem with "in 1 month" "second problem"
-2- [easy] take text -> ask when u want to be reminded
-3- [easy] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
-4- [easy] set end for reminder, /remindme every 2 hours until 10 pm
-5- add random reminder /remindme every [3-7] hours
-6- bug fel bot: remindme on 01/01 3amalha 2018
-7- search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
+1- [2 hours] fix the bot restart problem with "in 1 month" "second problem"
+2- [15 minutes] take text -> ask when u want to be reminded
+3- [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
+4- [1 hour] set end for reminder, /remindme every 2 hours until 10 pm
+5- [1 hour] add random reminder /remindme every [3-7] hours
+6- [30 minutes] bug: remindme on 01/01 3amalha 2018
+7- [30 minutes] search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
 --------
-LATER:
-* process ordinals in recurring reminders (also strings "first" "second")
-* use google maps for location for timezone
-* unit tests just for parsing
-* include in README the telegram link for the bot and a screenshot
+LOW PRIORITY [in order]:
+* alfred workflow
+    * authenticate with the telegram bot, obtain a token from the bot server
+    * workflow would just forward the message as it is to the bot
+* process ordinals in recurring reminders ("1st", "2nd", "third"), find some library to parse it to a number
+* pagination: show << page 1,2,3,4,5 >>
+* unit tests
+    * parsing
+    * setTimeout reminders
 * move the edit stuff in another module, refactor everything
 * middleware that runs before every call to check if user exists, if not it creates it
 * send message wrapper if bot blocked me i should delete them
-* sync events with my google/ios calendar
-* unit tests for everything else other than parsing
 * franco arabic: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
-* make it a messenger bot
-* mac app for remindmebot
+* messenger bot
 * /rate yro7 3l storebot
-* alfred workflow
+* mac app for remindmebot
 * donate
 * docker for the whole thing
 * install redis or memcached
+* sync events with google/ios calendar
 -----
 list - list all reminders
 remindme - add a reminder
