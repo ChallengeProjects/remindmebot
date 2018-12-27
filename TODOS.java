@@ -1,5 +1,6 @@
 TODOS:
 ----------------------
+0- use this to reply to my own message when user snoozes or deletes: ctx.reply(message, extra.inReplyTo(message.message_id))
 1- [20 minutes] option to edit time for recurring reminders
 2- [1 hour] reminder list
     - how to make a list reminder:
@@ -14,7 +15,6 @@ TODOS:
 4- [1 hour] set end for reminder, /remindme every 2 hours until 10 pm
 5- [1 hour] add random reminder /remindme every [3-7] hours
 6- [30 minutes] bug: remindme on 01/01 3amalha 2018
-7- [30 minutes] search the "search" channel "getAutoTimezone" w 7otaha fel bot 3ndy 3shan el user yb3t el location
 --------
 LOW PRIORITY [in order]:
 * alfred workflow

@@ -112,6 +112,21 @@ module.exports = class UserManager {
         updateStorage();
     }
 
+    static deleteUser(id) {
+        if(UserManager.userExists(id)){
+            return;
+        }
+
+        // first clean up all reminders
+        for(let reminderId in users[id].getReminders()) {
+            UserManager.deleteReminder(id, reminderId);
+        }
+
+        delete users[id];
+
+        updateStorage();
+    }
+
     static loadUsersDataFromStorage() {
         function deserializeUsers(usersSerialized) {
             let serializedUsers = JSON.parse(usersSerialized);

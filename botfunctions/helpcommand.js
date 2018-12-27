@@ -1,7 +1,11 @@
-const logger = require("../logger.js");
+const logger = require("../logger.js"),
+    UserManager = require("../userManager.js"),
+    catchBlocks = require("../errorhandling.js").catchBlocks;
 
 
-const HELP_TEXT = `1- /timezone to set your timezone
+const HELP_TEXT = `Feel free to contact me @bubakazouba if you would like to see anything else in the bot!
+
+1- /timezone to set your timezone
 2- /list to list all of your reminders
     * You can do "/list work" to only list reminders the contain the word "work"
 3- /help for help
@@ -28,24 +32,26 @@ const HELP_WITH_RECURRING_REMINDERS_TEXT = `To setup recurring reminders:
 
 keyword is <b>every</b>`;
 
+const ABOUT_TEXT = `This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests or bug reports!`;
+
 function addToBot(bot) {
     bot.command('help', ctx => {
         logger.info(`${ctx.chat.id}: help`);
-        return ctx.replyWithHTML(HELP_TEXT);
+        return ctx.replyWithHTML(HELP_TEXT).catch(catchBlocks);
     });
 
     bot.command('help_with_recurring_reminders', ctx=> {
-        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT);
+        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT).catch(catchBlocks);;
     });
 
     bot.command('start', ctx => {
         logger.info(`${ctx.chat.id}: start`);
         UserManager.addUser(ctx.chat.id, ctx.chat.username);
-        return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT);
+        return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT).catch(catchBlocks);
     });
 
     bot.command('about', ctx => {
-        return ctx.replyWithHTML("This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests or bug reports!");
+        return ctx.replyWithHTML(ABOUT_TEXT).catch(catchBlocks);
     });
 }
 

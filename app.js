@@ -10,12 +10,17 @@ const processTime = require('./processTime.js'),
     logger = require("./logger.js"),
     ReminderDate = require("./reminderDate.js"),
     listcommand = require("./botfunctions/listcommand.js"),
-    helpcommand = require("./botfunctions/helpcommand.js");
+    helpcommand = require("./botfunctions/helpcommand.js"),
+    catchBlocks = require("./errorhandling.js").catchBlocks,
+    config = require("./config.json")[process.env.NODE_ENV],
+    googleMapsClient = require('@google/maps').createClient({
+        key: config.googleMapsClientKey
+    });
 
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
 CUSTOM_SNOOZE_SCENE.enter(ctx => {
-    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
 });
 
 CUSTOM_SNOOZE_SCENE.on('text', ctx => {
@@ -29,7 +34,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     try {
         var {reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
     } catch(err) {
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
+        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
     UserManager.addReminderForUser(userId, newReminder);
@@ -43,7 +48,7 @@ CUSTOM_SNOOZE_SCENE.command('cancel', ctx => {
 
 const EDIT_TIME_SCENE = new Scene('EDIT_TIME_SCENE');
 EDIT_TIME_SCENE.enter(ctx => {
-    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply()));
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
 });
 EDIT_TIME_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
@@ -54,7 +59,7 @@ EDIT_TIME_SCENE.on('text', ctx => {
     try {
         var {reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
     } catch(err) {
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
+        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     UserManager.updateReminderDate(userId, reminderId, new ReminderDate(reminderDate));
     replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
@@ -66,7 +71,7 @@ EDIT_TIME_SCENE.command('cancel', ctx => {
 
 const EDIT_TEXT_SCENE = new Scene('EDIT_TEXT_SCENE');
 EDIT_TEXT_SCENE.enter(ctx => {
-    ctx.reply("Ok enter your new text (or /cancel)", Extra.markup(Markup.forceReply()));
+    ctx.reply("Ok enter your new text (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
 });
 EDIT_TEXT_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
@@ -113,7 +118,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(isRecurringText  + ' Alright I will remind you ' + reminder.getDateFormatted(), markup);
+    return ctx.reply(`${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to ${reminder.getShortenedText()}`, markup).catch(catchBlocks);
 }
 
 let remindmeCallBack = (ctx) => {
@@ -121,10 +126,10 @@ let remindmeCallBack = (ctx) => {
     let utterance = ctx.message.text;
 
     if(!UserManager.getUserTimezone(userId)) {
-        return ctx.reply("You need to set a timezone first with /timezone");
+        return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
     }
     if(utterance == '/remindme') {
-        return ctx.reply('/remindme what?');
+        return ctx.reply('/remindme what?').catch(catchBlocks);
     }
 
     try {
@@ -132,7 +137,7 @@ let remindmeCallBack = (ctx) => {
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
     } catch(err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID`);
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.");
+        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     
     let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
@@ -179,12 +184,12 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if(!reminder) {
-        return ctx.editMessageText("Reminder was already deleted.")
+        return ctx.editMessageText("Reminder was already deleted.").catch(catchBlocks);
     }
     let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`🗑️ Reminder deleted: "${reminderText}"`);
+    return ctx.editMessageText(`🗑️ Reminder deleted: "${reminderText}"`).catch(catchBlocks);
 });
 
 /**
@@ -198,8 +203,43 @@ bot.action(/VIEW_([^_]+)/, ctx => {
 
     let markup = getReminderMarkup(reminder);
     ctx.answerCbQuery();
-    return ctx.reply(reminder.getFormattedReminder(false), markup);
+    return ctx.reply(reminder.getFormattedReminder(false), markup).catch(catchBlocks);
 });
+
+bot.on('location', (ctx) => {
+    const userId = ctx.from.id;
+    const userLatitude = Number(ctx.message.location.latitude);
+    const userLongitude = Number(ctx.message.location.longitude);
+
+    convertCoordinatesToTimezone(userLatitude, userLongitude).then(timezoneId => {
+        UserManager.setUserTimezone(userId, timezoneId);
+        if (timezoneId) {
+            ctx.reply(`Your timezone has been set to ${timezoneId}. You can now start setting reminders!`);
+        } else {
+            ctx.reply("Something went wrong. Please try again at a later time");
+        }
+    })
+})
+
+function convertCoordinatesToTimezone(latitude, longitude) {
+    let timestamp = Math.floor(Date.now() / 1000);
+
+    return new Promise((resolve, reject) => {
+        googleMapsClient.timezone({
+            location: [latitude, longitude],
+            timestamp: timestamp,
+            language: 'en'
+        }, (err, res) => {
+            if (!err) {
+                resolve(res.json.timeZoneId);
+            } else {
+                logger.info("google maps error:", err);
+                reject(null);
+            }
+        });
+    });
+}
+
 
 bot.command('timezone', ctx => {
     let userId = ctx.chat.id;
@@ -210,26 +250,27 @@ bot.command('timezone', ctx => {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         }
         return ctx.replyWithHTML(`You need to specify a valid timezone.
+You can do this by either sending me your location 📍 or by using the /timezone command:
 
 <b>Examples:</b>
 • <code>/timezone America/Los_Angeles</code>
 • <code>/timezone Africa/Cairo</code>
-You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`);
+You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`).catch(catchBlocks);
     }
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
     UserManager.setUserTimezone(userId, timezone);
-    return ctx.reply("Ok your timezone now is " + timezone + ".");
+    return ctx.reply("Ok your timezone now is " + timezone + ". You can now start setting reminders!").catch(catchBlocks);
 });
 
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if(!reminder) {
-        return ctx.reply("Can't edit reminder. Reminder was deleted");
+        return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
     }
     if(reminder.isRecurring()) {
         ctx.answerCbQuery();
-        return ctx.reply("Sorry you cant edit time of recurring reminders");
+        return ctx.reply("Sorry you cant edit time of recurring reminders").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TIME_SCENE");
@@ -240,7 +281,7 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if(!reminder) {
-        return ctx.reply("Can't edit reminder. Reminder was deleted");
+        return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TEXT_SCENE");
@@ -258,12 +299,12 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     if(shouldEnable) {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("✅ Reminder enabled.");
+        return ctx.reply("✅ Reminder enabled.").catch(catchBlocks);
     }
     else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("🚫 Reminder disabled.");
+        return ctx.reply("🚫 Reminder disabled.").catch(catchBlocks);
     }
 });
 

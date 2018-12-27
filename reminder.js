@@ -140,7 +140,7 @@ module.exports = class Reminder {
     }
 
     getShortenedText() {
-        return this.getText().slice(0, 70) + "…";
+        return this.getText().slice(0, 70) + (this.getText().length > 70 ? "…" : "");
     }
 
     getDateCrated() {
