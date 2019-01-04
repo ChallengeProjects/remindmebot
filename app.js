@@ -27,6 +27,10 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
+    // make sure reminder still exists
+    if(!reminder) {
+        return ctx.scene.leave();
+    }
     let reminderText = reminder.getText();
 
     let utterance = "/remindme " + ctx.message.text + " to nothing";
@@ -54,6 +58,10 @@ EDIT_TIME_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
+    // make sure reminder still exists
+    if(!reminder) {
+        return ctx.scene.leave();
+    }
     let utterance = "/remindme " + ctx.message.text + " to nothing";
 
     try {
@@ -77,6 +85,10 @@ EDIT_TEXT_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
+    // make sure reminder still exists
+    if(!reminder) {
+        return ctx.scene.leave();
+    }
     UserManager.updateReminderText(userId, reminderId, ctx.message.text);
     replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
@@ -136,7 +148,7 @@ let remindmeCallBack = (ctx) => {
         var {reminderText, reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
     } catch(err) {
-        logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID`);
+        logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     
@@ -200,6 +212,9 @@ bot.action(/VIEW_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
+    if(!reminder) {
+        return ctx.answerCbQuery();
+    }
 
     let markup = getReminderMarkup(reminder);
     ctx.answerCbQuery();

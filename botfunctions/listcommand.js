@@ -26,6 +26,9 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
 
     let allRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, true);
     let allNoneRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, false);
+    if(allRecurringReminders == undefined || allNoneRecurringReminders == undefined) {
+        return;
+    }
     let nRecurring, nNoneRecurring;
     nRecurring = allRecurringReminders.length;
     nNoneRecurring = allNoneRecurringReminders.length;

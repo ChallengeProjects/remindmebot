@@ -15,6 +15,9 @@ TODOS:
 4- [1 hour] set end for reminder, /remindme every 2 hours until 10 pm
 5- [1 hour] add random reminder /remindme every [3-7] hours
 6- [30 minutes] bug: remindme on 01/01 3amalha 2018
+7- setup papertrail alerts on all errors
+8- handle all types of errors in UserManager when it returns undefined because of a non existent user
+9- make the bot work with groups
 --------
 LOW PRIORITY [in order]:
 * alfred workflow

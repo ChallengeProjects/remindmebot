@@ -22,6 +22,10 @@ General formula is: /remindme [date/time] to/that [anything].
     • remind me on january 5th that today is my birthday!
 
 You can also make recurring reminders: /help_with_recurring_reminders
+
+<b>Edit Reminder Time</b>: ✏️⏱
+<b>Edit Reminder Text</b>: ✏️📖
+<b>Delete Reminder</b>: 🗑️
 `;
 
 const HELP_WITH_RECURRING_REMINDERS_TEXT = `To setup recurring reminders:
