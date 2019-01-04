@@ -233,8 +233,8 @@ bot.on('location', (ctx) => {
         } else {
             ctx.reply("Something went wrong. Please try again at a later time");
         }
-    })
-})
+    });
+});
 
 function convertCoordinatesToTimezone(latitude, longitude) {
     let timestamp = Math.floor(Date.now() / 1000);

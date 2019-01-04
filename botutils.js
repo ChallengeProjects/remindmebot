@@ -1,6 +1,6 @@
 const bot = require("./bot.js"),
-    Extra = require('telegraf/extra'),
-    logger = require("./logger.js");
+    Extra = require('telegraf/extra');
+    // logger = require("./logger.js");
     // catchBlocks = require("./errorhandling.js").catchBlocks;
 
 function remindUser(reminder) {

@@ -45,7 +45,7 @@ function addToBot(bot) {
     });
 
     bot.command('help_with_recurring_reminders', ctx=> {
-        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT).catch(catchBlocks);;
+        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT).catch(catchBlocks);
     });
 
     bot.command('start', ctx => {

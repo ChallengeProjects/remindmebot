@@ -1,4 +1,5 @@
-const UserManager = require("./userManager.js");
+const UserManager = require("./userManager.js"),
+    logger = require("./logger.js");
 
 function catchBlocks(error) {
     if(error.code == 403) {
