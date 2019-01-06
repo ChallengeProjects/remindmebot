@@ -17,6 +17,45 @@ const processTime = require('./processTime.js'),
         key: config.googleMapsClientKey
     });
 
+/////////////////////////////////////////////////////////
+// small hack to set reminders through a RESTful API
+const express = require('express'),
+    bodyParser = require('body-parser');
+
+let app = express();
+app.use(bodyParser.json({limit: '50mb'}));
+app.post('/remindme', function(req, res) {
+    if(config.botToken != req.body.botToken) {
+        return;
+    }
+    logger.info("req.body="+JSON.stringify(req.body));
+    let ctx = {
+        message: {
+            text: req.body.text
+        },
+        chat: {
+            id: req.body.chatid
+        },
+        reply: function(text) {
+            res.send(text);
+            return {catch: function(){}};
+        },
+        update: {
+            message: {
+                message_id: 3
+            }
+        }
+    };
+    remindmeCallBack(ctx);
+});
+
+const PORT = Number(config.port);
+var server = app.listen(PORT, () => { 
+    var port = server.address().port;
+    logger.info('Magic happens at ' + port);
+});
+/////////////////////////////////////////////////////////
+
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
 CUSTOM_SNOOZE_SCENE.enter(ctx => {
