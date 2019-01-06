@@ -139,6 +139,9 @@ module.exports = class UserManager {
         }
 
         try {
+            if (!fs.existsSync(USERS_FILE_PATH)) {
+                fs.writeFileSync(USERS_FILE_PATH, '{}');
+            }
             let serializedUsers = fs.readFileSync(USERS_FILE_PATH);
             users = deserializeUsers(serializedUsers);
         } catch(err) {
