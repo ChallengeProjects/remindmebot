@@ -1,29 +1,28 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* [30 minutes] bug: remindme on 01/01 3amalha 2018
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
-* [30 minutes] bug: remindme on 01/01 3amalha 2018
+    * note: you also need to process ordinal strings like "first"
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
-* [2 hours] fix the bot restart problem with "in 1 month" ("problem2")
+* [2 hours] fix the bot restart problem with "every month" ("problem2")
+* validation of config.json in botStartup()
+* make the bot work with groups
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
+* Integration with calendar
+    * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
+--------
+LOW PRIORITY [in order]:
 * [20 minutes] bot said i dont have any reminders, if i dont have any it should show the recurring ones
     * or think of a better way in general to list them all, what if i only had a couple of non recurring reminders
         * then I can either show the recurring ones in the same message or in a different one?
-* Integration with calendar
-    * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
-
---------
-LOW PRIORITY [in order]:
-* validation of config.json in botStartup()
-* make the bot work with groups
 * setup server instead of polling for bot so its faster (add an option in config to do that)
-* setup papertrail alerts on all errors
 * [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
 * [1 hour] alfred workflow for list reminder bot
     * list all when user does typeahead search
@@ -40,22 +39,26 @@ LOW PRIORITY [in order]:
         - remove
         - clear
         - change title
-* process ordinals in recurring reminders ("1st", "2nd", "third"), find some library to parse it to a number
 * pagination: show << page 1,2,3,4,5 >>
 * [20 minutes] option to edit time for recurring reminders
+* franco arabic: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
+* /rate goes to storebot
+* donate
+-----
+big effort:
+* mac app for remindmebot
+* sync events with google/ios calendar
+* messenger bot
+-----
+non features:
+* setup papertrail alerts on all errors
 * unit tests
     * parsing
     * setTimeout reminders
 * move the edit stuff in another module, refactor everything
 * middleware that runs before every call to check if user exists, if not it creates it
-* franco arabic: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
-* messenger bot
-* /rate goes to storebot
-* mac app for remindmebot
-* donate
 * docker for the whole thing
 * install redis or memcached
-* sync events with google/ios calendar
 -----
 list - list all reminders
 remindme - add a reminder
