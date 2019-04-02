@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# quit if eslint fails
-npm run eslint
-if [[ $? != 0 ]]; then
-    echo "eslint failed, startbot.sh exiting..."
-    exit 1
-fi
 
 environment=$1
 
@@ -19,6 +13,13 @@ elif [[ $environment == "test" || $environment == "beta" || $environment == "dev
     NODE_ENV="development"
 else
     echo "provide prod or beta for environment"
+    exit 1
+fi
+
+# quit if eslint fails
+npm run eslint
+if [[ $? != 0 ]]; then
+    echo "eslint failed, startbot.sh exiting..."
     exit 1
 fi
 

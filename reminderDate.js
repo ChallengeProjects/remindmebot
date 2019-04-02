@@ -1,5 +1,5 @@
 const moment = require('moment'),
-    processTime = require('./processTime.js'),
+    processTime = require('./nlp/processTime.js'),
     timemachine = require("timemachine");
 // I don't know why I need this here, but I do
 //   without it, "sometimes" moment().unix() would return 0 in this file
@@ -12,12 +12,13 @@ module.exports = class ReminderDate {
      * @param  {moment}   options.date            moment object with date
      * @param  {[String]} options.recurringDates  string of recurring reminder dates (["tomorrow at 5 pm", "on monday at 3 pm"])
      */
-    constructor({date, recurringDates}) {
-        if(date && recurringDates) {
-            throw 'cant provide both date and recurringDates';
+    constructor({date, recurringDates, endingConditionDate}) {
+        if((date && recurringDates) || (date && endingConditionDate)) {
+            throw 'cant provide both (date and recurringDates) or (date and endingConditionDate)';
         }
 
         this.recurringDates = recurringDates;
+        this.endingConditionDate = endingConditionDate;
         this.date = date;
     }
 
@@ -65,7 +66,12 @@ module.exports = class ReminderDate {
 
     isInThePast(timezone) {
         if(this.isRecurring()) {
-            return false;
+            if(!this.endingConditionDate) {
+                return false;
+            }
+            else {
+                return this.endingConditionDate.unix() < moment().unix() ;
+            }
         }
         // console.log(`isInThePast: msFromNow: ${this.getMilliSecondsFromNow(timezone)}, momentnow:${moment().unix()}, date: ${new Date().getTime()/1000}`);
         return this.getMilliSecondsFromNow(timezone) < 0;

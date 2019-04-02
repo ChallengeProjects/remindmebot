@@ -1,4 +1,4 @@
-const processTime = require('../processTime.js'),
+const processTime = require('../nlp/processTime.js'),
     timemachine = require('timemachine');
 
 const TIME_ZONE = "America/Los_Angeles";

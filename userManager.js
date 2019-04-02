@@ -5,8 +5,10 @@ const User = require('./user.js'),
 
 let users = {}; // id:user
 
-const USERS_FILE_PATH = path.resolve(__dirname, 'users.json');
+const USERS_FILE_NAME = 'users.json';
+const USERS_FILE_PATH = path.resolve(__dirname, USERS_FILE_NAME);
 const UPDATES_FILE_PATH = path.resolve(__dirname, 'updates.txt');
+const BACKUP_DIRECTORY_PATH = path.resolve(__dirname, 'users_backup');
 
 function updateStorage() {
     let serializedUsers = {};
@@ -90,10 +92,11 @@ module.exports = class UserManager {
     }
 
     static setUserTimezone(userId, timezone) {
-        if(UserManager.userExists(userId)) {
-            users[userId].setTimezone(timezone);
-            updateStorage();
+        if(!UserManager.userExists(userId)) {
+            UserManager.addUser(userId);
         }
+        users[userId].setTimezone(timezone);
+        updateStorage();
     }
 
     static addReminderForUser(userId, reminder) {
@@ -127,14 +130,39 @@ module.exports = class UserManager {
         updateStorage();
     }
 
+    static backupUsersData() {
+        if(fs.existsSync(BACKUP_DIRECTORY_PATH) && !fs.lstatSync(BACKUP_DIRECTORY_PATH).isDirectory()) {
+            throw "BACKUP_DIRECTORY_PATH is not a directory";
+        }
+        if(!fs.existsSync(BACKUP_DIRECTORY_PATH)) {
+            fs.mkdirSync(BACKUP_DIRECTORY_PATH);
+        }
+        if(!fs.existsSync(USERS_FILE_PATH)) {
+            return;
+        }
+        // format of files is `{USERS_FILE_NAME}-<index>`
+        // parse the index out, get the max index and add 1 to the current backup
+        let maximumIndex = Math.max(...fs.readdirSync(BACKUP_DIRECTORY_PATH)
+            .map(fileName => parseInt(fileName.replace(USERS_FILE_NAME + '-', ''))));
+        if(maximumIndex == -Infinity) {
+            maximumIndex = 0;
+        }
+
+        let newBackupFileName = USERS_FILE_NAME + '-' + (maximumIndex + 1);
+        fs.copyFileSync(
+            USERS_FILE_PATH,
+            path.resolve(BACKUP_DIRECTORY_PATH, newBackupFileName)
+        );
+    }
+
     static loadUsersDataFromStorage() {
+        UserManager.backupUsersData();
         function deserializeUsers(usersSerialized) {
             let serializedUsers = JSON.parse(usersSerialized);
             let deserializedUsers = {};
             for(let userId in serializedUsers) {
                 deserializedUsers[userId] = User.deserialize(serializedUsers[userId]);
             }
-
             return deserializedUsers;
         }
 
@@ -143,6 +171,10 @@ module.exports = class UserManager {
                 fs.writeFileSync(USERS_FILE_PATH, '{}');
             }
             let serializedUsers = fs.readFileSync(USERS_FILE_PATH);
+            if(serializedUsers.length == 0) {
+                serializedUsers = '{}';
+                fs.writeFileSync(USERS_FILE_PATH, serializedUsers);
+            }
             users = deserializeUsers(serializedUsers);
         } catch(err) {
             console.error('couldnt deserialize users', err);

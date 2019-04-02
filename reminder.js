@@ -1,7 +1,7 @@
 const moment = require('moment'),
     remindUser = require("./botutils.js").remindUser,
     ReminderDate = require("./reminderDate.js"),
-    processTime = require('./processTime.js'),
+    processTime = require('./nlp/processTime.js'),
     timemachine = require("timemachine");
 // not sure if i need this here, but I had to use it in reminderDate.js
 //  I don't know why need it there, but I do
@@ -85,6 +85,12 @@ module.exports = class Reminder {
         let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDate.date;
         // console.log("\t_setTimeoutOneDate: date= ", date);
         this._setTimeout(() => {
+            // check if the ending date condition has passed
+            // clear the timeout and dont set another one
+            if(this.isInThePast()) {
+                this.clearTimeout();
+                return;
+            }
             remindUser(this);
             this._setTimeoutOneDate(dateString);
         }, (date.unix() - moment().unix()) * 1000);
