@@ -29,7 +29,7 @@ function remindUser(reminder) {
     });
 
     let isRecurringText = isRecurring ? "🔄⏱" : "⏱";
-    bot.telegram.sendMessage(String(userId), isRecurringText + " " + reminderText + '\n\n' + 'Remind me again in:', markup);//.catch(catchBlocks);
+    bot.telegram.sendMessage(String(userId), `<code>${isRecurringText}</code> ${reminderText} \n\n <code>Remind me again in:</code>`, markup);//.catch(catchBlocks);
 }
 
 

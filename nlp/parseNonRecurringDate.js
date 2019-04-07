@@ -11,16 +11,17 @@ const timemachine = require('timemachine'),
 // parse the time part of the string
 // try to apply both "am" and "pm" on it
 // choose whatever is closer
-function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, result, reminderDateTimeText) {
+function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText) {
     // get text
     let timePart = utils.getTimePartFromString(reminderDateTimeText);
     let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
     let textWitham = reminderDateTimeText.replace(timePart, timePart + " am");
-    
+
     // compute am and pm
     let parsedDatePM = moment.tz(moment(chrono.parseDate(textWithpm)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     let parsedDateAM = moment.tz(moment(chrono.parseDate(textWitham)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     let d;
+
     // fix dates before choosing
     if(parsedDateAM.isBefore(currentDate)) {
         parsedDateAM.add(1, 'day');
@@ -28,7 +29,6 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, result, rem
     if(parsedDatePM.isBefore(currentDate)) {
         parsedDatePM.add(1, 'day');
     }
-    
     if(parsedDateAM.isBefore(parsedDatePM)) {
         d = parsedDateAM;
         result = chrono.parse(textWitham)[0];
@@ -37,16 +37,32 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, result, rem
         d = parsedDatePM;
         result = chrono.parse(textWithpm)[0];
     }
+
     return {
         result: result,
         d: d
     };
 }
 
+// why not use 'meridiem' in result.start.impliedValues?
+// because chrono sucks
+// edge case in chrono: if the time is 12:xx am, and you say "at 12:10", it thinks 
+// that the meridiem is a known value
+function isMeridiemImplied(reminderDateTimeText) {
+    let timePart = utils.getTimePartFromString(reminderDateTimeText);
+    // meridiem is not an implied value if there is no time part
+    if(!timePart) {
+        return false;
+    }
+    return !timePart.match(/\b(am|pm)\b/i);
+}
+
 function parseNonRecurringDate(reminderDateTimeText, userTimezone) {
+    reminderDateTimeText = reminderDateTimeText.trim();
+    // remove double spaces in between
+    reminderDateTimeText = reminderDateTimeText.split(" ").filter(x => !!x.length).join(" ");
     // parse dates that chrono wouldn't parse
     let {monthDay, time} = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
-    
     if(monthDay) {
         reminderDateTimeText = "on " + monthDay;
         if(time) {
@@ -58,19 +74,31 @@ function parseNonRecurringDate(reminderDateTimeText, userTimezone) {
     // use timemachine to set the server's  date to be the  user's date, so stuff like "in 2 minutes"
     //  can be simply parsed with chrono
     timemachine.config({dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss")});
+
+    // capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
+    //  so chrono can parse it as time
+    let onTimeMatch = reminderDateTimeText.match(/^on ([0-9:]+)$/i);
+    if(!!onTimeMatch) {
+        reminderDateTimeText = `at ${onTimeMatch[1]}`;
+        if(onTimeMatch.indexOf(":") == -1) {
+            reminderDateTimeText += ":00";
+        }
+    }
+
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
 
-    if('meridiem' in result.start.impliedValues) {
-        let fixedReturn = fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, result, reminderDateTimeText);
+    if(isMeridiemImplied(reminderDateTimeText)) {
+        let fixedReturn = fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText);
         result = fixedReturn.result;
         d = fixedReturn.d;
     }
     timemachine.reset();
-
+    
     if(!result) {
         throw 'Could not parse';
     }
+    
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
 
@@ -79,7 +107,7 @@ function parseNonRecurringDate(reminderDateTimeText, userTimezone) {
     
     // if user specified week day and it happens to be in the past
     //  then they probably dont want it to be today (unless they specified the 'day number')
-    //  dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
+    // Dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
     // if('weekday' in knownValues && 'day' in impliedValues && (parsedDate.isBefore(currentDate) || parsedDate.isSame(currentDate, 'day'))) {
     if('weekday' in knownValues && 'day' in impliedValues && parsedDate.isBefore(currentDate)) {
         parsedDate.add(7, 'day');

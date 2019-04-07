@@ -6,6 +6,7 @@ const processTime = require('./nlp/processTime.js'),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
     moment = require("moment-timezone"),
+    autocorrect = require('autocorrect')({words: moment.tz.names()}),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
     ReminderDate = require("./reminderDate.js"),
@@ -137,8 +138,7 @@ EDIT_TEXT_SCENE.on('text', ctx => {
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
     // make sure reminder still exists
-    // looks like "/cancel" doesnt get captured in the command,
-    //  make sure it's captured here
+    // looks like "/cancel" doesnt get captured in the .command listener
     if(ctx.message.text == "/cancel") {
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
@@ -220,7 +220,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(`${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to ${reminder.getShortenedText()}`, markup).catch(catchBlocks);
+    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${reminder.getShortenedText()}`, markup).catch(catchBlocks);
 }
 
 let remindmeCallBack = (ctx) => {
@@ -348,21 +348,24 @@ function convertCoordinatesToTimezone(latitude, longitude) {
 
 bot.command('timezone', ctx => {
     let userId = ctx.chat.id;
-    let timezone = ctx.message.text.split(" ")[1];
-
+    let timezone = ctx.message.text.substr(ctx.message.text.indexOf(" ")).trim();
+    
+    timezone = autocorrect(timezone);
+    
     if(!timezone || !moment.tz.zone(timezone)) {
         if(timezone) {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         }
         return ctx.replyWithHTML(`You need to specify a valid timezone.
-You can do this by either sending me your location 📍 or by using the /timezone command:
+You can do this by either sending your location 📍 or by using the /timezone command:
 
 <b>Examples:</b>
-• <code>/timezone America/Los_Angeles</code>
-• <code>/timezone Africa/Cairo</code>
+• <code>/timezone America Los_Angeles</code>
+• <code>/timezone Africa Cairo</code>
 You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`).catch(catchBlocks);
     }
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
+    
     UserManager.setUserTimezone(userId, timezone);
     return ctx.reply("Ok your timezone now is " + timezone + ". You can now start setting reminders!").catch(catchBlocks);
 });
@@ -424,12 +427,12 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     }
 });
 
-
 function botStartup() {
     UserManager.loadUsersDataFromStorage();
     bot.startPolling();
     UserManager.sendFeatureUpdates();
     
+    // start the server
     const PORT = Number(config.port);
     var server = app.listen(PORT, () => { 
         var port = server.address().port;
@@ -439,7 +442,7 @@ function botStartup() {
 
 process.on('uncaughtException', function(err) {
     console.log("Uncaught Exception:", err);
-    process.exit(1);  // This is VITAL. Don't swallow the err and try to continue.
+    process.exit(1);
 });
 
 botStartup();

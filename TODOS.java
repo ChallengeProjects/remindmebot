@@ -1,7 +1,6 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
-* [30 minutes] bug: remindme on 01/01 3amalha 2018
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first"
@@ -9,7 +8,6 @@ TODOS:
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
-* validation of config.json in botStartup()
 * make the bot work with groups
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot

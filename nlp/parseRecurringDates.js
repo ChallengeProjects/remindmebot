@@ -92,7 +92,7 @@ function getEndingDateTime(reminderDateTimeText, userTimezone) {
     }
 
     return {
-        newReminderDateTimeText: reminderDateTimeText.substr(0, delimiterMatch.index - 1),
+        newReminderDateTimeText: reminderDateTimeText.substr(0, delimiterMatch.index).trim(),
         endingConditionDate: endingConditionDate,
     };
 }

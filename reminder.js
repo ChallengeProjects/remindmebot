@@ -3,8 +3,8 @@ const moment = require('moment'),
     ReminderDate = require("./reminderDate.js"),
     processTime = require('./nlp/processTime.js'),
     timemachine = require("timemachine");
-// not sure if i need this here, but I had to use it in reminderDate.js
-//  I don't know why need it there, but I do
+// not sure if I need this here, but I had to use it in reminderDate.js
+//  I don't know why I need it there, but I do
 //   without it, "sometimes" moment().unix() would return 0 in reminderDate.js
 timemachine.reset();
 
@@ -166,7 +166,7 @@ module.exports = class Reminder {
         }
         
         let disabledText = !this.isEnabled() ? "[Disabled]" : "";
-        return `<b>${disabledText} ${formattedDate}:</b>\n${text}`;
+        return `<code>${disabledText} ${formattedDate}:</code>\n${text}`;
     }
 
     getId() {
