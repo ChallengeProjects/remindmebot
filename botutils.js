@@ -1,5 +1,6 @@
 const bot = require("./bot.js"),
-    Extra = require('telegraf/extra');
+    Extra = require('telegraf/extra'),
+    encodeEntities = new (require('html-entities').XmlEntities)().encode;
     // logger = require("./logger.js");
     // catchBlocks = require("./errorhandling.js").catchBlocks;
 
@@ -29,7 +30,7 @@ function remindUser(reminder) {
     });
 
     let isRecurringText = isRecurring ? "🔄⏱" : "⏱";
-    bot.telegram.sendMessage(String(userId), `<code>${isRecurringText}</code> ${reminderText} \n\n <code>Remind me again in:</code>`, markup);//.catch(catchBlocks);
+    bot.telegram.sendMessage(String(userId), `<code>${isRecurringText}</code> ${encodeEntities(reminderText)} \n\n <code>Remind me again in:</code>`, markup);//.catch(catchBlocks);
 }
 
 

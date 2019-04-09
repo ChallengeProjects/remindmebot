@@ -4,11 +4,11 @@ const UserManager = require("./userManager.js"),
 function catchBlocks(error) {
     if(error.code == 403) {
         logger.info("User blocked bot, deleting user");
+        UserManager.deleteUser(error.on.payload.chat_id);
     }
     else {
-        logger.info("Unkown error, deleting user: ", JSON.stringify(error));
+        logger.info("Unkown error: ", JSON.stringify(error));
     }
-    UserManager.delete(error.on.payload.chat_id);
 }
 
 module.exports = {

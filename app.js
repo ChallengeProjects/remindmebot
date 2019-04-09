@@ -16,7 +16,8 @@ const processTime = require('./nlp/processTime.js'),
     config = require("./config.json")[process.env.NODE_ENV],
     googleMapsClient = require('@google/maps').createClient({
         key: config.googleMapsClientKey
-    });
+    }),
+    encodeEntities = new (require('html-entities').XmlEntities)().encode;
 
 /////////////////////////////////////////////////////////
 // small hack to set reminders through a RESTful API
@@ -220,7 +221,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${reminder.getShortenedText()}`, markup).catch(catchBlocks);
+    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
 }
 
 let remindmeCallBack = (ctx) => {
@@ -231,7 +232,7 @@ let remindmeCallBack = (ctx) => {
         return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
     }
     if(utterance == '/remindme') {
-        return ctx.reply('/remindme what?').catch(catchBlocks);
+        return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
     }
 
     try {

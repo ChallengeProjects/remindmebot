@@ -1,6 +1,7 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* remind me first weekend after 04/17 to ..
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first"
