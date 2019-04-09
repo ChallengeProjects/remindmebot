@@ -1,6 +1,7 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* refactor code so encoding of text is either in reminder.js or outside
 * remind me first weekend after 04/17 to ..
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month

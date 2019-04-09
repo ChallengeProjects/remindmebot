@@ -2,7 +2,8 @@ const moment = require('moment'),
     remindUser = require("./botutils.js").remindUser,
     ReminderDate = require("./reminderDate.js"),
     processTime = require('./nlp/processTime.js'),
-    timemachine = require("timemachine");
+    timemachine = require("timemachine"),
+    encodeEntities = new (require('html-entities').XmlEntities)().encode;
 // not sure if I need this here, but I had to use it in reminderDate.js
 //  I don't know why I need it there, but I do
 //   without it, "sometimes" moment().unix() would return 0 in reminderDate.js
@@ -158,7 +159,7 @@ module.exports = class Reminder {
     }
 
     getFormattedReminder(isShortened) {
-        let text = isShortened ? this.getShortenedText() : this.getText();
+        let text = encodeEntities(isShortened ? this.getShortenedText() : this.getText());
 
         let formattedDate = this.getDateFormatted(this.timezone.getTimezone());
         if(formattedDate.length > 70) {

@@ -309,7 +309,7 @@ bot.action(/VIEW_([^_]+)/, ctx => {
 
     let markup = getReminderMarkup(reminder);
     ctx.answerCbQuery();
-    return ctx.reply(encodeEntities(reminder.getFormattedReminder(false)), markup).catch(catchBlocks);
+    return ctx.reply(reminder.getFormattedReminder(false), markup).catch(catchBlocks);
 });
 
 bot.on('location', (ctx) => {
