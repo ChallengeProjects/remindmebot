@@ -1,6 +1,7 @@
 const UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
-    Extra = require('telegraf/extra');
+    Extra = require('telegraf/extra'),
+    encodeEntities = new (require('html-entities').XmlEntities)().encode;
 
 function _listToMatrix(list, n) {
     // split into rows of 7s
@@ -51,7 +52,7 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     }
     
 
-    logger.info(`${userId}: list, isRecurring:${isRecurring} ${searchTerm},${reminders.length} reminders`);
+    logger.info(`${userId}: list, isRecurring:${isRecurring} ${encodeEntities(searchTerm)},${reminders.length} reminders`);
 
     let markup = Extra.HTML().markup((m) => {
         let reminderButtons = [];
@@ -79,7 +80,7 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     let remindersList = [];
     let i = (pageNumber - 1) * NUMBER_OF_REMINDERS_PER_PAGE + 1;
     for(let reminder of reminders) {
-        remindersList.push(`<b>${i++})</b> ${reminder.getFormattedReminder(true)}`);
+        remindersList.push(`<b>${i++})</b> ${encodeEntities(reminder.getFormattedReminder(true))}`);
     }
 
     if(!remindersList.length) {
