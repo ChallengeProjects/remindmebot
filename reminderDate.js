@@ -95,7 +95,7 @@ module.exports = class ReminderDate {
             let date = this._getNextRecurringDate(timezone);
             let nextTime = this._getDateFormatted(date, timezone);
             let endingDateText = "";
-            if(!!this.endingConditionDate) {
+            if(this.endingConditionDate) {
                 let endingDateFormatted = this._getDateFormatted(this.endingConditionDate, timezone);
                 endingDateText = `\nEnd date: ${endingDateFormatted}`;
             }

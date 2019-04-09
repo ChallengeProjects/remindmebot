@@ -21,6 +21,7 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
     let parsedDatePM = moment.tz(moment(chrono.parseDate(textWithpm)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     let parsedDateAM = moment.tz(moment(chrono.parseDate(textWitham)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     let d;
+    let result;
 
     // fix dates before choosing
     if(parsedDateAM.isBefore(currentDate)) {
@@ -78,7 +79,7 @@ function parseNonRecurringDate(reminderDateTimeText, userTimezone) {
     // capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
     //  so chrono can parse it as time
     let onTimeMatch = reminderDateTimeText.match(/^on ([0-9:]+)$/i);
-    if(!!onTimeMatch) {
+    if(onTimeMatch) {
         reminderDateTimeText = `at ${onTimeMatch[1]}`;
         if(onTimeMatch.indexOf(":") == -1) {
             reminderDateTimeText += ":00";
