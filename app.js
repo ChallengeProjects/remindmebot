@@ -13,11 +13,11 @@ const processTime = require('./nlp/processTime.js'),
     listcommand = require("./botfunctions/listcommand.js"),
     helpcommand = require("./botfunctions/helpcommand.js"),
     catchBlocks = require("./errorhandling.js").catchBlocks,
+    { encodeHTMLEntities } = require("./botutils.js"),
     config = require("./config.json")[process.env.NODE_ENV],
     googleMapsClient = require('@google/maps').createClient({
         key: config.googleMapsClientKey
-    }),
-    encodeEntities = new (require('html-entities').XmlEntities)().encode;
+    });
 
 /////////////////////////////////////////////////////////
 // small hack to set reminders through a RESTful API
@@ -221,7 +221,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
+    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
 }
 
 let remindmeCallBack = (ctx) => {
