@@ -143,7 +143,10 @@ module.exports = class Reminder {
         return this.text;
     }
 
-    getShortenedText() {
+    getShortenedText(length) {
+        if (!length) {
+            length = 70;
+        }
         return this.getText().slice(0, 70) + (this.getText().length > 70 ? "…" : "");
     }
 

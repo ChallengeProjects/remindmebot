@@ -26,6 +26,9 @@ You can also make recurring reminders: /help_with_recurring_reminders
 <b>Edit Reminder Time</b>: ✏️⏱
 <b>Edit Reminder Text</b>: ✏️📖
 <b>Delete Reminder</b>: 🗑️
+<b>Enable Reminder</b>: 🔔
+<b>Disable Reminder</b>: 🔕
+<b>Check off Reminder</b>: ✅
 `;
 
 const HELP_WITH_RECURRING_REMINDERS_TEXT = `To setup recurring reminders:

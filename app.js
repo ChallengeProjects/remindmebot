@@ -1,4 +1,4 @@
-etconst processTime = require('./nlp/processTime.js'),
+const processTime = require('./nlp/processTime.js'),
     Reminder = require('./reminder.js'),
     UserManager = require("./userManager.js"),
     Extra = require('telegraf/extra'),
@@ -204,9 +204,9 @@ function getReminderMarkup(reminder) {
             m.callbackButton("⏎", `APPEND-LINE_${reminder.getId()}`)
         ];
         if (reminder.isRecurring() && reminder.isEnabled()) {
-            buttons.push(m.callbackButton("🚫", `DISABLE_${reminder.getId()}`));
+            buttons.push(m.callbackButton("🔕", `DISABLE_${reminder.getId()}`));
         } else if (reminder.isRecurring() && !reminder.isEnabled()) {
-            buttons.push(m.callbackButton("✅", `ENABLE_${reminder.getId()}`));
+            buttons.push(m.callbackButton("🔔", `ENABLE_${reminder.getId()}`));
         }
 
         return m.inlineKeyboard(buttons);
@@ -275,6 +275,21 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     ctx.answerCbQuery();
     return replyWithConfirmation(ctx, snoozedReminder, null);
 });
+/**
+ * delete format is the following:
+ * DELETE_<reminder id>
+ */
+bot.action(/CHECK_OFF_([^_]+)/, ctx => {
+    logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
+    let reminderId = ctx.match[1];
+    let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
+    if (!reminder) {
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>").catch(catchBlocks);
+    }
+    let reminderText = reminder.getShortenedText(15);
+    ctx.answerCbQuery();
+    return ctx.editMessageText(`<code>✅ Reminder checked off: </code>"${reminderText}"`).catch(catchBlocks);
+});
 
 /**
  * delete format is the following:
@@ -285,12 +300,12 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("Reminder was already deleted.").catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>").catch(catchBlocks);
     }
     let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`🗑️ Reminder deleted: "${reminderText}"`).catch(catchBlocks);
+    return ctx.editMessageText(`<code>🗑️ Reminder deleted: </code>"${reminderText}"`).catch(catchBlocks);
 });
 
 /**
@@ -318,9 +333,9 @@ bot.on('location', (ctx) => {
     convertCoordinatesToTimezone(userLatitude, userLongitude).then(timezoneId => {
         UserManager.setUserTimezone(userId, timezoneId);
         if (timezoneId) {
-            ctx.reply(`Your timezone has been set to ${timezoneId}. You can now start setting reminders!`);
+            ctx.reply(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
         } else {
-            ctx.reply("Something went wrong. Please try again at a later time");
+            ctx.reply("<code>Something went wrong. Please try again at a later time</code>");
         }
     });
 });
@@ -366,7 +381,7 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
 
     UserManager.setUserTimezone(userId, timezone);
-    return ctx.reply("Ok your timezone now is " + timezone + ". You can now start setting reminders!").catch(catchBlocks);
+    return ctx.reply("<code>Ok your timezone now is </code>" + timezone + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
 });
 
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
@@ -417,11 +432,11 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     if (shouldEnable) {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("✅ Reminder enabled.").catch(catchBlocks);
+        return ctx.reply("🔔 Reminder enabled.").catch(catchBlocks);
     } else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("🚫 Reminder disabled.").catch(catchBlocks);
+        return ctx.reply("🔕 Reminder disabled.").catch(catchBlocks);
     }
 });
 

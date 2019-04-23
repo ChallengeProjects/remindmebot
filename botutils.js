@@ -19,11 +19,11 @@ function remindUser(reminder) {
     };
     let markup = Extra.HTML().markup((m) => {
         let buttonsRow1 = Object.keys(SNOOZE_MAP).map(key => m.callbackButton(key.toLowerCase(), `SNOOZE_${SNOOZE_MAP[key]}_${reminderId}`));
-        let buttonsRow2 = [m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`)];
+        let buttonsRow2 = [m.callbackButton('✅', `CHECK_OFF_${reminderId}`), m.callbackButton('Enter Time', `CUSTOM_SNOOZE_${reminderId}`)];
 
         if (isRecurring) {
             buttonsRow2.push(m.callbackButton('🗑️', `DELETE_${reminderId}`));
-            buttonsRow2.push(m.callbackButton('🚫', `DISABLE_${reminderId}`));
+            buttonsRow2.push(m.callbackButton('🔕', `DISABLE_${reminderId}`));
         }
         return m.inlineKeyboard([buttonsRow1, buttonsRow2]);
     });
