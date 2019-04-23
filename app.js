@@ -288,7 +288,7 @@ bot.action(/CHECK_OFF_([^_]+)/, ctx => {
     }
     let reminderText = reminder.getShortenedText(15);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`<code>✅ Reminder checked off: </code>"${reminderText}"`).catch(catchBlocks);
+    return ctx.editMessageText(`<code>✅ Reminder checked off: </code>"${reminderText}"`, Extra.HTML().markup()).catch(catchBlocks);
 });
 
 /**
@@ -305,7 +305,7 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`<code>🗑️ Reminder deleted: </code>"${reminderText}"`).catch(catchBlocks);
+    return ctx.editMessageText(`<code>🗑️ Reminder deleted: </code>"${reminderText}"`, Extra.HTML().markup()).catch(catchBlocks);
 });
 
 /**
@@ -333,9 +333,9 @@ bot.on('location', (ctx) => {
     convertCoordinatesToTimezone(userLatitude, userLongitude).then(timezoneId => {
         UserManager.setUserTimezone(userId, timezoneId);
         if (timezoneId) {
-            ctx.reply(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
+            ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
         } else {
-            ctx.reply("<code>Something went wrong. Please try again at a later time</code>");
+            ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>");
         }
     });
 });
@@ -381,18 +381,18 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
 
     UserManager.setUserTimezone(userId, timezone);
-    return ctx.reply("<code>Ok your timezone now is </code>" + timezone + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
+    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + timezone + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
 });
 
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(catchBlocks);
     }
     if (reminder.isRecurring()) {
         ctx.answerCbQuery();
-        return ctx.reply("Sorry you cant edit time of recurring reminders").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Sorry you cant the edit time of recurring reminders</code>").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TIME_SCENE");
@@ -403,7 +403,7 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TEXT_SCENE");
@@ -414,7 +414,7 @@ bot.action(/APPEND-LINE_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted.</code>").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("APPEND_LINE_SCENE");
