@@ -12,8 +12,8 @@ module.exports = class ReminderDate {
      * @param  {moment}   options.date            moment object with date
      * @param  {[String]} options.recurringDates  string of recurring reminder dates (["tomorrow at 5 pm", "on monday at 3 pm"])
      */
-    constructor({date, recurringDates, endingConditionDate}) {
-        if((date && recurringDates) || (date && endingConditionDate)) {
+    constructor({ date, recurringDates, endingConditionDate }) {
+        if ((date && recurringDates) || (date && endingConditionDate)) {
             throw 'cant provide both (date and recurringDates) or (date and endingConditionDate)';
         }
 
@@ -31,10 +31,9 @@ module.exports = class ReminderDate {
     }
 
     valueOf() {
-        if(this.date) {
+        if (this.date) {
             return this.date.valueOf();
-        }
-        else {
+        } else {
             return this._getNextRecurringDate.valueOf();
         }
     }
@@ -52,7 +51,7 @@ module.exports = class ReminderDate {
      * @return {moment} next recurring date
      */
     _getNextRecurringDate(timezone) {
-        if(!this.isRecurring()) {
+        if (!this.isRecurring()) {
             throw 'No recurring dates';
         }
 
@@ -65,12 +64,11 @@ module.exports = class ReminderDate {
     }
 
     isInThePast(timezone) {
-        if(this.isRecurring()) {
-            if(!this.endingConditionDate) {
+        if (this.isRecurring()) {
+            if (!this.endingConditionDate) {
                 return false;
-            }
-            else {
-                return this.endingConditionDate.unix() < moment().unix() ;
+            } else {
+                return this.endingConditionDate.unix() < moment().unix();
             }
         }
         // console.log(`isInThePast: msFromNow: ${this.getMilliSecondsFromNow(timezone)}, momentnow:${moment().unix()}, date: ${new Date().getTime()/1000}`);
@@ -79,10 +77,9 @@ module.exports = class ReminderDate {
 
     getMilliSecondsFromNow(timezone) {
         let date;
-        if(this.isRecurring()) {
+        if (this.isRecurring()) {
             date = this._getNextRecurringDate(timezone);
-        }
-        else {
+        } else {
             date = this.getDate();
         }
 
@@ -91,18 +88,17 @@ module.exports = class ReminderDate {
     }
 
     getDateFormatted(timezone) {
-        if(this.isRecurring()) {
+        if (this.isRecurring()) {
             let date = this._getNextRecurringDate(timezone);
             let nextTime = this._getDateFormatted(date, timezone);
             let endingDateText = "";
-            if(this.endingConditionDate) {
+            if (this.endingConditionDate) {
                 let endingDateFormatted = this._getDateFormatted(this.endingConditionDate, timezone);
                 endingDateText = `\nEnd date: ${endingDateFormatted}`;
             }
-            
+
             return `next time: ${nextTime}, all times: ${JSON.stringify(this.recurringDates)}${endingDateText}`;
-        }
-        else {
+        } else {
             return this._getDateFormatted(this.date, timezone);
         }
     }
@@ -113,27 +109,26 @@ module.exports = class ReminderDate {
         let time;
 
         // if minute is 0 then just give the hour
-        if(dateThen.format("mm") == "00") {
+        if (dateThen.format("mm") == "00") {
             time = dateThen.format("h a");
-        }
-        else {
+        } else {
             time = dateThen.format("h:mm a");
         }
 
         // if same day just give time
-        if(dateNow.isSame(dateThen, 'day')) {
+        if (dateNow.isSame(dateThen, 'day')) {
             return `at ${time}`;
         }
         // if it's tomorrow say tomorrow(<weekday>)
-        else if(dateNow.clone().add(1, 'day').isSame(dateThen, 'd')) {
+        else if (dateNow.clone().add(1, 'day').isSame(dateThen, 'd')) {
             return `tomorrow (${dateThen.format('dddd')}) at ${time}`; // tomorrow (Wednesday) at 3:04 pm
         }
         // if same month just give week day and month day
-        else if(dateNow.isSame(dateThen, 'month')) {
+        else if (dateNow.isSame(dateThen, 'month')) {
             return `on ${dateThen.format("dddd")} the ${dateThen.format("Do")} at ${time}`; // on Monday the 12th at 3:04 pm
         }
         // if same year just give MM/DD
-        else if(dateNow.isSame(dateThen, 'year')) {
+        else if (dateNow.isSame(dateThen, 'year')) {
             return `on ${dateThen.format("dddd MM/DD")} at ${time}`;
         }
         // else just give the full date
@@ -153,10 +148,10 @@ module.exports = class ReminderDate {
     static deserialize(serializedReminderDateObject) {
         let date = undefined;
         let endingConditionDate = undefined;
-        if(serializedReminderDateObject.date) {
+        if (serializedReminderDateObject.date) {
             date = moment(serializedReminderDateObject.date);
         }
-        if(serializedReminderDateObject.endingConditionDate) {
+        if (serializedReminderDateObject.endingConditionDate) {
             endingConditionDate = moment(serializedReminderDateObject.endingConditionDate);
         }
         return new ReminderDate({

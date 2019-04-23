@@ -11,10 +11,9 @@ module.exports = class User {
     }
 
     setTimezone(timezone) {
-        if(typeof timezone == 'string') {
+        if (typeof timezone == 'string') {
             this.timezone = new Timezone(timezone);
-        }
-        else {
+        } else {
             this.timezone = timezone;
         }
     }
@@ -42,7 +41,7 @@ module.exports = class User {
     }
 
     deleteReminder(id) {
-        if(this.reminders[id]) {
+        if (this.reminders[id]) {
             this.reminders[id].clearTimeout();
             delete this.reminders[id];
         }
@@ -52,11 +51,10 @@ module.exports = class User {
         let intermediateResult = Object.values(this.reminders)
             .filter(reminder => !reminder.isInThePast() && reminder.isRecurring() == isRecurring)
             .sort((r1, r2) => r1.getDate().valueOf() - r2.getDate().valueOf());
-        if(searchTerm) {
+        if (searchTerm) {
             return intermediateResult
                 .filter(reminder => reminder.text.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-        else {
+        } else {
             return intermediateResult;
         }
     }
@@ -83,16 +81,16 @@ module.exports = class User {
 
     getSerializableObject() {
         let serializableReminderObject = {};
-        for(let reminderId in this.reminders) {
-            if(!this.reminders[reminderId].isInThePast()) {
+        for (let reminderId in this.reminders) {
+            if (!this.reminders[reminderId].isInThePast()) {
                 serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
             }
         }
         let serializableTimezoneObject;
-        if(this.timezone) {
+        if (this.timezone) {
             serializableTimezoneObject = this.timezone.getSerializableObject();
         }
-        
+
         return {
             id: this.id,
             username: this.username,
@@ -103,17 +101,16 @@ module.exports = class User {
 
     static deserialize(serializedUserObject) {
         let timezone;
-        if(serializedUserObject.timezone) {
-            if(typeof serializedUserObject.timezone == 'string') {
+        if (serializedUserObject.timezone) {
+            if (typeof serializedUserObject.timezone == 'string') {
                 timezone = new Timezone(serializedUserObject.timezone);
-            }
-            else {
+            } else {
                 timezone = Timezone.deserialize(serializedUserObject.timezone);
             }
         }
 
         let deserializedReminders = {};
-        for(let reminderId in serializedUserObject.reminders) {
+        for (let reminderId in serializedUserObject.reminders) {
             deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone);
         }
 

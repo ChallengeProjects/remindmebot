@@ -44,7 +44,7 @@ function addToBot(bot) {
         return ctx.replyWithHTML(HELP_TEXT).catch(catchBlocks);
     });
 
-    bot.command('help_with_recurring_reminders', ctx=> {
+    bot.command('help_with_recurring_reminders', ctx => {
         return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT).catch(catchBlocks);
     });
 

@@ -7,10 +7,10 @@ function _getRecurringDates(reminderDateTimeText) {
 
     // try to parse units
     let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
-    units = [...units, ...units.map(u => u+'s')]; // add plural
+    units = [...units, ...units.map(u => u + 's')]; // add plural
     let unitMatch = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'i'));
     let dates = [];
-    if(unitMatch) {
+    if (unitMatch) {
         let frequency = unitMatch[1] ? parseInt(unitMatch[1].trim()) : 1;
         let unit = unitMatch[2];
         dates.push(`in ${frequency} ${unit}`);
@@ -18,8 +18,8 @@ function _getRecurringDates(reminderDateTimeText) {
 
     // try to parse week days
     let weekDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    for(let weekDay of weekDays) {
-        if(dateText.match(new RegExp(`\\b${weekDay}\\b`, 'i'))) {
+    for (let weekDay of weekDays) {
+        if (dateText.match(new RegExp(`\\b${weekDay}\\b`, 'i'))) {
             dates.push(`on ${weekDay}`);
         }
     }
@@ -52,17 +52,17 @@ function _getRecurringDates(reminderDateTimeText) {
 function convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText) {
     let untilFromRegex = /^until (.*) from (today|now)/i;
     let untilFromMatch = endingDateTimeText.match(untilFromRegex);
-    if(untilFromMatch != null) {
+    if (untilFromMatch != null) {
         return endingDateTimeText.replace(untilFromRegex, "in $1");
     }
     let untilRegex = /^until (.*)/i;
     let untilMatch = endingDateTimeText.match(untilRegex);
-    if(untilMatch != null) {
+    if (untilMatch != null) {
         return endingDateTimeText.replace(untilRegex, "on $1");
     }
     let forRegex = /^for (.*)/i;
     let forMatch = endingDateTimeText.match(forRegex);
-    if(forMatch != null) {
+    if (forMatch != null) {
         return endingDateTimeText.replace(forRegex, "in $1");
     }
     throw "Couldn't parse endingDateTimeText";
@@ -78,7 +78,7 @@ function convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText) {
  */
 function getEndingDateTime(reminderDateTimeText, userTimezone) {
     let delimiterMatch = reminderDateTimeText.match(/ (until|for) /i);
-    if(delimiterMatch == null) {
+    if (delimiterMatch == null) {
         return null;
     }
     // remove everything before the delimiter (but keep the delimiter)
@@ -103,13 +103,13 @@ function getEndingDateTime(reminderDateTimeText, userTimezone) {
  * @return {[String]} example: ["on sunday at 2 pm", "on sunday at 3 pm", "on monday at 2 pm", "on monday at 3 pm"]
  */
 function parseRecurringDates(reminderDateTimeText, userTimezone) {
-    if(!reminderDateTimeText.match(/\bevery\b/i)) {
+    if (!reminderDateTimeText.match(/\bevery\b/i)) {
         return null;
     }
     // check if there is a condition for ending
     let endingDateTimeResult = getEndingDateTime(reminderDateTimeText, userTimezone);
     let endingConditionDate;
-    if(endingDateTimeResult) {
+    if (endingDateTimeResult) {
         reminderDateTimeText = endingDateTimeResult.newReminderDateTimeText;
         endingConditionDate = endingDateTimeResult.endingConditionDate;
     }
@@ -120,18 +120,18 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     // /remindme every monday, tuesday,.. at 8am, 3 pm, 4:50 pm -> "every monday, tuesday,.."
     let dates = _getRecurringDates(reminderDateTimeText);
 
-    if(!dates || dates.length == 0) {
+    if (!dates || dates.length == 0) {
         return null;
     }
 
     // if there was no time provided, just return the dates
-    if(!times) {
+    if (!times) {
         recurringDates = dates;
     }
     // otherwise return [dates]x[times]
     else {
-        for(let date of dates) {
-            for(let time of times) {
+        for (let date of dates) {
+            for (let time of times) {
                 recurringDates.push(date + " " + time);
             }
         }

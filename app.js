@@ -1,4 +1,4 @@
-const processTime = require('./nlp/processTime.js'),
+etconst processTime = require('./nlp/processTime.js'),
     Reminder = require('./reminder.js'),
     UserManager = require("./userManager.js"),
     Extra = require('telegraf/extra'),
@@ -6,14 +6,13 @@ const processTime = require('./nlp/processTime.js'),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
     moment = require("moment-timezone"),
-    autocorrect = require('autocorrect')({words: moment.tz.names()}),
+    autocorrect = require('autocorrect')({ words: moment.tz.names() }),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
     ReminderDate = require("./reminderDate.js"),
     listcommand = require("./botfunctions/listcommand.js"),
     helpcommand = require("./botfunctions/helpcommand.js"),
-    catchBlocks = require("./errorhandling.js").catchBlocks,
-    { encodeHTMLEntities } = require("./botutils.js"),
+    catchBlocks = require("./errorhandling.js").catchBlocks, { encodeHTMLEntities } = require("./botutils.js"),
     config = require("./config.json")[process.env.NODE_ENV],
     googleMapsClient = require('@google/maps').createClient({
         key: config.googleMapsClientKey
@@ -25,12 +24,12 @@ const express = require('express'),
     bodyParser = require('body-parser');
 
 let app = express();
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json({ limit: '50mb' }));
 app.post('/remindme', function(req, res) {
-    if(config.botToken != req.body.botToken) {
+    if (config.botToken != req.body.botToken) {
         return;
     }
-    logger.info("req.body="+JSON.stringify(req.body));
+    logger.info("req.body=" + JSON.stringify(req.body));
     let ctx = {
         message: {
             text: req.body.text
@@ -39,9 +38,9 @@ app.post('/remindme', function(req, res) {
             id: req.body.chatid
         },
         reply: function(text) {
-            logger.info("going to reply with: "+text);
+            logger.info("going to reply with: " + text);
             res.send(text);
-            return {catch: function(){}};
+            return { catch: function() {} };
         },
         update: {
             message: {
@@ -67,11 +66,11 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
-    if(ctx.message.text == "/cancel") {
+    if (ctx.message.text == "/cancel") {
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    if(!reminder) {
+    if (!reminder) {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
@@ -80,8 +79,8 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     let utterance = "/remindme " + ctx.message.text + " to nothing";
 
     try {
-        var {reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-    } catch(err) {
+        var { reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+    } catch (err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
@@ -106,19 +105,19 @@ EDIT_TIME_SCENE.on('text', ctx => {
     // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
-    if(ctx.message.text == "/cancel") {
+    if (ctx.message.text == "/cancel") {
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    if(!reminder) {
+    if (!reminder) {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
     let utterance = "/remindme " + ctx.message.text + " to nothing";
 
     try {
-        var {reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-    } catch(err) {
+        var { reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+    } catch (err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     UserManager.updateReminderDate(userId, reminderId, new ReminderDate(reminderDate));
@@ -140,11 +139,11 @@ EDIT_TEXT_SCENE.on('text', ctx => {
     let reminder = UserManager.getReminder(userId, reminderId);
     // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the .command listener
-    if(ctx.message.text == "/cancel") {
+    if (ctx.message.text == "/cancel") {
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    if(!reminder) {
+    if (!reminder) {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
@@ -168,11 +167,11 @@ APPEND_LINE_SCENE.on('text', ctx => {
     // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
-    if(ctx.message.text == "/cancel") {
+    if (ctx.message.text == "/cancel") {
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    if(!reminder) {
+    if (!reminder) {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
@@ -204,10 +203,9 @@ function getReminderMarkup(reminder) {
             m.callbackButton("🗑️", `DELETE_${reminder.getId()}`),
             m.callbackButton("⏎", `APPEND-LINE_${reminder.getId()}`)
         ];
-        if(reminder.isRecurring() && reminder.isEnabled()) {
+        if (reminder.isRecurring() && reminder.isEnabled()) {
             buttons.push(m.callbackButton("🚫", `DISABLE_${reminder.getId()}`));
-        }
-        else if(reminder.isRecurring() && !reminder.isEnabled()) {
+        } else if (reminder.isRecurring() && !reminder.isEnabled()) {
             buttons.push(m.callbackButton("✅", `ENABLE_${reminder.getId()}`));
         }
 
@@ -217,7 +215,7 @@ function getReminderMarkup(reminder) {
 
 function replyWithConfirmation(ctx, reminder, replyToMessageId) {
     let markup = getReminderMarkup(reminder);
-    if(replyToMessageId) {
+    if (replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
@@ -228,21 +226,21 @@ let remindmeCallBack = (ctx) => {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
 
-    if(!UserManager.getUserTimezone(userId)) {
+    if (!UserManager.getUserTimezone(userId)) {
         return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
     }
-    if(utterance == '/remindme') {
+    if (utterance == '/remindme') {
         return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
     }
 
     try {
-        var {reminderText, reminderDate} = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        var { reminderText, reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
-    } catch(err) {
+    } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
-    
+
     let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
     UserManager.addReminderForUser(userId, reminder);
     return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
@@ -286,7 +284,7 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
-    if(!reminder) {
+    if (!reminder) {
         return ctx.editMessageText("Reminder was already deleted.").catch(catchBlocks);
     }
     let reminderText = reminder.getShortenedText();
@@ -303,7 +301,7 @@ bot.action(/VIEW_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
-    if(!reminder) {
+    if (!reminder) {
         return ctx.answerCbQuery();
     }
 
@@ -350,11 +348,11 @@ function convertCoordinatesToTimezone(latitude, longitude) {
 bot.command('timezone', ctx => {
     let userId = ctx.chat.id;
     let timezone = ctx.message.text.substr(ctx.message.text.indexOf(" ")).trim();
-    
+
     timezone = autocorrect(timezone);
-    
-    if(!timezone || !moment.tz.zone(timezone)) {
-        if(timezone) {
+
+    if (!timezone || !moment.tz.zone(timezone)) {
+        if (timezone) {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezone}`);
         }
         return ctx.replyWithHTML(`You need to specify a valid timezone.
@@ -366,7 +364,7 @@ You can do this by either sending your location 📍 or by using the /timezone c
 You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`).catch(catchBlocks);
     }
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezone}`);
-    
+
     UserManager.setUserTimezone(userId, timezone);
     return ctx.reply("Ok your timezone now is " + timezone + ". You can now start setting reminders!").catch(catchBlocks);
 });
@@ -374,10 +372,10 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
-    if(!reminder) {
+    if (!reminder) {
         return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
     }
-    if(reminder.isRecurring()) {
+    if (reminder.isRecurring()) {
         ctx.answerCbQuery();
         return ctx.reply("Sorry you cant edit time of recurring reminders").catch(catchBlocks);
     }
@@ -389,7 +387,7 @@ bot.action(/EDIT-TIME_([^_]+)/, ctx => {
 bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
-    if(!reminder) {
+    if (!reminder) {
         return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
@@ -400,7 +398,7 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
 bot.action(/APPEND-LINE_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
-    if(!reminder) {
+    if (!reminder) {
         return ctx.reply("Can't edit reminder. Reminder was deleted").catch(catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
@@ -416,12 +414,11 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
 
     let shouldEnable = ctx.match[1] == "ENABLE";
-    if(shouldEnable) {
+    if (shouldEnable) {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
         return ctx.reply("✅ Reminder enabled.").catch(catchBlocks);
-    }
-    else {
+    } else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
         return ctx.reply("🚫 Reminder disabled.").catch(catchBlocks);
@@ -432,10 +429,10 @@ function botStartup() {
     UserManager.loadUsersDataFromStorage();
     bot.startPolling();
     UserManager.sendFeatureUpdates();
-    
+
     // start the server
     const PORT = Number(config.port);
-    var server = app.listen(PORT, () => { 
+    var server = app.listen(PORT, () => {
         var port = server.address().port;
         logger.info('Magic happens at ' + port);
     });

@@ -1,5 +1,5 @@
 const moment = require('moment'),
-    {remindUser, encodeHTMLEntities} = require("./botutils.js"),
+    { remindUser, encodeHTMLEntities } = require("./botutils.js"),
     ReminderDate = require("./reminderDate.js"),
     processTime = require('./nlp/processTime.js'),
     timemachine = require("timemachine");
@@ -55,30 +55,28 @@ module.exports = class Reminder {
      */
     _setTimeout(callback, time) {
         const MAX_TIME = Math.pow(2, 31) - 1;
-        if(time > MAX_TIME) {
+        if (time > MAX_TIME) {
             this.timeouts.push(setTimeout(() => {
                 this._setTimeout(callback, time - MAX_TIME);
             }, MAX_TIME));
-        }
-        else {
+        } else {
             this.timeouts.push(setTimeout(callback, time));
         }
     }
 
     setTimeout() {
-        if(!this.reminderDate.isRecurring()) {
+        if (!this.reminderDate.isRecurring()) {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
             // console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
             this._setTimeout(() => {
                 remindUser(this);
             }, time);
-        }
-        else {
+        } else {
             // console.log("setTimeout: Recurring: text= ", this.getText());
-            for(let dateString of this.reminderDate.getDates()) {
+            for (let dateString of this.reminderDate.getDates()) {
                 this._setTimeoutOneDate(dateString);
             }
-        }   
+        }
     }
 
     _setTimeoutOneDate(dateString) {
@@ -87,7 +85,7 @@ module.exports = class Reminder {
         this._setTimeout(() => {
             // check if the ending date condition has passed
             // clear the timeout and dont set another one
-            if(this.isInThePast()) {
+            if (this.isInThePast()) {
                 this.clearTimeout();
                 return;
             }
@@ -111,13 +109,13 @@ module.exports = class Reminder {
     }
 
     clearTimeout() {
-        for(let timeout of this.timeouts) {
+        for (let timeout of this.timeouts) {
             clearTimeout(timeout);
         }
     }
 
     isInThePast() {
-        if(!this.reminderDate) {
+        if (!this.reminderDate) {
             console.log("reminder date doesnt exist", this.getText());
             return true;
         }
@@ -129,7 +127,7 @@ module.exports = class Reminder {
     }
 
     setReminderDate(date) {
-        if(!date || !(date instanceof ReminderDate)) {
+        if (!date || !(date instanceof ReminderDate)) {
             console.log("ERROR: reminderDate is not of type ReminderDate: ", date, this.getText());
         }
         this.reminderDate = date;
@@ -161,10 +159,10 @@ module.exports = class Reminder {
         let text = encodeHTMLEntities(isShortened ? this.getShortenedText() : this.getText());
 
         let formattedDate = this.getDateFormatted(this.timezone.getTimezone());
-        if(formattedDate.length > 70) {
+        if (formattedDate.length > 70) {
             formattedDate = isShortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
         }
-        
+
         let disabledText = !this.isEnabled() ? "[Disabled]" : "";
         return `<code>${disabledText} ${formattedDate}:</code>\n${text}`;
     }
@@ -203,7 +201,7 @@ module.exports = class Reminder {
         reminder.enabled = serializedReminderObject.enabled;
         reminder.setTimezone(timezone);
 
-        if(!reminder.isInThePast() && reminder.isEnabled()) {
+        if (!reminder.isInThePast() && reminder.isEnabled()) {
             reminder.setTimeout();
         }
         return reminder;

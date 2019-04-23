@@ -1,7 +1,7 @@
 const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
     parseNonRecurringDate = require("./parseNonRecurringDate.js");
-    // logger = require("./logger.js");
+// logger = require("./logger.js");
 
 /**
  * splits user's command from the "to" or "that" delimiter into a datetime part and a text part
@@ -17,10 +17,10 @@ function _splitReminderText(text) {
         TO: " to ",
         THAT: " that "
     };
-    
+
     let toIndex = text.toLowerCase().indexOf(DELIMITERS.TO);
     let thatIndex = text.toLowerCase().indexOf(DELIMITERS.THAT);
-    if(toIndex == -1 && thatIndex == -1) {
+    if (toIndex == -1 && thatIndex == -1) {
         throw 'Could not parse';
     }
     toIndex = toIndex == -1 ? Number.MAX_VALUE : toIndex;
@@ -38,8 +38,8 @@ function _splitReminderText(text) {
 }
 
 function correctSpellingForDateTimeText(reminderDateTimeText) {
-    for(let correctWord in commonTypos) {
-        for(let incorrectWord of commonTypos[correctWord]) {
+    for (let correctWord in commonTypos) {
+        for (let incorrectWord of commonTypos[correctWord]) {
             reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
         }
     }
@@ -47,10 +47,10 @@ function correctSpellingForDateTimeText(reminderDateTimeText) {
 }
 
 function getDate(text, userTimezone) {
-    let {reminderText, reminderDateTimeText} = _splitReminderText(text);
+    let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     reminderDateTimeText = correctSpellingForDateTimeText(reminderDateTimeText);
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
-    if(recurringDatesResult) {
+    if (recurringDatesResult) {
         let recurringDates = recurringDatesResult.recurringDates;
         let endingConditionDate = recurringDatesResult.endingConditionDate;
         return {
@@ -60,12 +60,11 @@ function getDate(text, userTimezone) {
                 endingConditionDate: endingConditionDate,
             }
         };
-    }
-    else {
+    } else {
         let parsedDate = parseNonRecurringDate.parseNonRecurringDate(reminderDateTimeText, userTimezone);
         return {
             reminderText: reminderText,
-            reminderDate: {date: parsedDate}
+            reminderDate: { date: parsedDate }
         };
     }
 }
