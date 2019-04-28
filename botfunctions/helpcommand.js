@@ -1,9 +1,10 @@
 const logger = require("../logger.js"),
     UserManager = require("../userManager.js"),
-    catchBlocks = require("../errorhandling.js").catchBlocks;
+    catchBlocks = require("../errorhandling.js").catchBlocks,
+    config = require("../config.json");
 
 
-const HELP_TEXT = `Feel free to contact me @bubakazouba if you would like to see anything else in the bot!
+const HELP_TEXT = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you would like to see anything else in the bot!
 
 1- /timezone to set your timezone
 2- /list to list all of your reminders
@@ -20,6 +21,8 @@ General formula is: /remindme [date/time] to/that [anything].
     • /r in five minutes to check on the oven
     • /remindme on wednesday to pickup the kids from school
     • remind me on january 5th that today is my birthday!
+    • remind me every weekday at 12 pm to call my son in school to check on him
+    • remind me every hour until 6 pm to log my work
 
 You can also make recurring reminders: /help_with_recurring_reminders
 
