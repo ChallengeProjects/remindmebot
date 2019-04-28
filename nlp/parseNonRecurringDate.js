@@ -54,7 +54,7 @@ function isMeridiemImplied(reminderDateTimeText) {
     if (!timePart) {
         return false;
     }
-    return !timePart.match(/\b(am|pm)\b/i);
+    return !timePart.match(/\b(a\.?m|p\.?m)\.?\b/i);
 }
 
 function parseNonRecurringDate(reminderDateTimeText, userTimezone) {

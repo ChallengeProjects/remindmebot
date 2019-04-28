@@ -14,8 +14,8 @@ function _splitReminderText(text) {
     text = text.trim();
 
     const DELIMITERS = {
-        TO: " to ",
-        THAT: " that "
+        TO: " to ".toLowerCase(),
+        THAT: " that ".toLowerCase(),
     };
 
     let toIndex = text.toLowerCase().indexOf(DELIMITERS.TO);
@@ -37,7 +37,7 @@ function _splitReminderText(text) {
     };
 }
 
-function correctSpellingForDateTimeText(reminderDateTimeText) {
+function _correctSpellingForDateTimeText(reminderDateTimeText) {
     for (let correctWord in commonTypos) {
         for (let incorrectWord of commonTypos[correctWord]) {
             reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
@@ -47,8 +47,10 @@ function correctSpellingForDateTimeText(reminderDateTimeText) {
 }
 
 function getDate(text, userTimezone) {
+    // remove double spaces from text
+    text = text.replace(/ {1,}/g," ");
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
-    reminderDateTimeText = correctSpellingForDateTimeText(reminderDateTimeText);
+    reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
     if (recurringDatesResult) {
         let recurringDates = recurringDatesResult.recurringDates;

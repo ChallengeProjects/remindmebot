@@ -8,7 +8,7 @@ function getTimePartFromString(str) {
     for (let atSegment of atSegments) {
         let words = atSegment
             .replace(/,/g, " ") // replace all commas with spaces so we can split by them
-            .replace(/([0-9]+)(am|pm)/g, "$1 $2") // add spacing between number and am|pm
+            .replace(/([0-9]+)(a\.?m\.?|p\.?m\.?)/g, "$1 $2") // add spacing between number and am|pm
             .split(" ") // split
             .filter(x => !!x.length); // make sure no string is empty in the list
 
@@ -16,7 +16,7 @@ function getTimePartFromString(str) {
         let flag = true;
         for (let word of words) {
             // each word has to either be a number with colons in between or "am" "pm" or "and"
-            if (!word.match(/^[0-9:]+$/i) && !word.match(/^(am|pm|and)$/i)) {
+            if (!word.match(/^[0-9:]+$/i) && !word.match(/^(a\.?m\.?|p\.?m\.?|and)$/i)) {
                 flag = false;
                 break;
             }
@@ -50,7 +50,7 @@ function getTimesFromString(str) {
     // str = "3 am, 4 pm" [3, am, 4, pm]
     let words = timePartFromString.split(" ")
         .slice(1).join(" ") // remove the "at"
-        .replace(/([0-9]+)(am|pm)/g, "$1 $2") // seperate numbers joined with am/pm
+        .replace(/([0-9]+)(a\.?m\.?|p\.?m\.?)/g, "$1 $2") // seperate numbers joined with am/pm
         .replace(/\band\b/ig, " ") // replace "and" with " "
         .replace(/,/g, " ") // replace "," with " "
         .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
@@ -58,7 +58,7 @@ function getTimesFromString(str) {
     let tempArrayUntilMeridiem = [];
     for (let word of words) {
         // if this word is a meridiem then process it and clear it
-        if (word.match(/^(am|pm)$/i)) {
+        if (word.match(/^(a\.?m\.?|p\.?m\.?)$/i)) {
             let meridiem = word;
             for (let tempWord of tempArrayUntilMeridiem) {
                 times.push("at " + tempWord + " " + meridiem);
