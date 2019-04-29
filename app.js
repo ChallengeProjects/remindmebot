@@ -1,5 +1,5 @@
 const processTime = require('./nlp/processTime.js'),
-    Reminder = require('./reminder.js'),
+    Reminder = require('./models/reminder.js'),
     UserManager = require("./userManager.js"),
     Extra = require('telegraf/extra'),
     Markup = require('telegraf/markup'),
@@ -9,7 +9,7 @@ const processTime = require('./nlp/processTime.js'),
     autocorrect = require('autocorrect')({ words: moment.tz.names() }),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
-    ReminderDate = require("./reminderDate.js"),
+    ReminderDate = require("./models/reminderDate.js"),
     listcommand = require("./botfunctions/listcommand.js"),
     helpcommand = require("./botfunctions/helpcommand.js"),
     catchBlocks = require("./errorhandling.js").catchBlocks,
@@ -374,7 +374,7 @@ You can do this by either sending your location 📍 or by using the /timezone c
 • <code>/timezone PDT</code>
 • <code>/timezone EST</code>
 You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`;
-    if(!timezoneInput || timezoneInput.length == 0) {
+    if (!timezoneInput || timezoneInput.length == 0) {
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE).catch(catchBlocks);
     }
     // if timezone is not one of the valid moment timezones

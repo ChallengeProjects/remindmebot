@@ -1,4 +1,4 @@
-const User = require('./user.js'),
+const User = require('./models/user.js'),
     fs = require('fs'),
     path = require('path'),
     sendMessageToUser = require("./botutils.js").sendMessageToUser;

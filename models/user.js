@@ -2,7 +2,6 @@ const Reminder = require('./reminder.js'),
     Timezone = require("./timezone.js");
 
 module.exports = class User {
-
     constructor(id, username, timezone) {
         this.id = id;
         this.username = username;

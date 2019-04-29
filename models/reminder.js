@@ -1,7 +1,7 @@
 const moment = require('moment'),
-    { remindUser, encodeHTMLEntities } = require("./botutils.js"),
+    { remindUser, encodeHTMLEntities } = require("../botutils.js"),
     ReminderDate = require("./reminderDate.js"),
-    processTime = require('./nlp/processTime.js'),
+    processTime = require('../nlp/processTime.js'),
     timemachine = require("timemachine");
 // not sure if I need this here, but I had to use it in reminderDate.js
 //  I don't know why I need it there, but I do
@@ -44,7 +44,6 @@ module.exports = class Reminder {
     isRecurring() {
         return this.reminderDate.isRecurring();
     }
-
 
     /**
      * setTimeout cant accept time that is > 2^31 - 1, this 
