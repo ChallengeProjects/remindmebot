@@ -226,6 +226,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
 let remindmeCallBack = (ctx) => {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
+    logger.info(`${ctx.chat.id}: COMMAND_REMINDME`);
 
     if (!UserManager.getUserTimezone(userId)) {
         return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
