@@ -48,7 +48,7 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
 
 function getDate(text, userTimezone) {
     // remove double spaces from text
-    text = text.replace(/ {1,}/g," ");
+    text = text.replace(/ {1,}/g, " ");
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);

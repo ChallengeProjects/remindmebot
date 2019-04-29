@@ -1,7 +1,7 @@
 // goal of this script is to enable the flipping the order of the reminder
 // so both of these strings should work:
-s1 = "/remindme [at 4 pm] that i will need to leave at 5 pm"
-s2 = "/remindme that i need to leave at 4 pm at 5 pm"
+// let s1 = "/remindme [at 4 pm] that i will need to leave at 5 pm";
+// let s2 = "/remindme that i need to leave at 4 pm at 5 pm";
 //--------------
 // problems with this algorithm
 // 1- doesnt include alot of the keywords for date time:
@@ -33,8 +33,8 @@ function splitReminderTextAndDateTime(s) {
     for(let reminderDateTimeDelimiter of REMINDER_DATE_TIME_DELIMITERS) {
         reminderDateTimeDelimitersIndices.push(...getAllIndices(sArr, reminderDateTimeDelimiter));
     }
-    reminderTextDelimitersIndices.sort((a,b) => a-b);
-    reminderDateTimeDelimitersIndices.sort((a,b) => a-b);
+    reminderTextDelimitersIndices.sort((a, b) => a-b);
+    reminderDateTimeDelimitersIndices.sort((a, b) => a-b);
     if(reminderDateTimeDelimitersIndices.length == 0 || reminderTextDelimitersIndices.length == 0) {
         throw 'Could not parse';
     }
@@ -58,3 +58,7 @@ function splitReminderTextAndDateTime(s) {
     console.log(reminderText);
     console.log(reminderDateTime);
 }
+
+module.exports = {
+    splitReminderTextAndDateTime: splitReminderTextAndDateTime,
+};
