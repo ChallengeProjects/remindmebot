@@ -23,6 +23,9 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     if (!searchTerm) {
         searchTerm = "";
     }
+    else {
+        logger.info(`${ctx.chat.id}: COMMAND_LIST_SEARCH_TERM`);
+    }
 
     let allRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, true);
     let allNoneRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, false);
@@ -106,6 +109,7 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
 
 function addToBot(bot) {
     bot.action(/LIST_NON_RECURRING_([0-9]+)_([^_]*)/, ctx => {
+        logger.info(`${ctx.chat.id}: COMMAND_LIST_NON_RECURRING`);
         let userId = ctx.chat.id;
         let pageNumber = ctx.match[1];
         let b64EncodedSearchTerm = ctx.match[2];
@@ -115,6 +119,7 @@ function addToBot(bot) {
     });
 
     bot.action(/LIST_RECURRING_([0-9]+)_([^_]*)/, ctx => {
+        logger.info(`${ctx.chat.id}: COMMAND_LIST_RECURRING`);
         let userId = ctx.chat.id;
         let pageNumber = ctx.match[1];
         let b64EncodedSearchTerm = ctx.match[2];

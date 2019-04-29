@@ -334,8 +334,10 @@ bot.on('location', (ctx) => {
     convertCoordinatesToTimezone(userLatitude, userLongitude).then(timezoneId => {
         UserManager.setUserTimezone(userId, timezoneId);
         if (timezoneId) {
+            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID_LOCATION:${timeZoneId}`);
             ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
         } else {
+            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_LOCATION_ERROR`);
             ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>");
         }
     });

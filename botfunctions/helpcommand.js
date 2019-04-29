@@ -46,7 +46,7 @@ const ABOUT_TEXT = `This bot was created by @bubakazouba. The source code is ava
 
 function addToBot(bot) {
     bot.command('help', ctx => {
-        logger.info(`${ctx.chat.id}: help`);
+        logger.info(`${ctx.chat.id}: COMMAND_HELP`);
         return ctx.replyWithHTML(HELP_TEXT).catch(catchBlocks);
     });
 
@@ -55,7 +55,7 @@ function addToBot(bot) {
     });
 
     bot.command('start', ctx => {
-        logger.info(`${ctx.chat.id}: start`);
+        logger.info(`${ctx.chat.id}: COMMAND_START`);
         UserManager.addUser(ctx.chat.id, ctx.chat.username);
         return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things' + '\n' + HELP_TEXT).catch(catchBlocks);
     });
