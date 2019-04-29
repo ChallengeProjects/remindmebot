@@ -1,6 +1,11 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* dashboard:
+    * no frontend, just spit out a JSON. Then make a CLI utility to parse the JSON file and spitout some stats
+    * make a singleton that would store data
+    * how often are people using features like recurring dates, list, list with search term..etc
+    
 * refactor code so encoding of text is either in reminder.js or outside
 * remind me first weekend after 04/17 to ..
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
