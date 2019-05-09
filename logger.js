@@ -18,7 +18,7 @@ if (!config.papertrail) {
     logger.info = function(msg) {
         console.log(msg);
         copyOfLoggerInfo(msg);
-    }
+    };
 
     module.exports = logger;
 }

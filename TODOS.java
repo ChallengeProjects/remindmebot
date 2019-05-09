@@ -1,6 +1,7 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* prepush hook run eslint
 * alfred response should not have html entities, callback should just scrape it out
 * pick one function and write unit tests for it (i can start with recurring reminders as they are more inclusive)
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
