@@ -1,11 +1,12 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
-* dashboard:
-    * no frontend, just spit out a JSON. Then make a CLI utility to parse the JSON file and spitout some stats
-    * make a singleton that would store data
-    * how often are people using features like recurring dates, list, list with search term..etc
-    
+* alfred response should not have html entities, callback should just scrape it out
+* pick one function and write unit tests for it (i can start with recurring reminders as they are more inclusive)
+* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
+* attach images to reminders
+* specific error messages and autocorrections using my method for flipping order of text and date time
+* plot a graph of all reminders times
 * refactor code so encoding of text is either in reminder.js or outside
 * remind me first weekend after 04/17 to ..
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
@@ -15,20 +16,31 @@ TODOS:
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
-* make the bot work with groups
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
+        * that function should filter out the html tags out
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
-* Integration with calendar
-    * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
 --------
 LOW PRIORITY [in order]:
+* Integration with calendar
+    * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
+* [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
+* dashboard:
+    * no frontend, just spit out a JSON. Then make a CLI utility to parse the JSON file and spitout some stats
+    * make a singleton that would store data
+    * how often are people using features like recurring dates, list, list with search term..etc
+UX DESIGN PROBLEMS:
+    * autocorrect on list search
+    * /remindme to.. at..
+    * /remindme to..
+        * when do you want to be reminded?
+* only allow admin to use reminder bot in a group
+* remind me when im home -> sync with calendar
 * [20 minutes] bot said i dont have any reminders, if i dont have any it should show the recurring ones
     * or think of a better way in general to list them all, what if i only had a couple of non recurring reminders
         * then I can either show the recurring ones in the same message or in a different one?
 * setup server instead of polling for bot so its faster (add an option in config to do that)
-* [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
 * [1 hour] alfred workflow for list reminder bot
     * list all when user does typeahead search
     * selection allows user to
@@ -36,7 +48,6 @@ LOW PRIORITY [in order]:
         * edit time
         * edit text
         * append
-* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 * [1 hour] reminder list
     - how to make a list reminder:
     - when shown/edited, show these options

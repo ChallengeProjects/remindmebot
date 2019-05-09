@@ -6,11 +6,19 @@ require('winston-papertrail').Papertrail;
 if (!config.papertrail) {
     module.exports = { info: console.log };
 } else {
-    var winstonPapertrail = new winston.transports.Papertrail(config.papertrail);
+    let winstonPapertrail = new winston.transports.Papertrail(config.papertrail);
 
-    var logger = new winston.Logger({
+    let logger = new winston.Logger({
         transports: [winstonPapertrail]
     });
+
+    let copyOfLoggerInfo = logger.info;
+
+    // print to stdout and papertrail
+    logger.info = function(msg) {
+        console.log(msg);
+        copyOfLoggerInfo(msg);
+    }
 
     module.exports = logger;
 }

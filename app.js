@@ -68,6 +68,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
     if (ctx.message.text == "/cancel") {
+        logger.info(`${ctx.chat.id}: CANCEL_CUSTOM_SNOOZE`);
         ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
@@ -84,6 +85,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     } catch (err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
+    logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_SUCCESFUL`);
     let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
     UserManager.addReminderForUser(userId, newReminder);
     replyWithConfirmation(ctx, newReminder, null);
@@ -91,6 +93,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
 });
 
 CUSTOM_SNOOZE_SCENE.command('cancel', ctx => {
+    logger.info(`${ctx.chat.id}: CANCEL_CUSTOM_SNOOZE`);
     ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
     return ctx.scene.leave();
 });
@@ -240,7 +243,7 @@ let remindmeCallBack = (ctx) => {
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
     } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
+        return ctx.reply("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something] (Note date comes after not before).\n You can also try /help.").catch(catchBlocks);
     }
 
     let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
@@ -258,6 +261,7 @@ bot.command('r', remindmeCallBack);
 
 bot.action(/CUSTOM_SNOOZE_([^_]+)/, ctx => {
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
+    logger.info(`${ctx.chat.id}: COMMAND_CUSTOM_SNOOZE`);
     ctx.scene.enter("CUSTOM_SNOOZE_SCENE");
     ctx.answerCbQuery();
 });
@@ -270,6 +274,7 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     let userId = ctx.chat.id;
     let period = ctx.match[1];
     let reminderId = ctx.match[2];
+    logger.info(`${ctx.chat.id}: COMMAND_PRESET_SNOOZE_${period}`);
     let reminder = UserManager.getReminder(userId, reminderId);
 
     let snoozedReminder = reminder.getSnoozedReminder(parseInt(period));

@@ -4,7 +4,7 @@ const logger = require("../logger.js"),
     config = require("../config.json");
 
 
-const HELP_TEXT = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you would like to see anything else in the bot!
+const HELP_TEXT = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you have any questions, feature requests or bug reports.
 
 1- /timezone to set your timezone
 2- /list to list all of your reminders
