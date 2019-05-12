@@ -104,7 +104,12 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
     // create the map and return
     let dateToTimeMap = {};
     for(let i = 0; i < Math.max(timeParts.length, dateParts.length); i++) {
-        dateToTimeMap[dateParts[i]] = timeParts[i];
+        if(i == timeParts.length) {
+            dateToTimeMap[dateParts[i]] = [];
+        }
+        else {
+            dateToTimeMap[dateParts[i]] = timeParts[i];
+        }
     }
     return dateToTimeMap;
 }
@@ -117,8 +122,8 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
     
     for(let date in dateToTimeMap) {
         let timePart = dateToTimeMap[date];
-        if(!timePart) {
-            dateToParsedTimesMap[date] = undefined;
+        if(!timePart.length) {
+            dateToParsedTimesMap[date] = [];
             continue;
         }
         let times = [];

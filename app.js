@@ -76,19 +76,29 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    let reminderText = reminder.getText();
 
     let utterance = "/remindme " + ctx.message.text + " to nothing";
 
     try {
-        var { reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        var { reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
     } catch (err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
     logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_SUCCESFUL`);
-    let newReminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
-    UserManager.addReminderForUser(userId, newReminder);
-    replyWithConfirmation(ctx, newReminder, null);
+
+    let reminderText = reminder.getText();
+    if(reminderDates.dates) {
+        for(let date of reminderDates.dates) {
+            let reminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+            UserManager.addReminderForUser(userId, reminder);
+            replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+        }
+    }
+    else {
+        let reminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
+        UserManager.addReminderForUser(userId, reminder);
+        replyWithConfirmation(ctx, reminder, null);
+    }
     return ctx.scene.leave();
 });
 
@@ -120,12 +130,24 @@ EDIT_TIME_SCENE.on('text', ctx => {
     let utterance = "/remindme " + ctx.message.text + " to nothing";
 
     try {
-        var { reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        var { reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
     } catch (err) {
         return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
     }
-    UserManager.updateReminderDate(userId, reminderId, new ReminderDate(reminderDate));
-    replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+    let reminderText = reminder.getText();
+    UserManager.deleteReminder(ctx.chat.id, reminderId);
+    if(reminderDates.dates) {
+        for(let date of reminderDates.dates) {
+            let newReminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+            UserManager.addReminderForUser(userId, newReminder);
+            replyWithConfirmation(ctx, newReminder, ctx.update.message.message_id);
+        }
+    }
+    else {
+        let newReminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
+        UserManager.addReminderForUser(userId, newReminder);
+        replyWithConfirmation(ctx, newReminder, ctx.update.message.message_id);
+    }
     return ctx.scene.leave();
 });
 EDIT_TIME_SCENE.command('cancel', ctx => {
@@ -239,17 +261,27 @@ let remindmeCallBack = (ctx) => {
     }
 
     try {
-        var { reminderText, reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        var { reminderText, reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
         // Log utterance so I can run tests on new NLP algos later
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
     } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
         return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes AFTER the reminder text and not before</b>.\nYou can also try /help.").catch(catchBlocks);
     }
-
-    let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
-    UserManager.addReminderForUser(userId, reminder);
-    return replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+    
+    if(reminderDates.dates) {
+        for(let date of reminderDates.dates) {
+            let reminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+            UserManager.addReminderForUser(userId, reminder);
+            replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+        }
+    }
+    else {
+        let reminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
+        UserManager.addReminderForUser(userId, reminder);
+        replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+    }
+    return;
 };
 
 bot.hears(/remind me(.*)/i, (ctx) => {

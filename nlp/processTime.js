@@ -1,6 +1,7 @@
 const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
-    parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js");
+    parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
+    utils = require("./utils.js");
 // logger = require("./logger.js");
 
 const PARSE_ERROR_MESSAGES = {
@@ -68,16 +69,33 @@ function getDate(text, userTimezone) {
         let endingConditionDate = recurringDatesResult.endingConditionDate;
         return {
             reminderText: reminderText,
-            reminderDate: {
+            reminderDates: {
                 recurringDates: recurringDates,
                 endingConditionDate: endingConditionDate,
             }
         };
     } else {
-        let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(reminderDateTimeText, userTimezone);
+        let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
+
+        // Compute cross product for each date
+        let parsedDates = [];
+        for(let date in dateToTimesMap) {
+            if(!dateToTimesMap[date].length) {
+                let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(date, userTimezone);
+                parsedDates.push(parsedDate);
+            }
+            else {
+                for(let time of dateToTimesMap[date]) {
+                    let dateTimeText = date + " " + time;
+                    let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(dateTimeText, userTimezone);
+                    parsedDates.push(parsedDate);
+                }
+            }
+        }
+        
         return {
             reminderText: reminderText,
-            reminderDate: { date: parsedDate }
+            reminderDates: { dates: parsedDates }
         };
     }
 }

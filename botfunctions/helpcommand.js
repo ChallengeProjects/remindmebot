@@ -18,6 +18,7 @@ General formula is: /remindme [date/time] to/that [anything].
 <b>Examples:</b>
     • /remindme at 2 pm to do my homework
     • /remindme tomorrow at 5 pm to do my homework
+    • /remindme on wednesday at 3 pm and on saturday at 10 am to wake up
     • /r in five minutes to check on the oven
     • /remindme on wednesday to pickup the kids from school
     • remind me on january 5th that today is my birthday!

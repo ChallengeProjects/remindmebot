@@ -2,6 +2,7 @@ const timemachine = require('timemachine'),
     utils = require('./utils.js'),
     moment = require('moment-timezone'),
     chrono = require('chrono-node-albinodrought');
+timemachine.reset();
 
 /**
  * Fix the Meridiem if it was implied by the chrono library (because it sucks)
@@ -51,7 +52,7 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
 function isMeridiemImplied(reminderDateTimeText) {
     let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     // meridiem is not an implied value if there is no time part
-    if (!timePart) {
+    if (!timePart.length) {
         return false;
     }
     return !timePart.match(new RegExp(`\b${utils.MERIDIEM_REGEX}\b`, 'i'));
