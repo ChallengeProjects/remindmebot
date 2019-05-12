@@ -39,7 +39,7 @@ app.post('/remindme', function(req, res) {
             id: req.body.chatid
         },
         reply: function(text) {
-            logger.info("going to reply with: " + text);
+            logger.info("RESTFUL_API: going to reply with: " + text);
             res.send(text);
             return { catch: function() {} };
         },

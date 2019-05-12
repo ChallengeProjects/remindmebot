@@ -4,7 +4,6 @@ TODOS:
 * suggest autofix text before time
     * add specific error messages like "you forgot the 'to' or 'that'"
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
-* precommit hook run eslint and npm test
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 ------------------
 * i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one

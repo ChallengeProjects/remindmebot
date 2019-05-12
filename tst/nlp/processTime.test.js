@@ -2,7 +2,7 @@ const processTime = require('../../nlp/processTime.js');
 // TODO: actually check the result and not just the length
 describe("getDate", () => {
     it('should work', () => {
-        map = {
+        let map = {
             '/remindme at 2 pm to do my homework': {
                 reminderText: 'do my homework',
                 reminderDates: {
@@ -77,10 +77,10 @@ describe("getDate", () => {
                     expect(result.reminderDates.dates.length).toEqual(value.reminderDates.datesLength);
                 }
                 if(value.reminderDates.recurringDatesLength) {
-                    expect(result.reminderDates.recurringDates.length).toEqual(value.reminderDates.recurringDatesLength)
+                    expect(result.reminderDates.recurringDates.length).toEqual(value.reminderDates.recurringDatesLength);
                 }
                 if(value.reminderDates.hasEndingConditionDate !== undefined) {
-                    expect(!!result.reminderDates.endingConditionDate).toEqual(value.reminderDates.hasEndingConditionDate)
+                    expect(!!result.reminderDates.endingConditionDate).toEqual(value.reminderDates.hasEndingConditionDate);
                 }
             }
         }
