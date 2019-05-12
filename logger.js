@@ -16,7 +16,7 @@ if (!config.papertrail) {
 
     // print to stdout and papertrail
     logger.info = function(msg) {
-        console.log(msg);
+        console.log("LOGGER_INFO: " + msg);
         copyOfLoggerInfo(msg);
     };
 

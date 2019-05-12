@@ -69,7 +69,16 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
             paginationButtons.push(m.callbackButton(`Page ${pageNumber - 1} «`, `LIST${isRecurring ? "" : "_NON"}_RECURRING_${pageNumber - 1}_${b64EncodedSearchTerm}`));
         }
 
-        paginationButtons.push(m.callbackButton(`${isRecurring ? nNoneRecurring + " ⏱" : nRecurring + " 🔄⏱"}`, `LIST${isRecurring ? "_NON" : ""}_RECURRING_1_${b64EncodedSearchTerm}`));
+        // add the switch button from recurring to non recurring
+        //  only if there are non recurring reminders
+        if (isRecurring && nNoneRecurring != 0) {
+            paginationButtons.push(m.callbackButton(`${nNoneRecurring + " ⏱"}`, `LIST_NON_RECURRING_1_${b64EncodedSearchTerm}`));    
+        }
+        // add the switch button from non recurring to recurring
+        //  only if there are recurring reminders
+        else if (!isRecurring && nRecurring != 0) {
+            paginationButtons.push(m.callbackButton(`${nRecurring + " 🔄⏱"}`, `LIST_RECURRING_1_${b64EncodedSearchTerm}`));
+        }
 
         if (pageNumber < Math.ceil(allReminders.length / NUMBER_OF_REMINDERS_PER_PAGE)) {
             paginationButtons.push(m.callbackButton(`Page ${pageNumber + 1} »`, `LIST${isRecurring ? "" : "_NON"}_RECURRING_${pageNumber + 1}_${b64EncodedSearchTerm}`));

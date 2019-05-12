@@ -1,12 +1,16 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
+* suggest autofix text before time
+    * add specific error messages like "you forgot the 'to' or 'that'"
+* 24h or in 10m, 5s
+* sed command to edit texts
 * prepush hook run eslint
 * alfred response should not have html entities, callback should just scrape it out
 * pick one function and write unit tests for it (i can start with recurring reminders as they are more inclusive)
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 * attach images to reminders
-* specific error messages and autocorrections using my method for flipping order of text and date time
 * plot a graph of all reminders times
 * refactor code so encoding of text is either in reminder.js or outside
 * remind me first weekend after 04/17 to ..
@@ -26,7 +30,6 @@ TODOS:
 LOW PRIORITY [in order]:
 * Integration with calendar
     * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
-* [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
 * dashboard:
     * no frontend, just spit out a JSON. Then make a CLI utility to parse the JSON file and spitout some stats
     * make a singleton that would store data

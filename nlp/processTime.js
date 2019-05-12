@@ -3,6 +3,9 @@ const commonTypos = require("./commonTypos.json"),
     parseNonRecurringDate = require("./parseNonRecurringDate.js");
 // logger = require("./logger.js");
 
+const PARSE_ERROR_MESSAGES = {
+    'NO_DELIMITER_PROVIDED': 'NO_DELIMITER_PROVIDED',
+};
 /**
  * splits user's command from the "to" or "that" delimiter into a datetime part and a text part
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
@@ -11,25 +14,32 @@ const commonTypos = require("./commonTypos.json"),
  * { reminderText: "abcdef", reminderDateTimeText: "to/every ... at ..."}
  */
 function _splitReminderText(text) {
-    text = text.trim();
-
-    const DELIMITERS = {
-        TO: " to ".toLowerCase(),
-        THAT: " that ".toLowerCase(),
+    // get the index of the first delimiter
+    const SPLIT_DELIMITERS = {
+        TO: "to".toLowerCase(),
+        THAT: "that".toLowerCase(),
     };
 
-    let toIndex = text.toLowerCase().indexOf(DELIMITERS.TO);
-    let thatIndex = text.toLowerCase().indexOf(DELIMITERS.THAT);
-    if (toIndex == -1 && thatIndex == -1) {
-        throw 'Could not parse';
+    let selectedSplitDelimiterIndex = Number.MAX_VALUE;
+    let selectedSplitDelimiter = null;
+    for (let splitDelimiter of Object.values(SPLIT_DELIMITERS)) {
+        let matchResult = text.toLowerCase().match(new RegExp(`\\b${splitDelimiter}\\b`, 'i'));
+        if(!matchResult) {
+            continue;
+        }
+        let currentIndex = matchResult.index;
+        if (currentIndex < selectedSplitDelimiterIndex) {
+            selectedSplitDelimiter = splitDelimiter;
+            selectedSplitDelimiterIndex = currentIndex;
+        }
     }
-    toIndex = toIndex == -1 ? Number.MAX_VALUE : toIndex;
-    thatIndex = thatIndex == -1 ? Number.MAX_VALUE : thatIndex;
-    let splitIndex = Math.min(toIndex, thatIndex);
-    let selectedDelimiter = toIndex < thatIndex ? DELIMITERS.TO : DELIMITERS.THAT;
 
-    let reminderText = text.slice(splitIndex + selectedDelimiter.length);
-    let reminderDateTime = text.slice(text.indexOf(" ") + 1, splitIndex); // ignore the first word (the command /remindme)
+    if (selectedSplitDelimiterIndex == Number.MAX_VALUE) {
+        throw PARSE_ERROR_MESSAGES.NO_DELIMITER_PROVIDED;
+    }
+
+    let reminderText = text.slice(selectedSplitDelimiterIndex + selectedSplitDelimiter.length);
+    let reminderDateTime = text.slice(text.indexOf(" ") + 1, selectedSplitDelimiterIndex); // ignore the first word (the command /remindme)
 
     return {
         reminderText: reminderText.trim(),
@@ -49,6 +59,7 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
 function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
+    text = text.trim();
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
@@ -79,6 +90,7 @@ saturday at 4pm should be next saturday if today is saturday
 
 module.exports = {
     getDate: getDate,
+    PARSE_ERROR_MESSAGES: PARSE_ERROR_MESSAGES,
     //only exported for unit tests
-    _splitReminderText: _splitReminderText
+    _splitReminderText: _splitReminderText,
 };

@@ -243,7 +243,7 @@ let remindmeCallBack = (ctx) => {
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
     } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
-        return ctx.reply("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something] (Note date comes after not before).\n You can also try /help.").catch(catchBlocks);
+        return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes AFTER the reminder text and not before</b>.\nYou can also try /help.").catch(catchBlocks);
     }
 
     let reminder = new Reminder(reminderText, new ReminderDate(reminderDate), userId);
