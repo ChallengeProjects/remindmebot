@@ -240,7 +240,8 @@ let remindmeCallBack = (ctx) => {
 
     try {
         var { reminderText, reminderDate } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-        logger.info(`${ctx.chat.id}: remindme REMINDER_VALID`);
+        // Log utterance so I can run tests on new NLP algos later
+        logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
     } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
         return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes AFTER the reminder text and not before</b>.\nYou can also try /help.").catch(catchBlocks);
