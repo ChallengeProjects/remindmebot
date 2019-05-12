@@ -1,6 +1,6 @@
 const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
-    parseNonRecurringDate = require("./parseNonRecurringDate.js");
+    parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js");
 // logger = require("./logger.js");
 
 const PARSE_ERROR_MESSAGES = {
@@ -74,7 +74,7 @@ function getDate(text, userTimezone) {
             }
         };
     } else {
-        let parsedDate = parseNonRecurringDate.parseNonRecurringDate(reminderDateTimeText, userTimezone);
+        let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(reminderDateTimeText, userTimezone);
         return {
             reminderText: reminderText,
             reminderDate: { date: parsedDate }

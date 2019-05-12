@@ -1,12 +1,15 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
+* remind me tomorrow at 3 pm and every tuesday at 4 pm to ... [mix recurring and non recurring reminders]
 * [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
 * suggest autofix text before time
     * add specific error messages like "you forgot the 'to' or 'that'"
 * 24h or in 10m, 5s
 * sed command to edit texts
 * prepush hook run eslint
+* remind me on tuesdayS and wednesdayS at .. to ...
 * alfred response should not have html entities, callback should just scrape it out
 * pick one function and write unit tests for it (i can start with recurring reminders as they are more inclusive)
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))

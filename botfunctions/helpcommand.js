@@ -23,6 +23,8 @@ General formula is: /remindme [date/time] to/that [anything].
     • remind me on january 5th that today is my birthday!
     • remind me every weekday at 12 pm to call my son in school to check on him
     • remind me every hour until 6 pm to log my work
+    • remind me every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins
+    • remind me every weekday at 9 am and every weekend at 11 am to open up the store
 
 You can also make recurring reminders: /help_with_recurring_reminders
 

@@ -13,7 +13,7 @@ const timemachine = require('timemachine'),
 // choose whatever is closer
 function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText) {
     // get text
-    let timePart = utils.getTimePartFromString(reminderDateTimeText);
+    let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
     let textWitham = reminderDateTimeText.replace(timePart, timePart + " am");
 
@@ -49,15 +49,15 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
 // edge case in chrono: if the time is 12:xx am, and you say "at 12:10", it thinks 
 // that the meridiem is a known value
 function isMeridiemImplied(reminderDateTimeText) {
-    let timePart = utils.getTimePartFromString(reminderDateTimeText);
+    let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     // meridiem is not an implied value if there is no time part
     if (!timePart) {
         return false;
     }
-    return !timePart.match(/\b(a\.?m|p\.?m)\.?\b/i);
+    return !timePart.match(new RegExp(`\b${utils.MERIDIEM_REGEX}\b`, 'i'));
 }
 
-function parseNonRecurringDate(reminderDateTimeText, userTimezone) {
+function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     reminderDateTimeText = reminderDateTimeText.trim();
     // remove double spaces in between
     reminderDateTimeText = reminderDateTimeText.split(" ").filter(x => !!x.length).join(" ");
@@ -167,9 +167,9 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
  */
 function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     // what happens if we dont have monthDay
-    let monthDay = _getDateTextFromOrdinal(utils.getDatePartFromString(reminderDateTimeText), userTimezone);
+    let monthDay = _getDateTextFromOrdinal(utils.getDatePartsFromString(reminderDateTimeText)[0], userTimezone);
 
-    let times = utils.getTimesFromReminderDateTime(reminderDateTimeText);
+    let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText))[0];
 
     if (!times || times.length == 0) {
         times = ["at 12 pm"];
@@ -182,5 +182,5 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
 }
 
 module.exports = {
-    parseNonRecurringDate: parseNonRecurringDate
+    parseNonRecurringSingleDate: parseNonRecurringSingleDate
 };

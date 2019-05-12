@@ -3,3 +3,4 @@ config.json
 users.json
 updates.txt
 sftp-config.json
+.DS_STORE

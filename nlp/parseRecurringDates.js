@@ -1,14 +1,15 @@
 const utils = require('./utils.js'),
-    parseNonRecurringDate = require('./parseNonRecurringDate');
+    parseNonRecurringSingleDate = require('./parseNonRecurringSingleDate');
 
-function _getRecurringDates(reminderDateTimeText) {
-    let dateText = utils.getDatePartFromString(reminderDateTimeText);
-    dateText = dateText.replace(/,/g, ' ');
+function _getRecurringDates(dateText) {
+    dateText = dateText.replace(/(,|and)/ig, ' ');
 
     // try to parse units
     let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
-    units = [...units, ...units.map(u => u + 's')]; // add plural
+    units = [...units, ...units.map(u => u + 's')]; // add plural forms too
+    
     let unitMatch = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'i'));
+    
     let dates = [];
     if (unitMatch) {
         let frequency = unitMatch[1] ? parseInt(unitMatch[1].trim()) : 1;
@@ -27,7 +28,7 @@ function _getRecurringDates(reminderDateTimeText) {
 }
 
 /**
- * pretty self descriptive name
+ * Self descriptive name
  * @return {String} reminderDateTimeText
  * example: "until 5 minutes from now" -> "in 5 days"
  * example: "until 2 days from now at 2 pm" -> "in 2 days at 2 pm"
@@ -86,7 +87,7 @@ function getEndingDateTime(reminderDateTimeText, userTimezone) {
     let endingConditionDate;
     try {
         endingDateTimeText = convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText);
-        endingConditionDate = parseNonRecurringDate.parseNonRecurringDate(endingDateTimeText, userTimezone);
+        endingConditionDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(endingDateTimeText, userTimezone);
     } catch (err) {
         throw "Couldn't parse ending condition";
     }
@@ -115,24 +116,26 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     }
 
     let recurringDates = [];
-    // /remindme every monday, tuesday,.. at 8am, 3 pm, 4:50 pm -> ["8 am", "3 pm", "4:50 pm"]
-    let times = utils.getTimesFromReminderDateTime(reminderDateTimeText);
-    // /remindme every monday, tuesday,.. at 8am, 3 pm, 4:50 pm -> "every monday, tuesday,.."
-    let dates = _getRecurringDates(reminderDateTimeText);
-
-    if (!dates || dates.length == 0) {
-        return null;
-    }
-
-    // if there was no time provided, just return the dates
-    if (!times) {
-        recurringDates = dates;
-    }
-    // otherwise return [dates]x[times]
-    else {
-        for (let date of dates) {
-            for (let time of times) {
-                recurringDates.push(date + " " + time);
+    // /remindme every monday, tuesday at 8am, 3 pm and wednesday at 2 pm -> {"monday, tuesday": ["at 8 am", "at 3 pm"]
+    //  , "wednesday": "at 2 pm"}
+    let dateTextToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
+    
+    for(let dateText in dateTextToTimesMap) {
+        let times = dateTextToTimesMap[dateText];
+        let dates = _getRecurringDates(dateText);
+        if (!dates || dates.length == 0) {
+            return null;
+        }
+        // if there was no time provided, then its just the dates
+        if (!times) {
+            recurringDates = dates;
+        }
+        // otherwise return [dates]x[times]
+        else {
+            for (let date of dates) {
+                for (let time of times) {
+                    recurringDates.push(date + " " + time);
+                }
             }
         }
     }
@@ -143,5 +146,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     };
 }
 module.exports = {
-    parseRecurringDates: parseRecurringDates
+    parseRecurringDates: parseRecurringDates,
+    // exported only for unit tests
+    _getRecurringDates: _getRecurringDates,
 };
