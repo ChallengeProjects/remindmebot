@@ -12,8 +12,10 @@ const HELP_TEXT = process.env.NODE_ENV == "development" ? `This is an unreliable
 3- /help for help
 4- Use /remindme to make reminders.
 
-General formula is: /remindme [date/time] to/that [anything].
-<b>Don't forget the "to" or "that"</b>
+General formula is: /remindme [date/time] to/that [text].
+<b>Notes:</b>
+    • Don't forget the "to" or "that".
+    • Has to be [date] first then the [text] and NOT the other way around.
 
 <b>Examples:</b>
     • /remindme at 2 pm to do my homework
@@ -42,6 +44,7 @@ const HELP_WITH_RECURRING_REMINDERS_TEXT = `To setup recurring reminders:
 /remindme every sunday at 10 am to do my laundry
 /remindme every monday,wednesday,friday at 5 pm to leave at 6 from work to pick up the kids
 /remindme every 2 hours to check my email
+/remindme every weekday at 9 am and every weekend at 11 am to open up the store
 
 keyword is <b>every</b>`;
 

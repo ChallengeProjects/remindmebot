@@ -1,18 +1,28 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
-* i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
-* remind me tomorrow at 3 pm and every tuesday at 4 pm to ... [mix recurring and non recurring reminders]
-* [1 hour] make the "," work even when its a non recurring reminder, example: /remindme at 01/08/2019 at 12 pm,01/014/2019 at 1 pm,01/015/2019 at 8 am to check the "doctor" channel
+* processTime unit tests for the following cases (start with checking for exceptions):
+    * /remindme at 2 pm to do my homework
+    * /remindme tomorrow at 5 pm to do my homework
+    * /remindme on wednesday at 3 pm and on saturday at 10 am to wake up
+    * /remindme in five minutes to check on the oven
+    * /remindme on wednesday to pickup the kids from school
+    * /remindme on january 5th that today is my birthday!
+    * /remindme every weekday at 12 pm to call my son in school to check on him
+    * /remindme every hour until 6 pm to log my work
+    * /remindme every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins
+    * /remindme every weekday at 9 am and every weekend at 11 am to open up the store
 * suggest autofix text before time
     * add specific error messages like "you forgot the 'to' or 'that'"
+* [2 hours] fix the bot restart problem with "every month" ("problem2")
+* prepush hook run eslint
+* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
+------------------
+* i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
 * 24h or in 10m, 5s
 * sed command to edit texts
-* prepush hook run eslint
 * remind me on tuesdayS and wednesdayS at .. to ...
 * alfred response should not have html entities, callback should just scrape it out
-* pick one function and write unit tests for it (i can start with recurring reminders as they are more inclusive)
-* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 * attach images to reminders
 * plot a graph of all reminders times
 * refactor code so encoding of text is either in reminder.js or outside
@@ -24,7 +34,6 @@ TODOS:
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
-* [2 hours] fix the bot restart problem with "every month" ("problem2")
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
@@ -32,6 +41,7 @@ TODOS:
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
 --------
 LOW PRIORITY [in order]:
+* remind me tomorrow at 3 pm and every tuesday at 4 pm to ... [mix recurring and non recurring reminders]
 * Integration with calendar
     * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
 * dashboard:
