@@ -4,7 +4,7 @@ const timemachine = require('timemachine'),
     chrono = require('chrono-node-albinodrought');
 
 /**
- * Fix the Meridiem if it was implied  by the chrono library (because it sucks)
+ * Fix the Meridiem if it was implied by the chrono library (because it sucks)
  * Returns: {{ChronoResult, Moment}} result after fix and parsed date after fix
  */
 // logic:
@@ -169,7 +169,7 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     // what happens if we dont have monthDay
     let monthDay = _getDateTextFromOrdinal(utils.getDatePartFromString(reminderDateTimeText), userTimezone);
 
-    let times = utils.getTimesFromString(reminderDateTimeText);
+    let times = utils.getTimesFromReminderDateTime(reminderDateTimeText);
 
     if (!times || times.length == 0) {
         times = ["at 12 pm"];

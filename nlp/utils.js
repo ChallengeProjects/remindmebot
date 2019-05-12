@@ -1,3 +1,25 @@
+const TIME_NUMBER_REGEX = '[0-9:]+';
+const MERIDIEM_REGEX = '(a\.?m\.?|p\.?m\.?)';
+
+function isTimeNumber(word) {
+    return !!word.match(new RegExp(`^${TIME_NUMBER_REGEX}$`));
+}
+function isMeridiem(word) {
+    return !!word.match(new RegExp(`^${MERIDIEM_REGEX}$`, 'i'));
+}
+
+// "at 3" -> ["3"]
+// "at 3 4 pm " -> ["3", "4", "pm"]
+// "at 3 am, 4 pm" -> ["3", "am", "4", "pm"]
+function parseTimesStringToArray(timePartFromString) {
+    let words = timePartFromString.split(" ")
+        .slice(1).join(" ") // remove the "at"
+        .replace(new RegExp(`(${TIME_NUMBER_REGEX})(${MERIDIEM_REGEX})`, 'gi'), "$1 $2") // seperate numbers joined with am/pm
+        .replace(/(,|\band\b)/ig, " ") // replace "," or "and" with " "
+        .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
+    return words;
+}
+
 function getTimePartFromString(str) {
     // example: "on 2/3 at 2,3,4" -> ["2/3","2,3,4"]
     let atSegments = str
@@ -6,17 +28,13 @@ function getTimePartFromString(str) {
         .filter(x => !!x.length); // make sure no empty string is in the list
 
     for (let atSegment of atSegments) {
-        let words = atSegment
-            .replace(/,/g, " ") // replace all commas with spaces so we can split by them
-            .replace(/([0-9]+)(a\.?m\.?|p\.?m\.?)/g, "$1 $2") // add spacing between number and am|pm
-            .split(" ") // split
-            .filter(x => !!x.length); // make sure no string is empty in the list
+        let words = parseTimesStringToArray("at " + atSegment);
 
         // make sure all "words" in the atSegment only contain "time words"
         let flag = true;
         for (let word of words) {
-            // each word has to either be a number with colons in between or "am" "pm" or "and"
-            if (!word.match(/^[0-9:]+$/i) && !word.match(/^(a\.?m\.?|p\.?m\.?|and)$/i)) {
+            // each word has to either be either time number or meridiem
+            if(!isTimeNumber(word) && !isMeridiem(word)) {
                 flag = false;
                 break;
             }
@@ -31,8 +49,8 @@ function getTimePartFromString(str) {
     return null;
 }
 
-// example: "on 02/03 at 2, 3 and 4 pm and 5 am" -> ["2 pm", "3 pm", "4 pm", "5 am"]
-function getTimesFromString(str) {
+// example: "on 02/03 at 2, 3 and 4 pm and 5 am" -> ["at 2 pm", "at 3 pm", "at 4 pm", "at 5 am"]
+function getTimesFromReminderDateTime(str) {
     let times = [];
     let timePartFromString = getTimePartFromString(str);
 
@@ -41,24 +59,13 @@ function getTimesFromString(str) {
         return null;
     }
 
-    // if no recurrence
-    if (timePartFromString.indexOf(",") == -1 && !timePartFromString.match(/\band\b/i)) {
-        return [timePartFromString];
-    }
+    let words = parseTimesStringToArray(timePartFromString);
 
-    // str = "3 4 pm " [3, 4, pm]
-    // str = "3 am, 4 pm" [3, am, 4, pm]
-    let words = timePartFromString.split(" ")
-        .slice(1).join(" ") // remove the "at"
-        .replace(/([0-9]+)(a\.?m\.?|p\.?m\.?)/g, "$1 $2") // seperate numbers joined with am/pm
-        .replace(/\band\b/ig, " ") // replace "and" with " "
-        .replace(/,/g, " ") // replace "," with " "
-        .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
-
+    // walk through the array until u find a meridiem, append the meridiem to the time and push it to the array
     let tempArrayUntilMeridiem = [];
     for (let word of words) {
-        // if this word is a meridiem then process it and clear it
-        if (word.match(/^(a\.?m\.?|p\.?m\.?)$/i)) {
+        // if this word is a meridiem then process it for all the numbers we pushed and clear the array
+        if (isMeridiem(word)) {
             let meridiem = word;
             for (let tempWord of tempArrayUntilMeridiem) {
                 times.push("at " + tempWord + " " + meridiem);
@@ -87,6 +94,6 @@ function getDatePartFromString(reminderDateTimeText) {
 
 module.exports = {
     getDatePartFromString: getDatePartFromString,
-    getTimesFromString: getTimesFromString,
+    getTimesFromReminderDateTime: getTimesFromReminderDateTime,
     getTimePartFromString: getTimePartFromString,
 };

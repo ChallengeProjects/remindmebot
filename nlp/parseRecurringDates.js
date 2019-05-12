@@ -116,7 +116,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
 
     let recurringDates = [];
     // /remindme every monday, tuesday,.. at 8am, 3 pm, 4:50 pm -> ["8 am", "3 pm", "4:50 pm"]
-    let times = utils.getTimesFromString(reminderDateTimeText);
+    let times = utils.getTimesFromReminderDateTime(reminderDateTimeText);
     // /remindme every monday, tuesday,.. at 8am, 3 pm, 4:50 pm -> "every monday, tuesday,.."
     let dates = _getRecurringDates(reminderDateTimeText);
 
