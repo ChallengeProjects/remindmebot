@@ -1,8 +1,89 @@
-// const processTime = require('../nlp/processTime.js'),
-//     timemachine = require('timemachine');
-describe("hi", () => {
-    it('just a place holder', () => {
-        expect(1).toEqual(1);
+const processTime = require('../../nlp/processTime.js');
+// TODO: actually check the result and not just the length
+describe("getDate", () => {
+    it('should work', () => {
+        map = {
+            '/remindme at 2 pm to do my homework': {
+                reminderText: 'do my homework',
+                reminderDates: {
+                    datesLength: 1,
+                },
+            },
+            '/remindme tomorrow at 5 pm to do my homework': {
+                reminderText: 'do my homework',
+                reminderDates: {
+                    datesLength: 1,
+                },
+            },
+            '/remindme on wednesday at 3 pm and on saturday at 10 am to wake up': {
+                reminderText: 'wake up',
+                reminderDates: {
+                    datesLength: 2,
+                },
+            },
+            '/remindme in five minutes to check on the oven': {
+                reminderText: 'check on the oven',
+                reminderDates: {
+                    datesLength: 1,
+                },
+            },
+            '/remindme on wednesday to pickup the kids from school': {
+                reminderText: 'pickup the kids from school',
+                reminderDates: {
+                    datesLength: 1,
+                },
+            },
+            '/remindme on january 5th that today is my birthday!': {
+                reminderText: 'today is my birthday!',
+                reminderDates: {
+                    datesLength: 1,
+                },
+            },
+            '/remindme every weekday at 12 pm to call my son in school to check on him': {
+                reminderText: 'call my son in school to check on him',
+                reminderDates: {
+                    recurringDatesLength: 5,
+                    hasEndingConditionDate: false,
+                },
+            },
+            '/remindme every hour until 6 pm to log my work': {
+                reminderText: 'log my work',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: true,
+                },
+            },
+            '/remindme every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins': {
+                reminderText: 'take my vitamins',
+                reminderDates: {
+                    recurringDatesLength: 5,
+                    hasEndingConditionDate: false,
+                }
+            },
+            '/remindme every weekday at 9 am and every weekend at 11 am to open up the store': {
+                reminderText: 'open up the store',
+                reminderDates: {
+                    recurringDatesLength: 7,
+                    hasEndingConditionDate: false,
+                }
+            },
+        };
+        for(let key in map) {
+            let value = map[key];
+            let result = processTime.getDate(key);
+            expect(result.reminderText).toEqual(value.reminderText);
+            if(value.reminderDates) {
+                if(value.reminderDates.datesLength) {
+                    expect(result.reminderDates.dates.length).toEqual(value.reminderDates.datesLength);
+                }
+                if(value.reminderDates.recurringDatesLength) {
+                    expect(result.reminderDates.recurringDates.length).toEqual(value.reminderDates.recurringDatesLength)
+                }
+                if(value.reminderDates.hasEndingConditionDate !== undefined) {
+                    expect(!!result.reminderDates.endingConditionDate).toEqual(value.reminderDates.hasEndingConditionDate)
+                }
+            }
+        }
     });
 });
 // const TIME_ZONE = "America/Los_Angeles";

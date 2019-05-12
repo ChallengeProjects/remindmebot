@@ -85,7 +85,7 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
         for(let i = 0; i < parts.length; i++) {
             let part = parts[i];
             let partsSplit = part.split(delimiter);
-            while(true) {
+            while(partsSplit.length) {
                 let lastElement = partsSplit[partsSplit.length - 1];
                 if(lastElement.match(new RegExp(`^(${DELIMITERS.join("|")})$`, 'i'))) {
                     partsSplit.pop();

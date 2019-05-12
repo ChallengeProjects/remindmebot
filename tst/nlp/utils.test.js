@@ -63,7 +63,7 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
                 "every wednesday": "at 3 pm",
             },
             "on wednesday": {
-                "on wednesday": undefined,
+                "on wednesday": [],
             }
         };
         for (let key in map) {
@@ -91,7 +91,7 @@ describe("getDateToParsedTimesFromReminderDateTime", () => {
                 "on tuesday": ["at 3 am"]
             },
             "on wednesday": {
-                "on wednesday": undefined
+                "on wednesday": []
             }
         };
         for (let key in map) {

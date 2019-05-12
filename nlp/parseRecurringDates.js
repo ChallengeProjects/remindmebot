@@ -123,11 +123,11 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     for(let dateText in dateTextToTimesMap) {
         let times = dateTextToTimesMap[dateText];
         let dates = _getRecurringDates(dateText);
-        if (!dates || dates.length == 0) {
+        if (!dates || !dates.length) {
             return null;
         }
         // if there was no time provided, then its just the dates
-        if (!times) {
+        if (!times || !times.length) {
             recurringDates = dates;
         }
         // otherwise return [dates]x[times]

@@ -1,21 +1,10 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
-* processTime unit tests for the following cases (start with checking for exceptions):
-    * /remindme at 2 pm to do my homework
-    * /remindme tomorrow at 5 pm to do my homework
-    * /remindme on wednesday at 3 pm and on saturday at 10 am to wake up
-    * /remindme in five minutes to check on the oven
-    * /remindme on wednesday to pickup the kids from school
-    * /remindme on january 5th that today is my birthday!
-    * /remindme every weekday at 12 pm to call my son in school to check on him
-    * /remindme every hour until 6 pm to log my work
-    * /remindme every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins
-    * /remindme every weekday at 9 am and every weekend at 11 am to open up the store
 * suggest autofix text before time
     * add specific error messages like "you forgot the 'to' or 'that'"
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
-* prepush hook run eslint
+* precommit hook run eslint and npm test
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 ------------------
 * i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
