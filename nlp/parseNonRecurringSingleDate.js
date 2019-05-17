@@ -34,7 +34,8 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
     if (parsedDateAM.isBefore(parsedDatePM)) {
         d = parsedDateAM;
         result = chrono.parse(textWitham)[0];
-    } else {
+    }
+    else {
         d = parsedDatePM;
         result = chrono.parse(textWithpm)[0];
     }

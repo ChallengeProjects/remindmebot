@@ -74,7 +74,8 @@ function getDate(text, userTimezone) {
                 endingConditionDate: endingConditionDate,
             }
         };
-    } else {
+    }
+    else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
 
         // Compute cross product for each date

@@ -33,9 +33,11 @@ LOW PRIORITY [in order]:
 * Integration with calendar
     * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long
 * dashboard:
-    * no frontend, just spit out a JSON. Then make a CLI utility to parse the JSON file and spitout some stats
-    * make a singleton that would store data
-    * how often are people using features like recurring dates, list, list with search term..etc
+    * parse the log file and draw charts for how often people are:
+        * setting reminders (non recurring vs recurring)
+        * setting invalid reminders
+        * /start
+    * setup autorotation for the log file so it doesnt max out
 UX DESIGN PROBLEMS:
     * autocorrect on list search
     * /remindme to.. at..

@@ -87,9 +87,9 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_SUCCESFUL`);
 
     let reminderText = reminder.getText();
-    if(reminderDates.dates) {
-        for(let date of reminderDates.dates) {
-            let reminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+    if (reminderDates.dates) {
+        for (let date of reminderDates.dates) {
+            let reminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
             UserManager.addReminderForUser(userId, reminder);
             replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
         }
@@ -136,9 +136,9 @@ EDIT_TIME_SCENE.on('text', ctx => {
     }
     let reminderText = reminder.getText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
-    if(reminderDates.dates) {
-        for(let date of reminderDates.dates) {
-            let newReminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+    if (reminderDates.dates) {
+        for (let date of reminderDates.dates) {
+            let newReminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
             UserManager.addReminderForUser(userId, newReminder);
             replyWithConfirmation(ctx, newReminder, ctx.update.message.message_id);
         }
@@ -266,12 +266,12 @@ let remindmeCallBack = (ctx) => {
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
     } catch (err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
-        return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes AFTER the reminder text and not before</b>.\nYou can also try /help.").catch(catchBlocks);
+        return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(catchBlocks);
     }
-    
-    if(reminderDates.dates) {
-        for(let date of reminderDates.dates) {
-            let reminder = new Reminder(reminderText, new ReminderDate({date: date}), userId);
+
+    if (reminderDates.dates) {
+        for (let date of reminderDates.dates) {
+            let reminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
             UserManager.addReminderForUser(userId, reminder);
             replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
         }
@@ -375,7 +375,8 @@ bot.on('location', (ctx) => {
         if (timezoneId) {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID_LOCATION:${timezoneId}`);
             ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
-        } else {
+        }
+        else {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_LOCATION_ERROR`);
             ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>");
         }
@@ -393,7 +394,8 @@ function convertCoordinatesToTimezone(latitude, longitude) {
         }, (err, res) => {
             if (!err) {
                 resolve(res.json.timeZoneId);
-            } else {
+            }
+            else {
                 logger.info("google maps error:", err);
                 reject(null);
             }
@@ -494,7 +496,8 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
         return ctx.reply("🔔 Reminder enabled.").catch(catchBlocks);
-    } else {
+    }
+    else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
         return ctx.reply("🔕 Reminder disabled.").catch(catchBlocks);

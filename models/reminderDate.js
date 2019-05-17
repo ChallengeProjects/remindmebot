@@ -32,7 +32,8 @@ module.exports = class ReminderDate {
     valueOf() {
         if (this.date) {
             return this.date.valueOf();
-        } else {
+        }
+        else {
             return this._getNextRecurringDate.valueOf();
         }
     }
@@ -66,7 +67,8 @@ module.exports = class ReminderDate {
         if (this.isRecurring()) {
             if (!this.endingConditionDate) {
                 return false;
-            } else {
+            }
+            else {
                 return this.endingConditionDate.unix() < moment().unix();
             }
         }
@@ -78,7 +80,8 @@ module.exports = class ReminderDate {
         let date;
         if (this.isRecurring()) {
             date = this._getNextRecurringDate(timezone);
-        } else {
+        }
+        else {
             date = this.getDate();
         }
 
@@ -97,7 +100,8 @@ module.exports = class ReminderDate {
             }
 
             return `next time: ${nextTime}, all times: ${JSON.stringify(this.recurringDates)}${endingDateText}`;
-        } else {
+        }
+        else {
             return this._getDateFormatted(this.date, timezone);
         }
     }
@@ -110,7 +114,8 @@ module.exports = class ReminderDate {
         // if minute is 0 then just give the hour
         if (dateThen.format("mm") == "00") {
             time = dateThen.format("h a");
-        } else {
+        }
+        else {
             time = dateThen.format("h:mm a");
         }
 

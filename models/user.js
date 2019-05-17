@@ -12,7 +12,8 @@ module.exports = class User {
     setTimezone(timezone) {
         if (typeof timezone == 'string') {
             this.timezone = new Timezone(timezone);
-        } else {
+        }
+        else {
             this.timezone = timezone;
         }
     }
@@ -53,7 +54,8 @@ module.exports = class User {
         if (searchTerm) {
             return sortedRemindersInThePast
                 .filter(reminder => reminder.text.toLowerCase().includes(searchTerm.toLowerCase()));
-        } else {
+        }
+        else {
             return sortedRemindersInThePast;
         }
     }
@@ -103,7 +105,8 @@ module.exports = class User {
         if (serializedUserObject.timezone) {
             if (typeof serializedUserObject.timezone == 'string') {
                 timezone = new Timezone(serializedUserObject.timezone);
-            } else {
+            }
+            else {
                 timezone = Timezone.deserialize(serializedUserObject.timezone);
             }
         }

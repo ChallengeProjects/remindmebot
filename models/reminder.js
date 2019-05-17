@@ -58,7 +58,8 @@ module.exports = class Reminder {
             this.timeouts.push(setTimeout(() => {
                 this._setTimeout(callback, time - MAX_TIME);
             }, MAX_TIME));
-        } else {
+        }
+        else {
             this.timeouts.push(setTimeout(callback, time));
         }
     }
@@ -70,7 +71,8 @@ module.exports = class Reminder {
             this._setTimeout(() => {
                 remindUser(this);
             }, time);
-        } else {
+        }
+        else {
             // console.log("setTimeout: Recurring: text= ", this.getText());
             for (let dateString of this.reminderDate.getDates()) {
                 this._setTimeoutOneDate(dateString);

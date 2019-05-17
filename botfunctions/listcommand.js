@@ -44,7 +44,8 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     if (allReminders.length == 0) {
         pageNumber = 0;
         reminders = [];
-    } else {
+    }
+    else {
         let remindersMatrix = _listToMatrix(allReminders, NUMBER_OF_REMINDERS_PER_PAGE);
         if (pageNumber > remindersMatrix.length) {
             pageNumber = remindersMatrix.length;
@@ -97,7 +98,8 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
         let noRemindersMessage = `You have no ${isRecurring ? "🔄⏱" : "⏱"} reminders ${searchTerm.length != 0 ? "with the search query: " + searchTerm : ""}`;
         if (isFirstInTransaction) {
             return ctx.reply(noRemindersMessage, markup);
-        } else {
+        }
+        else {
             return ctx.editMessageText(noRemindersMessage, markup);
         }
     }
@@ -111,7 +113,8 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
 
     if (isFirstInTransaction) {
         return ctx.reply(header + body + footer, markup);
-    } else {
+    }
+    else {
         return ctx.editMessageText(header + body + footer, markup);
     }
 }
