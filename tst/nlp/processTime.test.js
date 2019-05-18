@@ -67,6 +67,20 @@ describe("getDate", () => {
                     hasEndingConditionDate: false,
                 }
             },
+            '/remindme every monday and every tuesday to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDatesLength: 2,
+                    hasEndingConditionDate: false,
+                }
+            },
+            '/remindme every minute and every hour to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDatesLength: 2,
+                    hasEndingConditionDate: false,
+                }
+            },
         };
         for(let key in map) {
             let value = map[key];

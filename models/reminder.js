@@ -81,7 +81,7 @@ module.exports = class Reminder {
     }
 
     _setTimeoutOneDate(dateString) {
-        let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDate.date;
+        let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
         // console.log("\t_setTimeoutOneDate: date= ", date);
         this._setTimeout(() => {
             // check if the ending date condition has passed

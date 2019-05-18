@@ -126,9 +126,10 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
         if (!dates || !dates.length) {
             return null;
         }
+        
         // if there was no time provided, then its just the dates
         if (!times || !times.length) {
-            recurringDates = dates;
+            recurringDates.push(...dates);
         }
         // otherwise return [dates]x[times]
         else {

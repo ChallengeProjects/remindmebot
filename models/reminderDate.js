@@ -56,7 +56,7 @@ module.exports = class ReminderDate {
         }
 
         console.log("recurringDates=", this.recurringDates);
-        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", timezone).reminderDate.date)
+        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", timezone).reminderDates.dates[0])
             .sort((a, b) => a.unix() - b.unix());
 
         console.log("sortedDates=", sortedDates);
