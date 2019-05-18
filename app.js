@@ -1,23 +1,17 @@
-const processTime = require('./nlp/processTime.js'),
-    Reminder = require('./models/reminder.js'),
-    UserManager = require("./userManager.js"),
+const UserManager = require("./userManager.js"),
     Extra = require('telegraf/extra'),
     Markup = require('telegraf/markup'),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
-    moment = require("moment-timezone"),
-    autocorrect = require('autocorrect')({ words: moment.tz.names() }),
     bot = require('./bot.js'),
     logger = require("./logger.js"),
-    ReminderDate = require("./models/reminderDate.js"),
     listcommand = require("./botfunctions/listcommand.js"),
     helpcommand = require("./botfunctions/helpcommand.js"),
+    remindercommand = require("./botfunctions/remindercommand.js"),
+    timezonecommand = require("./botfunctions/timezonecommand.js"),
     catchBlocks = require("./errorhandling.js").catchBlocks,
     { encodeHTMLEntities } = require("./botutils.js"),
-    config = require("./config.json")[process.env.NODE_ENV],
-    googleMapsClient = require('@google/maps').createClient({
-        key: config.googleMapsClientKey
-    });
+    config = require("./config.json")[process.env.NODE_ENV];
 
 /////////////////////////////////////////////////////////
 // small hack to set reminders through a RESTful API
@@ -49,7 +43,7 @@ app.post('/remindme', function(req, res) {
             }
         }
     };
-    remindmeCallBack(ctx);
+    remindercommand.remindmeCallBack(ctx);
 });
 
 /////////////////////////////////////////////////////////
@@ -77,28 +71,11 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
         return ctx.scene.leave();
     }
 
-    let utterance = "/remindme " + ctx.message.text + " to nothing";
+    let utterance =`/remindme ${ctx.message.text} to ${reminder.getText()}`;
+    
+    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmation);
+    logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
 
-    try {
-        var { reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-    } catch (err) {
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
-    }
-    logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_SUCCESFUL`);
-
-    let reminderText = reminder.getText();
-    if (reminderDates.dates) {
-        for (let date of reminderDates.dates) {
-            let reminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
-            UserManager.addReminderForUser(userId, reminder);
-            replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
-        }
-    }
-    else {
-        let reminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
-        UserManager.addReminderForUser(userId, reminder);
-        replyWithConfirmation(ctx, reminder, null);
-    }
     return ctx.scene.leave();
 });
 
@@ -127,27 +104,13 @@ EDIT_TIME_SCENE.on('text', ctx => {
         ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
         return ctx.scene.leave();
     }
-    let utterance = "/remindme " + ctx.message.text + " to nothing";
-
-    try {
-        var { reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-    } catch (err) {
-        return ctx.reply("Sorry, I wasn't able to understand.\nCheck your spelling or try /help.").catch(catchBlocks);
+    let utterance = `/remindme ${ctx.message.text} to ${reminder.getText()}`;
+    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmation);
+    if (success) {
+        UserManager.deleteReminder(ctx.chat.id, reminderId);
     }
-    let reminderText = reminder.getText();
-    UserManager.deleteReminder(ctx.chat.id, reminderId);
-    if (reminderDates.dates) {
-        for (let date of reminderDates.dates) {
-            let newReminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
-            UserManager.addReminderForUser(userId, newReminder);
-            replyWithConfirmation(ctx, newReminder, ctx.update.message.message_id);
-        }
-    }
-    else {
-        let newReminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
-        UserManager.addReminderForUser(userId, newReminder);
-        replyWithConfirmation(ctx, newReminder, ctx.update.message.message_id);
-    }
+    logger.info(`${ctx.chat.id}: EDIT_TIME_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
+    
     return ctx.scene.leave();
 });
 EDIT_TIME_SCENE.command('cancel', ctx => {
@@ -218,8 +181,6 @@ stage.register(APPEND_LINE_SCENE);
 stage.register(CUSTOM_SNOOZE_SCENE);
 
 bot.use(stage.middleware());
-listcommand.addToBot(bot);
-helpcommand.addToBot(bot);
 
 function getReminderMarkup(reminder) {
     return Extra.HTML().markup((m) => {
@@ -248,50 +209,6 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
     return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
 }
 
-let remindmeCallBack = (ctx) => {
-    let userId = ctx.chat.id;
-    let utterance = ctx.message.text;
-    logger.info(`${ctx.chat.id}: COMMAND_REMINDME`);
-
-    if (!UserManager.getUserTimezone(userId)) {
-        return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
-    }
-    if (utterance == '/remindme') {
-        return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
-    }
-
-    try {
-        var { reminderText, reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
-        // Log utterance so I can run tests on new NLP algos later
-        logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
-    } catch (err) {
-        logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
-        return ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(catchBlocks);
-    }
-
-    if (reminderDates.dates) {
-        for (let date of reminderDates.dates) {
-            let reminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
-            UserManager.addReminderForUser(userId, reminder);
-            replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
-        }
-    }
-    else {
-        let reminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
-        UserManager.addReminderForUser(userId, reminder);
-        replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
-    }
-    return;
-};
-
-bot.hears(/remind me(.*)/i, (ctx) => {
-    ctx.message.text = `/remindme ${ctx.match[1]}`;
-    remindmeCallBack(ctx);
-});
-
-bot.command('remindme', remindmeCallBack);
-bot.command('r', remindmeCallBack);
-
 bot.action(/CUSTOM_SNOOZE_([^_]+)/, ctx => {
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     logger.info(`${ctx.chat.id}: COMMAND_CUSTOM_SNOOZE`);
@@ -309,6 +226,9 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     let reminderId = ctx.match[2];
     logger.info(`${ctx.chat.id}: COMMAND_PRESET_SNOOZE_${period}`);
     let reminder = UserManager.getReminder(userId, reminderId);
+    if (!reminder) {
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
+    }
 
     let snoozedReminder = reminder.getSnoozedReminder(parseInt(period));
     UserManager.addReminderForUser(userId, snoozedReminder);
@@ -324,7 +244,7 @@ bot.action(/CHECK_OFF_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("<code>Reminder was already deleted.</code>").catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
     }
     let reminderText = reminder.getShortenedText(15);
     ctx.answerCbQuery();
@@ -340,7 +260,7 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("<code>Reminder was already deleted.</code>").catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
     }
     let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
@@ -365,87 +285,6 @@ bot.action(/VIEW_([^_]+)/, ctx => {
     return ctx.reply(reminder.getFormattedReminder(false), markup).catch(catchBlocks);
 });
 
-bot.on('location', (ctx) => {
-    const userId = ctx.from.id;
-    const userLatitude = Number(ctx.message.location.latitude);
-    const userLongitude = Number(ctx.message.location.longitude);
-
-    convertCoordinatesToTimezone(userLatitude, userLongitude).then(timezoneId => {
-        UserManager.setUserTimezone(userId, timezoneId);
-        if (timezoneId) {
-            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID_LOCATION:${timezoneId}`);
-            ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
-        }
-        else {
-            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_LOCATION_ERROR`);
-            ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>");
-        }
-    });
-});
-
-function convertCoordinatesToTimezone(latitude, longitude) {
-    let timestamp = Math.floor(Date.now() / 1000);
-
-    return new Promise((resolve, reject) => {
-        googleMapsClient.timezone({
-            location: [latitude, longitude],
-            timestamp: timestamp,
-            language: 'en'
-        }, (err, res) => {
-            if (!err) {
-                resolve(res.json.timeZoneId);
-            }
-            else {
-                logger.info("google maps error:", err);
-                reject(null);
-            }
-        });
-    });
-}
-
-
-bot.command('timezone', ctx => {
-    let userId = ctx.chat.id;
-    let timezoneInput = ctx.message.text.split(" ").slice(1).join(" "); // remove the first word ("/timezone")
-    let parsedTimezone;
-    const INVALID_TIMEZONE_ERROR_MESSAGE = `You need to specify a valid timezone.
-You can do this by either sending your location 📍 or by using the /timezone command:
-
-<b>Examples:</b>
-• <code>/timezone America Los Angeles</code>
-• <code>/timezone Africa Cairo</code>
-• <code>/timezone PDT</code>
-• <code>/timezone EST</code>
-You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`;
-    if (!timezoneInput || timezoneInput.length == 0) {
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE).catch(catchBlocks);
-    }
-    // if timezone is not one of the valid moment timezones
-    if (!moment.tz.zone(timezoneInput)) {
-        // try to get it from the short names list
-        // Example moment.tz([2012, 5], 'America/Los_Angeles').format('z') == 'PDT'
-        let timezoneShortNamesMap = new Map(moment.tz.names().map(timezoneLongName => [moment.tz([2012, 5], timezoneLongName).format('z').toUpperCase(), timezoneLongName]));
-        if (timezoneShortNamesMap.has(timezoneInput.toUpperCase())) {
-            parsedTimezone = timezoneShortNamesMap.get(timezoneInput.toUpperCase()); // get the long name from here
-        }
-        // just try to autocorrect then
-        else {
-            parsedTimezone = autocorrect(timezoneInput);
-        }
-    }
-    else {
-        parsedTimezone = timezoneInput;
-    }
-    console.log("parsedTimezone=" + parsedTimezone);
-    if (!moment.tz.zone(parsedTimezone)) {
-        logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE).catch(catchBlocks);
-    }
-    logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput}`);
-
-    UserManager.setUserTimezone(userId, parsedTimezone);
-    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + timezoneInput + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
-});
 
 bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
@@ -505,6 +344,11 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
 });
 
 function botStartup() {
+    listcommand.addToBot(bot);
+    helpcommand.addToBot(bot);
+    remindercommand.addToBot(bot, replyWithConfirmation);
+    timezonecommand.addToBot(bot);
+
     UserManager.loadUsersDataFromStorage();
     bot.startPolling();
     UserManager.sendFeatureUpdates();

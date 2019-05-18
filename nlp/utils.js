@@ -4,6 +4,7 @@ const MERIDIEM_REGEX = '(a\\.?m\\.?|p\\.?m\\.?)';
 function isTimeNumber(word) {
     return !!word.match(new RegExp(`^${TIME_NUMBER_REGEX}$`));
 }
+
 function isMeridiem(word) {
     return !!word.match(new RegExp(`^${MERIDIEM_REGEX}$`, 'i'));
 }
@@ -20,16 +21,13 @@ function _parseTimesStringToArray(timePart) {
     return words;
 }
 
-
-
-// "on 2/3 at 2,3,4 pm" -> ["at 2,3,4 pm"]
-// "every monday at 2 am, 2 pm and 3 pm and tuesday at 4 pm" -> ["at 2 am, 2 pm and 3 pm", " at 4 pm"]
+// [see tests for examples]
 function getDateToTimePartsMapFromReminderDateTimeText(str) {
     function _isAtSegmentATimePart(words) {
         // make sure all "words" in the atSegment only contain "time words"
         for (let word of words) {
             // each word has to either be either time number or meridiem
-            if(!isTimeNumber(word) && !isMeridiem(word)) {
+            if (!isTimeNumber(word) && !isMeridiem(word)) {
                 return false;
             }
         }
@@ -42,7 +40,8 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
     // "on 2/3 at 2,3,4" -> ["2/3","2","3, "4"]
     // "every monday at 2 am, 2 pm and 3 pm and tuesday at 4 pm
     //  -> ["monday", "2 am", "2 pm", "3 pm", "tuesday", " 4 pm"]
-    // Now I need to combine the consecutive timie parts
+    // Now I need to combine the consecutive time parts so it becomes
+    //  dates: ["monday", "tuesday"], times: ["2 am, 2 pm, 3 pm", " 4 pm"]
 
     let atSegments = str
         .split(new RegExp(`\\b(${DELIMITERS.join("|")})\\b`, 'ig'))
@@ -56,15 +55,15 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
     for (let atSegment of atSegments) {
         let words = _parseTimesStringToArray("at " + atSegment);
 
-        if(_isAtSegmentATimePart(words)) {
+        if (_isAtSegmentATimePart(words)) {
             consecutiveAtTimeSegments.push(atSegment.trim());
-            if(consecutiveAtDateSegments.length) {
+            if (consecutiveAtDateSegments.length) {
                 dateParts.push(consecutiveAtDateSegments.join(DATE_PARTS_DELIMITER));
                 consecutiveAtDateSegments = [];
             }
         }
         else {
-            if(consecutiveAtTimeSegments.length) {
+            if (consecutiveAtTimeSegments.length) {
                 timeParts.push("at " + consecutiveAtTimeSegments.join(TIME_PARTS_DELIMITER));
                 consecutiveAtTimeSegments = [];
             }
@@ -72,22 +71,22 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
         }
     }
     // Add anything we didnt clear at the end
-    if(consecutiveAtTimeSegments.length) {
+    if (consecutiveAtTimeSegments.length) {
         timeParts.push("at " + consecutiveAtTimeSegments.join(TIME_PARTS_DELIMITER));
     }
-    if(consecutiveAtDateSegments.length) {
+    if (consecutiveAtDateSegments.length) {
         dateParts.push(consecutiveAtDateSegments.join(DATE_PARTS_DELIMITER));
     }
 
     // any element in dateParts or timeParts might have a delimiter hanging loose(on/every/at/in)
     // we need to remove it here
     function _removeHangingLooseDelimiters(parts, delimiter) {
-        for(let i = 0; i < parts.length; i++) {
+        for (let i = 0; i < parts.length; i++) {
             let part = parts[i];
             let partsSplit = part.split(delimiter);
-            while(partsSplit.length) {
+            while (partsSplit.length) {
                 let lastElement = partsSplit[partsSplit.length - 1];
-                if(lastElement.match(new RegExp(`^(${DELIMITERS.join("|")})$`, 'i'))) {
+                if (lastElement.match(new RegExp(`^(${DELIMITERS.join("|")})$`, 'i'))) {
                     partsSplit.pop();
                 }
                 else {
@@ -103,8 +102,8 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
 
     // create the map and return
     let dateToTimeMap = {};
-    for(let i = 0; i < Math.max(timeParts.length, dateParts.length); i++) {
-        if(i == timeParts.length) {
+    for (let i = 0; i < Math.max(timeParts.length, dateParts.length); i++) {
+        if (i == timeParts.length) {
             dateToTimeMap[dateParts[i]] = [];
         }
         else {
@@ -119,10 +118,10 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
     let dateToTimeMap = getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText);
 
     let dateToParsedTimesMap = {};
-    
-    for(let date in dateToTimeMap) {
+
+    for (let date in dateToTimeMap) {
         let timePart = dateToTimeMap[date];
-        if(!timePart.length) {
+        if (!timePart.length) {
             dateToParsedTimesMap[date] = [];
             continue;
         }
@@ -137,9 +136,9 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
         words = words.join(" ").split(new RegExp(MERIDIEM_REGEX));
         let timesPartsOfWords = words.filter((v, i) => i % 2 == 0);
         let meridiemsPartsOfWords = words.filter((v, i) => i % 2 == 1);
-        for(let i = 0; i < timesPartsOfWords.length; i++) {
+        for (let i = 0; i < timesPartsOfWords.length; i++) {
             let timesSplit = timesPartsOfWords[i].split(" ").filter(x => !!x.length);
-            let meridiem = meridiemsPartsOfWords.length > i ? (" " + meridiemsPartsOfWords[i]) : (""); 
+            let meridiem = meridiemsPartsOfWords.length > i ? (" " + meridiemsPartsOfWords[i]) : ("");
             times.push(...timesSplit.map(x => `at ${x}${meridiem}`));
         }
         dateToParsedTimesMap[date] = times;
