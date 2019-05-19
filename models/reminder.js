@@ -22,6 +22,7 @@ module.exports = class Reminder {
      * constructor
      * @param {string}       text          text that should be sent to the user
      * @param {ReminderDate} reminderDate  reminderDate date when user should be notified
+     * @param {string}       userId        id of user
      */
     constructor(text, reminderDate, userId) {
         this.text = text;
@@ -46,43 +47,41 @@ module.exports = class Reminder {
     }
 
     /**
-     * setTimeout cant accept time that is > 2^31 - 1, this 
+     * global.setTimeout can't accept time that is > 2^31 - 1, this 
      *  function uses setTimeout to keep calling itself after 2^31 - 1 milliseconds
      *  until it can call setTimeout directly on the callback
-     * @param {Function} callback [description]
-     * @param {[type]}   time     [description]
+     * @param {Function} callback
+     * @param {[type]}   time
      */
     _setTimeout(callback, time) {
         const MAX_TIME = Math.pow(2, 31) - 1;
         if (time > MAX_TIME) {
-            this.timeouts.push(setTimeout(() => {
+            this.timeouts.push(global.setTimeout(() => {
                 this._setTimeout(callback, time - MAX_TIME);
             }, MAX_TIME));
         }
         else {
-            this.timeouts.push(setTimeout(callback, time));
+            this.timeouts.push(global.setTimeout(callback, time));
         }
     }
 
     setTimeout() {
         if (!this.reminderDate.isRecurring()) {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
-            // console.log("setTimeout: Not recurring: text= ", this.getText(), "settimeout = ", time);
             this._setTimeout(() => {
                 remindUser(this);
             }, time);
         }
+        // if recurring reminder
         else {
-            // console.log("setTimeout: Recurring: text= ", this.getText());
             for (let dateString of this.reminderDate.getDates()) {
-                this._setTimeoutOneDate(dateString);
+                this._setTimeoutOneRecurringDate(dateString);
             }
         }
     }
 
-    _setTimeoutOneDate(dateString) {
+    _setTimeoutOneRecurringDate(dateString) {
         let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
-        // console.log("\t_setTimeoutOneDate: date= ", date);
         this._setTimeout(() => {
             // check if the ending date condition has passed
             // clear the timeout and dont set another one
@@ -91,7 +90,7 @@ module.exports = class Reminder {
                 return;
             }
             remindUser(this);
-            this._setTimeoutOneDate(dateString);
+            this._setTimeoutOneRecurringDate(dateString);
         }, (date.unix() - moment().unix()) * 1000);
     }
 
@@ -111,7 +110,7 @@ module.exports = class Reminder {
 
     clearTimeout() {
         for (let timeout of this.timeouts) {
-            clearTimeout(timeout);
+            global.clearTimeout(timeout);
         }
     }
 

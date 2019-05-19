@@ -72,7 +72,6 @@ big effort:
 non features:
 * setup papertrail alerts on all errors
 * unit tests
-    * parsing
     * setTimeout reminders
 * move the edit stuff in another module, refactor everything
 * middleware that runs before every call to check if user exists, if not it creates it
@@ -101,48 +100,3 @@ Alfred workflow:
     Lists inline
     Choose to view then u get the option to edit
 -----------------------------------
-function setTimeout() {
-    let timesStrings = reminderDate.getAllMilliseconds();
-    for(timeString of timesStrings){ 
-        this.setTimeoutString(timeString)
-    }
-}
-
-function setTimeoutString(timeString) {
-    setTimeout(() => {
-        pingUser();
-        this.setTimeoutString(timeString);
-    }, processTime(timeString));
-}
-
-problem2: in 2 weeks, will get recalculated if i close and open it again
-
-problem2:
-    at 9:00 pm:
-        user made reminder: "in 2 hours"
-        code:
-            time = processTime("in 2 hours")
-            setTimeout(() => {
-                pingUser();
-                clearFromStorage(time);
-            }, time);
-            store(time)
-
-    at 11:23 pm
-    on startup:
-        for every time in storage: // time is 10 pm
-                if non recurring:
-                    if time > now:
-                        setTimeout(time)
-                    if time < now:
-                        send msg
-                if recurring:
-                    if time > now:
-                        setTimeout(time)
-                    if time < now:
-                        send msg
-                        if it starts with "in":
-                            diff = now() - processTime(dateString)
-                            time + diff + diff ... until its after now
-                        else:
-                            nothing
