@@ -5,13 +5,9 @@ TODOS:
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 ------------------
-* i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
 * sed command to edit texts
 * remind me on tuesdayS and wednesdayS at .. to ...
-* alfred response should not have html entities, callback should just scrape it out
 * attach images to reminders
-* plot a graph of all reminders times
-* refactor code so encoding of text is either in reminder.js or outside
 * remind me first weekend after 04/17 to ..
     * remind me on the weekend in 2 weeks to..
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
@@ -23,10 +19,11 @@ TODOS:
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
-        * that function should filter out the html tags out
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
 --------
-LOW PRIORITY [in order]:
+LOW PRIORITY:
+* plot a graph of all reminders times
+* i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
 * remind me tomorrow at 3 pm and every tuesday at 4 pm to ... [mix recurring and non recurring reminders]
 * Integration with calendar
     * on the same day it would ask me if i want to delay my reminders after my calendar events, and by how long

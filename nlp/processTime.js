@@ -19,6 +19,7 @@ function _splitReminderText(text) {
         THAT: "that".toLowerCase(),
     };
 
+    // Find the minimum index of any split delimiter
     let selectedSplitDelimiterIndex = Number.MAX_VALUE;
     let selectedSplitDelimiter = null;
     for (let splitDelimiter of Object.values(SPLIT_DELIMITERS)) {
@@ -72,6 +73,7 @@ function getDate(text, userTimezone) {
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
+
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
     if (recurringDatesResult) {

@@ -10,44 +10,8 @@ const UserManager = require("./userManager.js"),
     remindercommand = require("./botfunctions/remindercommand.js"),
     timezonecommand = require("./botfunctions/timezonecommand.js"),
     catchBlocks = require("./errorhandling.js").catchBlocks,
-    { encodeHTMLEntities } = require("./botutils.js"),
-    config = require("./config.json")[process.env.NODE_ENV];
-
-/////////////////////////////////////////////////////////
-// small hack to set reminders through a RESTful API
-const express = require('express'),
-    bodyParser = require('body-parser');
-
-let app = express();
-app.use(bodyParser.json({ limit: '50mb' }));
-app.post('/remindme', function(req, res) {
-    if (config.botToken != req.body.botToken) {
-        return;
-    }
-    logger.info("req.body=" + JSON.stringify(req.body));
-    let ctx = {
-        message: {
-            text: req.body.text
-        },
-        chat: {
-            id: req.body.chatid
-        },
-        reply: function(text) {
-            logger.info("RESTFUL_API: going to reply with: " + text);
-            res.send(text);
-            return { catch: function() {} };
-        },
-        update: {
-            message: {
-                message_id: 3 // number doesnt matter, just keep the structure intact
-            }
-        }
-    };
-    remindercommand.remindmeCallBack(ctx);
-});
-
-/////////////////////////////////////////////////////////
-
+    config = require("./config.json")[process.env.NODE_ENV],
+    serverApp = require("./server.js");
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
 CUSTOM_SNOOZE_SCENE.enter(ctx => {
@@ -73,7 +37,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
 
     let utterance =`/remindme ${ctx.message.text} to ${reminder.getText()}`;
     
-    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmation);
+    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx);
     logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
 
     return ctx.scene.leave();
@@ -105,7 +69,7 @@ EDIT_TIME_SCENE.on('text', ctx => {
         return ctx.scene.leave();
     }
     let utterance = `/remindme ${ctx.message.text} to ${reminder.getText()}`;
-    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmation);
+    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx);
     if (success) {
         UserManager.deleteReminder(ctx.chat.id, reminderId);
     }
@@ -137,7 +101,7 @@ EDIT_TEXT_SCENE.on('text', ctx => {
         return ctx.scene.leave();
     }
     UserManager.updateReminderText(userId, reminderId, ctx.message.text);
-    replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+    remindercommand.replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
 });
 EDIT_TEXT_SCENE.command('cancel', ctx => {
@@ -166,7 +130,7 @@ APPEND_LINE_SCENE.on('text', ctx => {
     }
     let newText = reminder.getText() + '\n' + ctx.message.text;
     UserManager.updateReminderText(userId, reminderId, newText);
-    replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
+    remindercommand.replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     return ctx.scene.leave();
 });
 APPEND_LINE_SCENE.command('cancel', ctx => {
@@ -181,33 +145,6 @@ stage.register(APPEND_LINE_SCENE);
 stage.register(CUSTOM_SNOOZE_SCENE);
 
 bot.use(stage.middleware());
-
-function getReminderMarkup(reminder) {
-    return Extra.HTML().markup((m) => {
-        let buttons = [
-            m.callbackButton("✏️⏱", `EDIT-TIME_${reminder.getId()}`),
-            m.callbackButton("✏️📖", `EDIT-TEXT_${reminder.getId()}`),
-            m.callbackButton("🗑️", `DELETE_${reminder.getId()}`),
-            m.callbackButton("⏎", `APPEND-LINE_${reminder.getId()}`)
-        ];
-        if (reminder.isRecurring() && reminder.isEnabled()) {
-            buttons.push(m.callbackButton("🔕", `DISABLE_${reminder.getId()}`));
-        } else if (reminder.isRecurring() && !reminder.isEnabled()) {
-            buttons.push(m.callbackButton("🔔", `ENABLE_${reminder.getId()}`));
-        }
-
-        return m.inlineKeyboard(buttons);
-    });
-}
-
-function replyWithConfirmation(ctx, reminder, replyToMessageId) {
-    let markup = getReminderMarkup(reminder);
-    if (replyToMessageId) {
-        markup.reply_to_message_id = replyToMessageId;
-    }
-    let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
-}
 
 bot.action(/CUSTOM_SNOOZE_([^_]+)/, ctx => {
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
@@ -233,7 +170,7 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     let snoozedReminder = reminder.getSnoozedReminder(parseInt(period));
     UserManager.addReminderForUser(userId, snoozedReminder);
     ctx.answerCbQuery();
-    return replyWithConfirmation(ctx, snoozedReminder, null);
+    return remindercommand.replyWithConfirmation(ctx, snoozedReminder, null);
 });
 /**
  * delete format is the following:
@@ -280,7 +217,7 @@ bot.action(/VIEW_([^_]+)/, ctx => {
         return ctx.answerCbQuery();
     }
 
-    let markup = getReminderMarkup(reminder);
+    let markup = remindercommand.getReminderMarkup(reminder);
     ctx.answerCbQuery();
     return ctx.reply(reminder.getFormattedReminder(false), markup).catch(catchBlocks);
 });
@@ -344,10 +281,10 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
 });
 
 function botStartup() {
-    listcommand.addToBot(bot);
-    helpcommand.addToBot(bot);
-    remindercommand.addToBot(bot, replyWithConfirmation);
-    timezonecommand.addToBot(bot);
+    const COMMANDS = [listcommand, helpcommand, remindercommand, timezonecommand];
+    for(let c of COMMANDS) {
+        c.addToBot(bot);
+    }
 
     UserManager.loadUsersDataFromStorage();
     bot.startPolling();
@@ -355,7 +292,7 @@ function botStartup() {
 
     // start the server
     const PORT = Number(config.port);
-    var server = app.listen(PORT, () => {
+    var server = serverApp.listen(PORT, () => {
         var port = server.address().port;
         logger.info('Magic happens at ' + port);
     });

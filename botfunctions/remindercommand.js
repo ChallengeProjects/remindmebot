@@ -1,14 +1,42 @@
 const 
+    Extra = require('telegraf/extra'),
     Reminder = require('../models/reminder.js'),
     ReminderDate = require("../models/reminderDate.js"),
     processTime = require('../nlp/processTime.js'),
     UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
     catchBlocks = require("../errorhandling.js").catchBlocks,
-    errorCodes = require("../nlp/errorCodes.js");
+    errorCodes = require("../nlp/errorCodes.js"),
+    { encodeHTMLEntities } = require("../botutils.js");
 
+function getReminderMarkup(reminder) {
+    return Extra.HTML().markup((m) => {
+        let buttons = [
+            m.callbackButton("✏️⏱", `EDIT-TIME_${reminder.getId()}`),
+            m.callbackButton("✏️📖", `EDIT-TEXT_${reminder.getId()}`),
+            m.callbackButton("🗑️", `DELETE_${reminder.getId()}`),
+            m.callbackButton("⏎", `APPEND-LINE_${reminder.getId()}`)
+        ];
+        if (reminder.isRecurring() && reminder.isEnabled()) {
+            buttons.push(m.callbackButton("🔕", `DISABLE_${reminder.getId()}`));
+        } else if (reminder.isRecurring() && !reminder.isEnabled()) {
+            buttons.push(m.callbackButton("🔔", `ENABLE_${reminder.getId()}`));
+        }
 
-function addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmationCallBack) {
+        return m.inlineKeyboard(buttons);
+    });
+}
+
+function replyWithConfirmation(ctx, reminder, replyToMessageId) {
+    let markup = getReminderMarkup(reminder);
+    if (replyToMessageId) {
+        markup.reply_to_message_id = replyToMessageId;
+    }
+    let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
+    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
+}
+
+function addRemindersToUserFromUtterance(utterance, ctx) {
     let userId = ctx.chat.id;
 
     try {
@@ -27,18 +55,18 @@ function addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmationCa
         for (let date of reminderDates.dates) {
             let reminder = new Reminder(reminderText, new ReminderDate({ date: date }), userId);
             UserManager.addReminderForUser(userId, reminder);
-            replyWithConfirmationCallBack(ctx, reminder, ctx.update.message.message_id);
+            replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
         }
     }
     else {
         let reminder = new Reminder(reminderText, new ReminderDate(reminderDates), userId);
         UserManager.addReminderForUser(userId, reminder);
-        replyWithConfirmationCallBack(ctx, reminder, ctx.update.message.message_id);
+        replyWithConfirmation(ctx, reminder, ctx.update.message.message_id);
     }
     return true;
 }
 
-function remindmeCallBack(ctx, replyWithConfirmationCallBack) {
+function remindmeCallBack(ctx) {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
     logger.info(`${ctx.chat.id}: COMMAND_REMINDME`);
@@ -50,7 +78,7 @@ function remindmeCallBack(ctx, replyWithConfirmationCallBack) {
         return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
     }
 
-    let success = addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmationCallBack);
+    let success = addRemindersToUserFromUtterance(utterance, ctx);
     if(success) {
         // Log utterance so I can run tests on new NLP algos later
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
@@ -62,18 +90,18 @@ function remindmeCallBack(ctx, replyWithConfirmationCallBack) {
     return;
 }
 
-function addToBot(bot, replyWithConfirmationCallBack) {
+function addToBot(bot) {
     bot.hears(/remind me(.*)/i, (ctx) => {
         ctx.message.text = `/remindme ${ctx.match[1]}`;
-        remindmeCallBack(ctx, replyWithConfirmationCallBack);
+        remindmeCallBack(ctx);
     });
 
     bot.command('remindme', (ctx) => {
-        remindmeCallBack(ctx, replyWithConfirmationCallBack);
+        remindmeCallBack(ctx);
     });
 
     bot.command('r', (ctx) => {
-        remindmeCallBack(ctx, replyWithConfirmationCallBack);
+        remindmeCallBack(ctx);
     });
 }
 
@@ -81,4 +109,6 @@ module.exports = {
     addToBot: addToBot,
     addRemindersToUserFromUtterance: addRemindersToUserFromUtterance,
     remindmeCallBack: remindmeCallBack,
+    replyWithConfirmation: replyWithConfirmation,
+    getReminderMarkup: getReminderMarkup,
 };
