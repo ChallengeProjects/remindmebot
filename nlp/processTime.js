@@ -2,7 +2,9 @@ const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
     parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
     utils = require("./utils.js"),
-    errorCodes = require("./errorCodes.js");
+    errorCodes = require("./errorCodes.js"),
+    francoArabicToEnglish = require("./francoArabicToEnglish.json");
+
 // logger = require("./logger.js");
 // 
 /**
@@ -68,6 +70,14 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
+function _mapFrancoArabicToEnglish(reminderDateTimeText) {
+    for (let francoArabicWord in francoArabicToEnglish) {
+        let englishWord = francoArabicToEnglish[francoArabicWord];
+        reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${francoArabicWord}\\b`, 'ig'), englishWord);
+    }
+    return reminderDateTimeText;
+}
+
 function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
@@ -75,6 +85,8 @@ function getDate(text, userTimezone) {
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
 
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
+    reminderDateTimeText = _mapFrancoArabicToEnglish(reminderDateTimeText);
+    
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
     if (recurringDatesResult) {
         let recurringDates = recurringDatesResult.recurringDates;

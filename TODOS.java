@@ -2,16 +2,17 @@ TODOS:
 ----------------------
 [Sorted By Priority]
 * suggest autofix text before time
-* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
+    * send message "Did you mean?", with "Yes", "No" buttons
+    * save reminder in user temp storage, "Yes" button will 
+* [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
+* [1 hour] remindme every 1st of month
+    * note: you also need to process ordinal strings like "first"
 ------------------
 * sed command to edit texts
 * remind me on tuesdayS and wednesdayS at .. to ...
 * attach images to reminders
 * remind me first weekend after 04/17 to ..
     * remind me on the weekend in 2 weeks to..
-* [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
-* [1 hour] remindme every 1st of month
-    * note: you also need to process ordinal strings like "first"
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
@@ -19,6 +20,8 @@ TODOS:
     * one function to respond to bot
     * one function to respond to alfred
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
+* use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
+    * Need to store my own message_id somewhere first: https://github.com/telegraf/telegraf/issues/154
 --------
 LOW PRIORITY:
 * plot a graph of all reminders times
@@ -59,7 +62,6 @@ UX DESIGN PROBLEMS:
         - change title
 * pagination: show << page 1,2,3,4,5 >>
 * [20 minutes] option to edit time for recurring reminders
-* franco arabic: fakarny kaman sa3ten, fakarny youm el etnen, fakarny kol esbo3, fakarny kol esbo3en, fakarny kol youmen
 * /rate goes to storebot
 * donate
 -----

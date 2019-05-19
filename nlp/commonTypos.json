@@ -9,5 +9,12 @@
     "hour": ["hr", "our", "hur", "hor", "hou", "hhour", "hoour", "houur", "hourr", "ohur", "huor", "horu", "gour", "your", "uour", "jour", "nour", "bour", "hiur", "h9ur", "h0ur", "hpur", "hlur", "hkur", "hoyr", "ho7r", "ho8r", "hoir", "hokr", "hojr", "hohr", "houe", "hou4", "hou5", "hout", "houg", "houf", "houd", "ghour", "hgour", "yhour", "hyour", "uhour", "huour", "jhour", "hjour", "nhour", "hnour", "bhour", "hbour", "hiour", "hoiur", "h9our", "ho9ur", "h0our", "ho0ur", "hpour", "hopur", "hlour", "holur", "hkour", "hokur", "hoyur", "houyr", "ho7ur", "hou7r", "ho8ur", "hou8r", "hoiur", "houir", "hokur", "houkr", "hojur", "houjr", "hohur", "houhr", "houer", "houre", "hou4r", "hour4", "hou5r", "hour5", "houtr", "hourt", "hougr", "hourg", "houfr", "hourf", "houdr", "hourd"],
     "tomorrow": ["tmrw", "tomorow", "tomorrw"],
     "monday, tuesday, wednesday, thursday, friday": ["weekdays", "weekday", "week day", "week days"],
-    "saturday, sunday": ["weekend", "weekends", "week end", "week ends"]
+    "saturday, sunday": ["weekend", "weekends", "week end", "week ends"],
+    "7ad": ["7d"],
+    "we": ["w", "wel"],
+    "arb3": ["arba3"],
+    "and arba3": ["warba3","warb3"],
+    "youm": ["yom"],
+    "youmen": ["yomen"],
+    "kaman": ["kman"]
 }

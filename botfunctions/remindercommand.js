@@ -91,18 +91,21 @@ function remindmeCallBack(ctx) {
 }
 
 function addToBot(bot) {
-    bot.hears(/remind me(.*)/i, (ctx) => {
-        ctx.message.text = `/remindme ${ctx.match[1]}`;
+    const FRANCO_ARAB_VARIANTS = [
+        'fakarny', 'fakrny', 'fkarny', 'fkrny',
+        'fakarney', 'fakrney', 'fkraney', 'fkrney',
+        'fakarni', 'fakrni', 'fkrani', 'fkrni',
+        'fakarnei', 'fakrnei', 'fkrnaei', 'fkrnei',
+    ];
+
+    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS];
+    bot.hears(new RegExp(`(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
+        ctx.message.text = `/remindme ${ctx.match[2]}`;
         remindmeCallBack(ctx);
     });
 
-    bot.command('remindme', (ctx) => {
-        remindmeCallBack(ctx);
-    });
-
-    bot.command('r', (ctx) => {
-        remindmeCallBack(ctx);
-    });
+    bot.command('remindme', remindmeCallBack);
+    bot.command('r', remindmeCallBack);
 }
 
 module.exports = {

@@ -67,6 +67,13 @@ describe("getDate", () => {
                     hasEndingConditionDate: false,
                 }
             },
+            'fakarny kol youm etnen warba3 at 5 pm w kol youm talat at 7,8 am to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDatesLength: 4,
+                    hasEndingConditionDate: false,
+                },
+            },
             '/remindme every weekday at 9 am and every weekend at 11 am to open up the store': {
                 reminderText: 'open up the store',
                 reminderDates: {
