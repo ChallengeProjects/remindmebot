@@ -16,7 +16,14 @@ module.exports = class ReminderDate {
             throw 'cant provide both (date and recurringDates) or (date and endingConditionDate)';
         }
 
-        this.recurringDates = recurringDates;
+        if(recurringDates && recurringDates.length) {
+            if(typeof recurringDates[0] == 'string') {
+                this.recurringDates = recurringDates.map(x => ({dateString: x}));
+            }
+            else {
+                this.recurringDates = recurringDates;
+            }
+        }
         this.endingConditionDate = endingConditionDate;
         this.date = date;
     }
@@ -42,7 +49,7 @@ module.exports = class ReminderDate {
         return this.date;
     }
 
-    getDates() {
+    getRecurringDates() {
         return this.recurringDates;
     }
 
@@ -56,7 +63,7 @@ module.exports = class ReminderDate {
         }
 
         console.log("recurringDates=", this.recurringDates);
-        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd + " to test", timezone).reminderDates.dates[0])
+        let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd.dateString + " to test", timezone).reminderDates.dates[0])
             .sort((a, b) => a.unix() - b.unix());
 
         console.log("sortedDates=", sortedDates);
@@ -98,8 +105,8 @@ module.exports = class ReminderDate {
                 let endingDateFormatted = this._getDateFormatted(this.endingConditionDate, timezone);
                 endingDateText = `\nEnd date: ${endingDateFormatted}`;
             }
-
-            return `next time: ${nextTime}, all times: ${JSON.stringify(this.recurringDates)}${endingDateText}`;
+            let dateStrings = this.recurringDates.map(rd => rd.dateString);
+            return `next time: ${nextTime}, all times: ${JSON.stringify(dateStrings)}${endingDateText}`;
         }
         else {
             return this._getDateFormatted(this.date, timezone);
@@ -142,25 +149,54 @@ module.exports = class ReminderDate {
     }
 
     getSerializableObject() {
+        let recurringDates = undefined;
+
+        if(this.recurringDates) {
+            recurringDates = [];
+            for(let recurringDate of this.recurringDates) {
+                recurringDates.push({
+                    dateString: recurringDate.dateString,
+                    nextReminderTime: recurringDate.nextReminderTime.valueOf(),
+                });
+            }
+        }
         return {
             date: this.date ? this.date.valueOf() : undefined,
             endingConditionDate: this.endingConditionDate ? this.endingConditionDate.valueOf() : undefined,
-            recurringDates: this.recurringDates
+            recurringDates: recurringDates
         };
     }
 
     static deserialize(serializedReminderDateObject) {
         let date = undefined;
         let endingConditionDate = undefined;
+        let deserializedRecurringDates = undefined;
         if (serializedReminderDateObject.date) {
             date = moment(serializedReminderDateObject.date);
         }
         if (serializedReminderDateObject.endingConditionDate) {
             endingConditionDate = moment(serializedReminderDateObject.endingConditionDate);
         }
+        if(serializedReminderDateObject.recurringDates) {
+            deserializedRecurringDates = [];
+            for(let recurringDate of serializedReminderDateObject.recurringDates) {
+                // one time process
+                if(typeof recurringDate == 'string') {
+                    deserializedRecurringDates.push({
+                        dateString: recurringDate,
+                    });
+                }
+                else {
+                    deserializedRecurringDates.push({
+                        dateString: recurringDate.dateString,
+                        nextReminderTime: moment(recurringDate.nextReminderTime),
+                    });
+                }
+            }
+        }
         return new ReminderDate({
             date: date,
-            recurringDates: serializedReminderDateObject.recurringDates,
+            recurringDates: deserializedRecurringDates,
             endingConditionDate: endingConditionDate,
         });
     }

@@ -110,12 +110,10 @@ module.exports = class User {
                 timezone = Timezone.deserialize(serializedUserObject.timezone);
             }
         }
-
         let deserializedReminders = {};
         for (let reminderId in serializedUserObject.reminders) {
             deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone);
         }
-
         let deserializedUser = new User(serializedUserObject.id, serializedUserObject.username, timezone);
         deserializedUser.reminders = deserializedReminders;
         return deserializedUser;

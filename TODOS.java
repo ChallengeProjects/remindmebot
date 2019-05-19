@@ -2,7 +2,6 @@ TODOS:
 ----------------------
 [Sorted By Priority]
 * suggest autofix text before time
-* [2 hours] fix the bot restart problem with "every month" ("problem2")
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 ------------------
 * sed command to edit texts

@@ -65,7 +65,7 @@ module.exports = class Reminder {
         }
     }
 
-    setTimeout() {
+    setTimeout(isResetup) {
         if (!this.reminderDate.isRecurring()) {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
             this._setTimeout(() => {
@@ -74,14 +74,23 @@ module.exports = class Reminder {
         }
         // if recurring reminder
         else {
-            for (let dateString of this.reminderDate.getDates()) {
-                this._setTimeoutOneRecurringDate(dateString);
+            for (let recurringDate of this.reminderDate.getRecurringDates()) {
+                this._setTimeoutOneRecurringDate(recurringDate, isResetup);
             }
         }
     }
 
-    _setTimeoutOneRecurringDate(dateString) {
-        let date = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
+    _setTimeoutOneRecurringDate(recurringDate, isResetup) {
+        let dateString = recurringDate.dateString;
+        // if its a re-setup dont change the nextReminderTime
+        if(!isResetup) {
+            recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
+        }
+        // one time process
+        // if its a resetup but we dont have a nextReminderTime yet
+        else if(!recurringDate.nextReminderTime) {
+            recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
+        }
         this._setTimeout(() => {
             // check if the ending date condition has passed
             // clear the timeout and dont set another one
@@ -90,8 +99,10 @@ module.exports = class Reminder {
                 return;
             }
             remindUser(this);
-            this._setTimeoutOneRecurringDate(dateString);
-        }, (date.unix() - moment().unix()) * 1000);
+
+            recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
+            this._setTimeoutOneRecurringDate(recurringDate);
+        }, (recurringDate.nextReminderTime.unix() - moment().unix()) * 1000);
     }
 
     isEnabled() {
@@ -99,7 +110,7 @@ module.exports = class Reminder {
     }
 
     enable() {
-        this.setTimeout();
+        this.setTimeout(false);
         this.enabled = true;
     }
 
@@ -136,7 +147,7 @@ module.exports = class Reminder {
     updateDate(date) {
         this.clearTimeout();
         this.setReminderDate(date);
-        this.setTimeout();
+        this.setTimeout(false);
     }
 
     getText() {
@@ -205,7 +216,7 @@ module.exports = class Reminder {
         reminder.setTimezone(timezone);
 
         if (!reminder.isInThePast() && reminder.isEnabled()) {
-            reminder.setTimeout();
+            reminder.setTimeout(true);
         }
         return reminder;
     }

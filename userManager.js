@@ -18,6 +18,11 @@ function updateStorage() {
 
     fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(serializedUsers));
 }
+// We need to update the storage periodically because changes in the users object
+//  can happen from within the reminder.js file asynchronously (see research/problem2.txt)
+// Other alternative would be object watching, which doesnt look that much better to
+//  me than a periodic save
+setInterval(updateStorage, 1000);
 
 
 module.exports = class UserManager {
@@ -40,14 +45,12 @@ module.exports = class UserManager {
     static enableReminder(userId, reminderId) {
         if (UserManager.userExists(userId)) {
             users[userId].enableReminder(reminderId);
-            updateStorage();
         }
     }
 
     static disableReminder(userId, reminderId) {
         if (UserManager.userExists(userId)) {
             users[userId].disableReminder(reminderId);
-            updateStorage();
         }
     }
 
@@ -60,7 +63,6 @@ module.exports = class UserManager {
     static updateReminderText(userId, reminderId, text) {
         if (UserManager.userExists(userId)) {
             users[userId].updateReminderText(reminderId, text);
-            updateStorage();
         }
 
     }
@@ -68,14 +70,12 @@ module.exports = class UserManager {
     static updateReminderDate(userId, reminderId, date) {
         if (UserManager.userExists(userId)) {
             users[userId].updateReminderDate(reminderId, date);
-            updateStorage();
         }
     }
 
     static deleteReminder(userId, reminderId) {
         if (UserManager.userExists(userId)) {
             users[userId].deleteReminder(reminderId);
-            updateStorage();
         }
     }
 
@@ -96,13 +96,11 @@ module.exports = class UserManager {
             UserManager.addUser(userId);
         }
         users[userId].setTimezone(timezone);
-        updateStorage();
     }
 
     static addReminderForUser(userId, reminder) {
         if (UserManager.userExists(userId)) {
             users[userId].addReminder(reminder);
-            updateStorage();
         }
     }
 
@@ -112,7 +110,6 @@ module.exports = class UserManager {
         }
         users[id] = new User(id, username);
 
-        updateStorage();
     }
 
     static deleteUser(id) {
@@ -126,8 +123,6 @@ module.exports = class UserManager {
         }
 
         delete users[id];
-
-        updateStorage();
     }
 
     static backupUsersData() {

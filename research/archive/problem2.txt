@@ -1,9 +1,8 @@
 Problem description: The way recurring reminders work is by using the user string (e.g. "every monday") to calcualte the time when the reminder needs to be set. And when "monday" comes, we use the same "on monday" string to calculate the next time the recurring reminder should be sent. The problems comes when the user uses something like "every 2 months", which gets converted to "in 2 months". If the bot was restarted within the 2 months, the reminder will be setup again using the same string "in 2 months", so the 2 months period has been reset with the bot restarted.
 
 Solution:
-1- First seperate the problem to strictly recurring reminders that start with "in ".
-2- When the recurrinig reminder is set, we need to store the reminder epoch time in a .nextTimeReminder field
-3- On startup, when the reminder is deserialized and Reminder.setTimeout is called, we need to:
+1- When the recurrinig reminder is set, we need to store the reminder epoch time in a .nextTimeReminder field
+2- On startup, when the reminder is deserialized and Reminder.setTimeout is called, we need to:
     1- check if the reminder has a .nextTimeReminder field and use it to set a reminder that:
         1- sends reminder to user
         2- sets reminder normally this time (and resets the .nextTimeReminder field)
