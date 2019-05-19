@@ -2,12 +2,10 @@ TODOS:
 ----------------------
 [Sorted By Priority]
 * suggest autofix text before time
-    * add specific error messages like "you forgot the 'to' or 'that'"
 * [2 hours] fix the bot restart problem with "every month" ("problem2")
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
 ------------------
 * i dont like how getTimePartsFromString() is implemented, cant thing of a case that would break it now but pretty sure there is one
-* 24h or in 10m, 5s
 * sed command to edit texts
 * remind me on tuesdayS and wednesdayS at .. to ...
 * alfred response should not have html entities, callback should just scrape it out

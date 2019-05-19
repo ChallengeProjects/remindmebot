@@ -1,12 +1,10 @@
 const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
     parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
-    utils = require("./utils.js");
+    utils = require("./utils.js"),
+    errorCodes = require("./errorCodes.js");
 // logger = require("./logger.js");
-
-const PARSE_ERROR_MESSAGES = {
-    'NO_DELIMITER_PROVIDED': 'NO_DELIMITER_PROVIDED',
-};
+// 
 /**
  * splits user's command from the "to" or "that" delimiter into a datetime part and a text part
  * @param  {string} text user's text in format of "/remindme <datetime/time interval> to <text>"
@@ -36,15 +34,15 @@ function _splitReminderText(text) {
     }
 
     if (selectedSplitDelimiterIndex == Number.MAX_VALUE) {
-        throw PARSE_ERROR_MESSAGES.NO_DELIMITER_PROVIDED;
+        throw errorCodes.NO_DELIMITER_PROVIDED;
     }
 
     let reminderText = text.slice(selectedSplitDelimiterIndex + selectedSplitDelimiter.length);
-    let reminderDateTime = text.slice(text.indexOf(" ") + 1, selectedSplitDelimiterIndex); // ignore the first word (the command /remindme)
+    let reminderDateTimeText = text.slice(text.indexOf(" ") + 1, selectedSplitDelimiterIndex); // ignore the first word (the command /remindme)
 
     return {
         reminderText: reminderText.trim(),
-        reminderDateTimeText: reminderDateTime.trim()
+        reminderDateTimeText: reminderDateTimeText.trim()
     };
 }
 
@@ -54,6 +52,18 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
             reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
         }
     }
+
+    // xxx-> x:xx
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])([0-5][0-9])\b/g, "$1 $2:$3");
+    // xxxx->xx:xx
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])\b/g, "$1 $2:$3");
+
+    // 10w -> 10 weeks,10 w -> 10 weeks
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)w\b/g, "$1 weeks");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)d\b/g, "$1 days");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)h\b/g, "$1 hours");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)m\b/g, "$1 minutes");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)s\b/g, "$1 seconds");
     return reminderDateTimeText;
 }
 
@@ -77,7 +87,7 @@ function getDate(text, userTimezone) {
     }
     else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-
+        
         // Compute cross product for each date
         let parsedDates = [];
         for(let date in dateToTimesMap) {
@@ -109,7 +119,6 @@ saturday at 4pm should be next saturday if today is saturday
 
 module.exports = {
     getDate: getDate,
-    PARSE_ERROR_MESSAGES: PARSE_ERROR_MESSAGES,
     //only exported for unit tests
     _splitReminderText: _splitReminderText,
 };

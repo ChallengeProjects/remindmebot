@@ -1,0 +1,4 @@
+module.exports = {
+    'UNKOWN_ERROR': 'UNKOWN_ERROR',
+    'NO_DELIMITER_PROVIDED': 'NO_DELIMITER_PROVIDED',
+};

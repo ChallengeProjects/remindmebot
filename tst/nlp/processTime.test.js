@@ -53,6 +53,13 @@ describe("getDate", () => {
                     hasEndingConditionDate: true,
                 },
             },
+            '/remindme every hour until 604 to log my work': {
+                reminderText: 'log my work',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: true,
+                },
+            },
             '/remindme every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins': {
                 reminderText: 'take my vitamins',
                 reminderDates: {

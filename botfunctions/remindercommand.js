@@ -4,7 +4,8 @@ const
     processTime = require('../nlp/processTime.js'),
     UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
-    catchBlocks = require("../errorhandling.js").catchBlocks;
+    catchBlocks = require("../errorhandling.js").catchBlocks,
+    errorCodes = require("../nlp/errorCodes.js");
 
 
 function addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmationCallBack) {
@@ -13,7 +14,12 @@ function addRemindersToUserFromUtterance(utterance, ctx, replyWithConfirmationCa
     try {
         var { reminderText, reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
     } catch (err) {
-        ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(catchBlocks);
+        if(err == errorCodes.NO_DELIMITER_PROVIDED) {
+            ctx.replyWithHTML("Sorry, I wasn't able to understand.\n<b>Looks like your reminder was missing a 'to' or a 'that'.</b>\nTry /help").catch(catchBlocks);
+        }
+        else {
+            ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(catchBlocks);
+        }
         return false;
     }
 

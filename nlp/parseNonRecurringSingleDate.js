@@ -1,7 +1,8 @@
 const timemachine = require('timemachine'),
     utils = require('./utils.js'),
     moment = require('moment-timezone'),
-    chrono = require('chrono-node-albinodrought');
+    chrono = require('chrono-node-albinodrought'),
+    errorCodes = require("./errorCodes.js");
 timemachine.reset();
 
 /**
@@ -98,7 +99,7 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     timemachine.reset();
 
     if (!result) {
-        throw 'Could not parse';
+        throw errorCodes.UNKOWN_ERROR;
     }
 
     let knownValues = result.start.knownValues;
