@@ -97,6 +97,7 @@ function addToBot(bot) {
         'fakarni', 'fakrni', 'fkrani', 'fkrni',
         'fakarnei', 'fakrnei', 'fkrnaei', 'fkrnei',
     ];
+    FRANCO_ARAB_VARIANTS.push(...FRANCO_ARAB_VARIANTS.map(x => 'yasta ' + x));
 
     const ITALIAN_VARIANTS = [
         'ricordami',
