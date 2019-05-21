@@ -3,7 +3,7 @@ const commonTypos = require("./commonTypos.json"),
     parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
     utils = require("./utils.js"),
     errorCodes = require("./errorCodes.js"),
-    francoArabicToEnglish = require("./francoArabicToEnglish.json");
+    translationMaps = require("./translationMaps.json");
 
 // logger = require("./logger.js");
 // 
@@ -19,6 +19,8 @@ function _splitReminderText(text) {
     const SPLIT_DELIMITERS = {
         TO: "to".toLowerCase(),
         THAT: "that".toLowerCase(),
+        DI: "di".toLowerCase(), // "to" in Italian
+        CHI: "chi".toLowerCase(), // "that" in Italian
     };
 
     // Find the minimum index of any split delimiter
@@ -70,10 +72,13 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
-function _mapFrancoArabicToEnglish(reminderDateTimeText) {
-    for (let francoArabicWord in francoArabicToEnglish) {
-        let englishWord = francoArabicToEnglish[francoArabicWord];
-        reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${francoArabicWord}\\b`, 'ig'), englishWord);
+function translate(reminderDateTimeText) {
+    for (let foreignLanguage in translationMaps) {
+        let foreignLanguageMap = translationMaps[foreignLanguage];
+        for (let foreignLanguageWord in foreignLanguageMap) {
+            let englishWord = foreignLanguageMap[foreignLanguageWord];
+            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${foreignLanguageWord}\\b`, 'ig'), englishWord);
+        }
     }
     return reminderDateTimeText;
 }
@@ -85,7 +90,8 @@ function getDate(text, userTimezone) {
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
 
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
-    reminderDateTimeText = _mapFrancoArabicToEnglish(reminderDateTimeText);
+    reminderDateTimeText = translate(reminderDateTimeText);
+    console.log("after translate: '"+reminderDateTimeText+"'");
     
     let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
     if (recurringDatesResult) {

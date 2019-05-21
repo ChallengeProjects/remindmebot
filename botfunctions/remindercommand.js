@@ -98,14 +98,23 @@ function addToBot(bot) {
         'fakarnei', 'fakrnei', 'fkrnaei', 'fkrnei',
     ];
 
-    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS];
+    const ITALIAN_VARIANTS = [
+        'ricordami',
+    ];
+
+    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS, ...ITALIAN_VARIANTS];
     bot.hears(new RegExp(`(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
         ctx.message.text = `/remindme ${ctx.match[2]}`;
         remindmeCallBack(ctx);
     });
 
-    bot.command('remindme', remindmeCallBack);
-    bot.command('r', remindmeCallBack);
+    const COMMANDS_VARIANTS = ['r', 'remindme',
+        ...(FRANCO_ARAB_VARIANTS.filter(x => x.indexOf(" ") == -1)),
+        ...(ITALIAN_VARIANTS.filter(x => x.indexOf(" ") == -1)),
+    ];
+    for(let commandVariant of COMMANDS_VARIANTS) {
+        bot.command(commandVariant, remindmeCallBack);
+    }
 }
 
 module.exports = {
