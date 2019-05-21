@@ -17,7 +17,7 @@ else {
 
     // print to stdout and papertrail
     logger.info = function(msg) {
-        console.log("LOGGER_INFO: " + msg);
+        console.log("[" + new Date() + "] LOGGER_INFO:" + msg);
         copyOfLoggerInfo(msg);
     };
 
