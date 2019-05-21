@@ -53,6 +53,8 @@
     },
     "italian":
     {
+        "i": "",
+        
         "domenica": "sunday",
         "lunedi": "monday",
         "martedi": "tuesday",

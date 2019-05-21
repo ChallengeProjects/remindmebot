@@ -58,6 +58,11 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
         }
     }
 
+    // x.xx-> x:xx
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])]\.([0-5][0-9])\b/g, "$1 $2:$3");
+    // xx.xx->xx:xx
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])\.([0-5][0-9])\b/g, "$1 $2:$3");
+
     // xxx-> x:xx
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])([0-5][0-9])\b/g, "$1 $2:$3");
     // xxxx->xx:xx
