@@ -142,13 +142,36 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
 function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     let month = null,
         day = null;
-    let monthDayOrdinalRegexMatch = reminderDateText.match(/\b((january|february|march|april|may|june|july|august|september|october|november|december) )?the ([0-9]+)(st|nd|rd|th)?\b/i);
-    let indices = { month: 2, day: 3 };
-    if (!monthDayOrdinalRegexMatch) {
+    const MONTHS = moment.months();
+
+    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b((${MONTHS.join("|")}) )?the ([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
+    let indicesFormat1 = { month: 2, day: 3 };
+
+    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b([0-9]+)(st|nd|rd|th)? of (${MONTHS.join("|")})\\b`, 'i'));
+    let indicesFormat2 = { day: 1, month: 3 };
+
+    let match, indices;
+
+    if(!monthDayOrdinalRegexMatchFormat1 && !monthDayOrdinalRegexMatchFormat2) {
         return null;
     }
-    month = monthDayOrdinalRegexMatch[indices.month];
-    day = monthDayOrdinalRegexMatch[indices.day];
+    else if(!monthDayOrdinalRegexMatchFormat1 && !!monthDayOrdinalRegexMatchFormat2) {
+        match = monthDayOrdinalRegexMatchFormat2;
+        indices = indicesFormat2;
+    }
+    else if(!monthDayOrdinalRegexMatchFormat2 && !!monthDayOrdinalRegexMatchFormat1) {
+        match = monthDayOrdinalRegexMatchFormat1;
+        indices = indicesFormat1;
+    }
+    // if they both matched and there is no month in the first one
+    //  then pick the second one
+    else if(!monthDayOrdinalRegexMatchFormat1[indicesFormat1.month]) {
+        match = monthDayOrdinalRegexMatchFormat2;
+        indices = indicesFormat2;
+    }
+
+    month = match[indices.month];
+    day = match[indices.day];
 
     let dateText = "on";
     if (month) {
@@ -171,7 +194,6 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
 function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     // what happens if we dont have monthDay
     let monthDay = _getDateTextFromOrdinal(utils.getDatePartsFromString(reminderDateTimeText)[0], userTimezone);
-
     let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText))[0];
 
     if (!times || times.length == 0) {

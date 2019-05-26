@@ -17,6 +17,7 @@
         "key-spacing": ["error", { "beforeColon": false, "afterColon": true }],
         "no-console": "off",
         "no-constant-condition": "off",
+        "no-extra-boolean-cast": "off",
         "indent": [
             "error",
             4

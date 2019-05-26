@@ -60,9 +60,11 @@
         "martedi": "tuesday",
         "mercoledi": "wednesday",
         "giovedi": "thursday",
-        "venerdì": "friday",
+        "venerdi": "friday",
         "sabato": "saturday",
 
+        "fino": "until",
+        "sino": "until",
         "ogni": "every",
         "tutti": "every",
         "tra": "in",
@@ -73,6 +75,8 @@
         "e": "and",
 
         "domani": "tomorrow",
+
+        "giorno della settimana": "weekday",
 
         "anno": "year",
         "anni": "years",
@@ -86,6 +90,23 @@
         "minuti": "minutes",
         "secondo": "second",
         "secondi": "seconds",
+
+        "di sera": "pm",
+        "di pomeriggio": "pm",
+        "di mattina": "am",
+
+        "di Gennaio": "of January",
+        "di Febbraio": "of February",
+        "di Marzo": "of March",
+        "di Aprile": "of April",
+        "di Maggio": "of May",
+        "di Giugno": "of June",
+        "di Luglio": "of July",
+        "di Agosto": "of August",
+        "di Settembre": "of September",
+        "di Ottobre": "of October",
+        "di Novembre": "of November",
+        "di Dicembre": "of December",
 
         "Gennaio": "january",
         "Febbraio": "february",

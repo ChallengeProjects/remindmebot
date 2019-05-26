@@ -13,92 +13,50 @@ function isMeridiem(word) {
 // "at 3 4 pm " -> ["3", "4", "pm"]
 // "at 3 am, 4 pm" -> ["3", "am", "4", "pm"]
 function _parseTimesStringToArray(timePart) {
-    let words = timePart.split(" ")
-        .slice(1).join(" ") // remove the "at"
-        .replace(new RegExp(`(${TIME_NUMBER_REGEX})(${MERIDIEM_REGEX})`, 'gi'), "$1 $2") // seperate numbers joined with am/pm
-        .replace(/(,|\band\b)/ig, " ") // replace "," or "and" with " "
+    timePart = timePart.toLowerCase();
+    let words = timePart.split(" ");
+
+    if(words[0] == "at") {
+        words = words.slice(1);
+    }
+
+    words = words.join(" ") // remove the "at"
+        .replace(new RegExp(`(${TIME_NUMBER_REGEX})(${MERIDIEM_REGEX})`, 'g'), "$1 $2") // seperate numbers joined with am/pm
+        .replace(/(,|\band\b|\bat\b)/g, " ") // replace "," or "and" or "at" with " "
         .split(" ").filter(x => !!x.length); // split again to an array and remove all empty strings
     return words;
 }
 
 // [see tests for examples]
 function getDateToTimePartsMapFromReminderDateTimeText(str) {
-    function _isAtSegmentATimePart(words) {
-        // make sure all "words" in the atSegment only contain "time words"
-        for (let word of words) {
-            // each word has to either be either time number or meridiem
-            if (!isTimeNumber(word) && !isMeridiem(word)) {
-                return false;
-            }
-        }
-        return true;
+    str = str.toLowerCase();
+
+    // algorithm:
+    //  1- remove any "and" or ","
+    //  2- find time parts using TIME_REGEX
+    //  3- everything else is DateParts, split by TIME_REGEX
+    //  4- create the map from date(s) -> time(s)
+    
+    // remove any "and" or ","
+    str = str
+        .replace(/\band\b|,/g, " ")
+        .replace(/ {1,}/g, " ");
+
+    const TIME_REGEX = new RegExp(`at\\b(${TIME_NUMBER_REGEX}|${MERIDIEM_REGEX}|at|\\s)+`, 'g');
+    let timeParts = str.match(TIME_REGEX);
+    if(!!timeParts) {
+        timeParts = timeParts.map(x => x.trim());
     }
-    let timeParts = [];
-    let dateParts = [];
-    const DELIMITERS = ["on", "every", "and", ",", "at"];
-
-    // "on 2/3 at 2,3,4" -> ["2/3","2","3, "4"]
-    // "every monday at 2 am, 2 pm and 3 pm and tuesday at 4 pm
-    //  -> ["monday", "2 am", "2 pm", "3 pm", "tuesday", " 4 pm"]
-    // Now I need to combine the consecutive time parts so it becomes
-    //  dates: ["monday", "tuesday"], times: ["2 am, 2 pm, 3 pm", " 4 pm"]
-
-    let atSegments = str
-        .split(new RegExp(`\\b(${DELIMITERS.join("|")})\\b`, 'ig'))
-        .map(x => x.trim())
-        .filter(x => !!x.length); // make sure no empty string is in the list
-
-    let consecutiveAtTimeSegments = [];
-    let consecutiveAtDateSegments = [];
-    const DATE_PARTS_DELIMITER = " ";
-    const TIME_PARTS_DELIMITER = ", ";
-    for (let atSegment of atSegments) {
-        let words = _parseTimesStringToArray("at " + atSegment);
-
-        if (_isAtSegmentATimePart(words)) {
-            consecutiveAtTimeSegments.push(atSegment.trim());
-            if (consecutiveAtDateSegments.length) {
-                dateParts.push(consecutiveAtDateSegments.join(DATE_PARTS_DELIMITER));
-                consecutiveAtDateSegments = [];
-            }
-        }
-        else {
-            if (consecutiveAtTimeSegments.length) {
-                timeParts.push("at " + consecutiveAtTimeSegments.join(TIME_PARTS_DELIMITER));
-                consecutiveAtTimeSegments = [];
-            }
-            consecutiveAtDateSegments.push(atSegment.trim());
-        }
-    }
-    // Add anything we didnt clear at the end
-    if (consecutiveAtTimeSegments.length) {
-        timeParts.push("at " + consecutiveAtTimeSegments.join(TIME_PARTS_DELIMITER));
-    }
-    if (consecutiveAtDateSegments.length) {
-        dateParts.push(consecutiveAtDateSegments.join(DATE_PARTS_DELIMITER));
+    else {
+        timeParts = [];
     }
 
-    // any element in dateParts or timeParts might have a delimiter hanging loose(on/every/at/in)
-    // we need to remove it here
-    function _removeHangingLooseDelimiters(parts, delimiter) {
-        for (let i = 0; i < parts.length; i++) {
-            let part = parts[i];
-            let partsSplit = part.split(delimiter);
-            while (partsSplit.length) {
-                let lastElement = partsSplit[partsSplit.length - 1];
-                if (lastElement.match(new RegExp(`^(${DELIMITERS.join("|")})$`, 'i'))) {
-                    partsSplit.pop();
-                }
-                else {
-                    parts[i] = partsSplit.join(delimiter);
-                    break;
-                }
-            }
-        }
-        return parts;
-    }
-    timeParts = _removeHangingLooseDelimiters(timeParts, TIME_PARTS_DELIMITER);
-    dateParts = _removeHangingLooseDelimiters(dateParts, DATE_PARTS_DELIMITER);
+    let dateParts = str
+        .replace(TIME_REGEX, "|||")
+        .split("|||")
+        .filter(x => !!x) // remove any undefined elements
+        .map(x => x.trim().replace(/ {1,}/g, " ")) // trim and remove double spaces
+        .filter(x => !!x.length); // remove any empty elements in the list
 
     // create the map and return
     let dateToTimeMap = {};

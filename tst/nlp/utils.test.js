@@ -44,14 +44,14 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
                 "on 02/03": "at 3",
             },
             "on 02/03 at 3, 4 pm and 5 am": {
-                "on 02/03": "at 3, 4 pm, and, 5 am",
+                "on 02/03": "at 3 4 pm 5 am",
             },
             "every wednesday at 3, 4 pm and 5 am and every tuesday at 3 pm": {
-                "every wednesday": "at 3, 4 pm, and, 5 am",
+                "every wednesday": "at 3 4 pm 5 am",
                 "every tuesday": "at 3 pm",
             },
             "this wednesday at 3, 4 pm and on tuesday at 3 am": {
-                "this wednesday": "at 3, 4 pm",
+                "this wednesday": "at 3 4 pm",
                 "on tuesday": "at 3 am",
             },
             "every monday at 2 am and tuesday at 3 pm": {
@@ -59,7 +59,11 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
                 "tuesday": "at 3 pm",
             },
             "in 2 days at 3, 4 pm and every wednesday at 3 pm": {
-                "in 2 days": "at 3, 4 pm",
+                "in 2 days": "at 3 4 pm",
+                "every wednesday": "at 3 pm",
+            },
+            "in 2 days at 3 4 pm and every wednesday at 3 pm": {
+                "in 2 days": "at 3 4 pm",
                 "every wednesday": "at 3 pm",
             },
             "on wednesday": {

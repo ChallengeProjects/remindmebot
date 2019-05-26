@@ -95,6 +95,125 @@ describe("getDate", () => {
                     hasEndingConditionDate: false,
                 }
             },
+            // Italian starts
+            "ricordami tra 10 minuti di controllare il forno": {
+                reminderText: 'controllare il forno',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami tra 1 ora che sto ancora lavorando": {
+                reminderText: 'sto ancora lavorando',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami tra tre minuti di test": {
+                reminderText: 'test',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami alle 10 di test": {
+                reminderText: 'test',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami il 23 di Marzo di test": {
+                reminderText: 'test',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami alle 2 di pomeriggio di fare i compiti": {
+                reminderText: 'fare i compiti',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami domani alle 5 di pomeriggio di fare i compiti": {
+                reminderText: 'fare i compiti',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/r tra 5 minuti di controllare il forno": {
+                reminderText: 'controllare il forno',
+                reminderDates: {
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami mercoledì di prendere i bambini da scuola": {
+                reminderText: 'prendere i bambini da scuola',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami il 5 Gennaio che oggi è il mio compleanno": {
+                reminderText: 'oggi è il mio compleanno',
+                reminderDates: {
+                    datesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami ogni giorno della settimana alle 12 di pomeriggio di chiamare mio figlio  ": {
+                reminderText: 'chiamare mio figlio',
+                reminderDates: {
+                    recurringDatesLength: 5,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami ogni ora sino alle 6 di pomeriggio di registrare il mio lavoro ": {
+                reminderText: 'registrare il mio lavoro',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: true,
+                }
+            },
+            "/ricordami ogni giorno alle 9 di mattina e alle 9 di sera di prendere le mie medicien": {
+                reminderText: 'prendere le mie medicien',
+                reminderDates: {
+                    recurringDatesLength: 2,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami ogni domenica  alle 10 di mattina di lavare i panni": {
+                reminderText: 'lavare i panni',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami ogni lunedì, mercoledì e venerdi alle 5 di pomeriggio di andare via dal lavoro per prendere i bambini": {
+                reminderText: 'andare via dal lavoro per prendere i bambini',
+                reminderDates: {
+                    recurringDatesLength: 3,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "/ricordami ogni 2 ore di controllare la mia mail": {
+                reminderText: 'controllare la mia mail',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
+            "ricordami ogni giorno i giorni di test": {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDatesLength: 1,
+                    hasEndingConditionDate: false,
+                }
+            },
         };
         for(let key in map) {
             let value = map[key];

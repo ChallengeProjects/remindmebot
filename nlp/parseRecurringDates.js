@@ -8,13 +8,23 @@ function _getRecurringDates(dateText) {
     let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
     units = [...units, ...units.map(u => u + 's')]; // add plural forms too
     
-    let unitMatch = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'i'));
+    let unitMatches = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
     
     let dates = [];
-    if (unitMatch) {
-        let frequency = unitMatch[1] ? parseInt(unitMatch[1].trim()) : 1;
-        let unit = unitMatch[2];
-        dates.push(`in ${frequency} ${unit}`);
+    if (unitMatches) {
+        for(let unitMatch of unitMatches) {
+            let split = unitMatch.split(" ");
+            let frequency, unit;
+            if(split.length == 3) { // unit is there "every 3 minutes"
+                frequency = parseInt(split[1].trim());
+                unit = split[2];
+            }
+            else { // no unit
+                frequency = 1;
+                unit = split[1];
+            }
+            dates.push(`in ${frequency} ${unit}`);
+        }
     }
 
     // try to parse week days

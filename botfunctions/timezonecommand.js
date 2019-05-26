@@ -9,6 +9,29 @@ const
         key: config.googleMapsClientKey
     });
 
+const INVALID_TIMEZONE_ERROR_MESSAGE = {
+    'english': `You need to specify a valid timezone.
+You can do this by either sending your location 📍 or by using the /timezone command:
+
+<b>Examples:</b>
+• <code>/timezone Europe Italy</code>
+• <code>/timezone America Los Angeles</code>
+• <code>/timezone Africa Cairo</code>
+• <code>/timezone PDT</code>
+• <code>/timezone EST</code>
+You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`,
+    'italian': `You need to specify a valid timezone.
+You can do this by either sending your location 📍 or by using the /timezone command:
+
+<b>Examples:</b>
+• <code>/timezone Europe Italy</code>
+• <code>/timezone America Los Angeles</code>
+• <code>/timezone Africa Cairo</code>
+• <code>/timezone PDT</code>
+• <code>/timezone EST</code>
+You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`,
+};
+
 function _convertCoordinatesToTimezone(latitude, longitude) {
     let timestamp = Math.floor(Date.now() / 1000);
 
@@ -47,21 +70,13 @@ function locationCallback(ctx) {
     });
 }
 
-function timezoneCommandCallback(ctx) {
+function timezoneCommandCallback(ctx, language) {
     let userId = ctx.chat.id;
     let timezoneInput = ctx.message.text.split(" ").slice(1).join(" "); // remove the first word ("/timezone")
     let parsedTimezone;
-    const INVALID_TIMEZONE_ERROR_MESSAGE = `You need to specify a valid timezone.
-You can do this by either sending your location 📍 or by using the /timezone command:
-
-<b>Examples:</b>
-• <code>/timezone America Los Angeles</code>
-• <code>/timezone Africa Cairo</code>
-• <code>/timezone PDT</code>
-• <code>/timezone EST</code>
-You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`;
+    
     if (!timezoneInput || timezoneInput.length == 0) {
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE).catch(catchBlocks);
+        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
     // if timezone is not one of the valid moment timezones
     if (!moment.tz.zone(timezoneInput)) {
@@ -82,7 +97,7 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
     console.log("parsedTimezone=" + parsedTimezone);
     if (!moment.tz.zone(parsedTimezone)) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE).catch(catchBlocks);
+        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput}`);
 
@@ -91,7 +106,8 @@ You can find your timezone with a map <a href="https://momentjs.com/timezone/">h
 }
 
 function addToBot(bot) {
-    bot.command('timezone', timezoneCommandCallback);
+    bot.command('timezone', timezoneCommandCallback, 'english');
+    bot.command('fuso_orario', timezoneCommandCallback, 'italian');
     bot.on('location', locationCallback);
 }
 

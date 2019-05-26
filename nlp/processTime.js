@@ -20,17 +20,42 @@ function _splitReminderText(text) {
         TO: "to".toLowerCase(),
         THAT: "that".toLowerCase(),
         DI: "di".toLowerCase(), // "to" in Italian
-        CHI: "chi".toLowerCase(), // "that" in Italian
+        CHE: "che".toLowerCase(), // "that" in Italian
     };
-
+    // words in reminder date time text (am, pm, months)
+    const ITALIAN_DI_PREFIXES = ["mattina", "pomeriggio", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio",
+        "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"].map(x => x.toLowerCase());
     // Find the minimum index of any split delimiter
     let selectedSplitDelimiterIndex = Number.MAX_VALUE;
     let selectedSplitDelimiter = null;
     for (let splitDelimiter of Object.values(SPLIT_DELIMITERS)) {
-        let matchResult = text.toLowerCase().match(new RegExp(`\\b${splitDelimiter}\\b`, 'i'));
+        let matchResult = text.match(new RegExp(`\\b${splitDelimiter}\\b`, 'i'));
         if(!matchResult) {
             continue;
         }
+        
+        // Make sure its not the italian edge case "di Genanio" -> "of january"
+        if(splitDelimiter == SPLIT_DELIMITERS.DI) {
+            let foundIt = false;
+            // Get 2 words starting from the "Di"
+            // Example: "/r il 21 di Maggio alle 17.57 di andare a fare la spesa" ->
+            //  ["di Maggio",  "di andare"] 
+            // let test = text.slice(matchResult.index).split(" ").slice(0, 2).join(" ");
+            let testRegexMatches = text.match(new RegExp(`\\bdi ([^ ]+)\\b`, 'ig'));
+            for(let match of testRegexMatches) {
+
+                // take the match without the italian month
+                let secondWord = match.split(" ")[1];
+                if(ITALIAN_DI_PREFIXES.indexOf(secondWord) == -1) {
+                    foundIt = true;
+                    matchResult = text.match(new RegExp(`\\b${match}\\b`, ''));
+                }
+            }
+            if(!foundIt) {
+                continue;
+            }
+        }
+        
         let currentIndex = matchResult.index;
         if (currentIndex < selectedSplitDelimiterIndex) {
             selectedSplitDelimiter = splitDelimiter;
@@ -78,6 +103,18 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
 }
 
 function translate(reminderDateTimeText) {
+    const ACCENTS_MAP = {
+        'è': 'e',
+        'é': 'e',
+        'ì': 'i',
+        'ò': 'o',
+        'ù': 'u',
+    };
+    
+    for(let accent in ACCENTS_MAP) {
+        let englishLetter = ACCENTS_MAP[accent];
+        reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
+    }
     for (let foreignLanguage in translationMaps) {
         let foreignLanguageMap = translationMaps[foreignLanguage];
         for (let foreignLanguageWord in foreignLanguageMap) {
@@ -88,17 +125,42 @@ function translate(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
+function preProcessReminderDateTimeText(reminderDateTimeText) {
+    // remove double spaces from text
+    reminderDateTimeText = reminderDateTimeText.replace(/ {1,}/g, " ");
+    reminderDateTimeText = reminderDateTimeText.trim();
+
+    reminderDateTimeText = reminderDateTimeText.replace(/([^\s]),([^\s])/g, "$1, $2");
+    // 1- correct spelling first so you can translate
+    // 2- translate
+    // 3- call correctSpelling again because some mappings happen like "week days" or "at 1757" -> "at 17:57"
+    console.log("before _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");
+    reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
+    console.log("before translate: '"+reminderDateTimeText+"'");
+    reminderDateTimeText = translate(reminderDateTimeText);
+    console.log("after translate: '"+reminderDateTimeText+"'");
+    reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
+    console.log("after _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");
+
+    return reminderDateTimeText;
+}
+
 function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
-
-    reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
-    reminderDateTimeText = translate(reminderDateTimeText);
-    console.log("after translate: '"+reminderDateTimeText+"'");
     
-    let recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
+    reminderDateTimeText =  preProcessReminderDateTimeText(reminderDateTimeText);
+
+    let recurringDatesResult = null;
+
+    try {
+        recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
+    } catch(err) {
+        () => {}; // no-op so eslint doesnt complain
+    }
+
     if (recurringDatesResult) {
         let recurringDates = recurringDatesResult.recurringDates;
         let endingConditionDate = recurringDatesResult.endingConditionDate;
@@ -146,4 +208,5 @@ module.exports = {
     getDate: getDate,
     //only exported for unit tests
     _splitReminderText: _splitReminderText,
+    preProcessReminderDateTimeText: preProcessReminderDateTimeText,
 };

@@ -139,12 +139,14 @@ function addToBot(bot) {
         _displayList(ctx, userId, searchTerm, pageNumber, true, false);
     });
 
-    bot.command('list', ctx => {
+    let listCmdCallback = ctx => {
         let userId = ctx.chat.id;
         let searchTerm = ctx.message.text.split(" ")[1];
         let pageNumber = 1;
         _displayList(ctx, userId, searchTerm, pageNumber, false, true);
-    });
+    };
+    bot.command('list', listCmdCallback);
+    bot.command('lista', listCmdCallback);
 }
 
 module.exports = {
