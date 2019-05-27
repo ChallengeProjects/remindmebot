@@ -62,6 +62,11 @@ module.exports = class ReminderDate {
             throw 'No recurring dates';
         }
 
+        let sortedNextReminderDates = this.recurringDates.map(rd => rd.nextReminderTime).filter(nrt => !!nrt).sort((a, b) => a.unix() - b.unix());
+        if(sortedNextReminderDates.length) {
+            return sortedNextReminderDates[0];
+        }
+
         console.log("recurringDates=", this.recurringDates);
         let sortedDates = this.recurringDates.map(rd => processTime.getDate("/remindme " + rd.dateString + " to test", timezone).reminderDates.dates[0])
             .sort((a, b) => a.unix() - b.unix());

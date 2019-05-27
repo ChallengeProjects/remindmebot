@@ -4,7 +4,6 @@ TODOS:
 * parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
 * unit tests for _getDateTextFromOrdinal, both cases
     * add unit test for processTime for 23rd of march
-* 3:36 reminder -> getDateFormatted in remidnerdate.js outputs the next reminder date instead of the recurringDates.nextReminderDate. what else has this problem?
 * specific error msg: u need to use am and pm if they entered number > 12
 * suggest autofix text before time
     * send message "Did you mean?", with "Yes", "No" buttons
