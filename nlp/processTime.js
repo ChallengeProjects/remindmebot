@@ -23,7 +23,7 @@ function _splitReminderText(text) {
         CHE: "che".toLowerCase(), // "that" in Italian
     };
     // words in reminder date time text (am, pm, months)
-    const ITALIAN_DI_PREFIXES = ["mattina", "pomeriggio", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio",
+    const ITALIAN_DI_PREFIXES = ["sera", "mattina", "pomeriggio", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio",
         "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"].map(x => x.toLowerCase());
     // Find the minimum index of any split delimiter
     let selectedSplitDelimiterIndex = Number.MAX_VALUE;
@@ -43,12 +43,12 @@ function _splitReminderText(text) {
             // let test = text.slice(matchResult.index).split(" ").slice(0, 2).join(" ");
             let testRegexMatches = text.match(new RegExp(`\\bdi ([^ ]+)\\b`, 'ig'));
             for(let match of testRegexMatches) {
-
                 // take the match without the italian month
                 let secondWord = match.split(" ")[1];
-                if(ITALIAN_DI_PREFIXES.indexOf(secondWord) == -1) {
+                if(ITALIAN_DI_PREFIXES.indexOf(secondWord.toLowerCase()) == -1) {
+                    matchResult = text.match(new RegExp(`\\b${match}\\b`, 'i'));
                     foundIt = true;
-                    matchResult = text.match(new RegExp(`\\b${match}\\b`, ''));
+                    break; // dont continue to the next "Di"
                 }
             }
             if(!foundIt) {
@@ -93,27 +93,32 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     // xxxx->xx:xx
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])\b/g, "$1 $2:$3");
 
+    // at x/at xx -> at x:00/ at xx:00
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|until) ([0-1][0-9]|2[0-4])([^:]|$)/g, "$1 $2:00");
+
     // 10w -> 10 weeks,10 w -> 10 weeks
-    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)w\b/g, "$1 weeks");
-    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)d\b/g, "$1 days");
-    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)h\b/g, "$1 hours");
-    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)m\b/g, "$1 minutes");
-    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)s\b/g, "$1 seconds");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)w\b/ig, "$1 weeks");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)d\b/ig, "$1 days");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)h\b/ig, "$1 hours");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)m\b/ig, "$1 minutes");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)s\b/ig, "$1 seconds");
     return reminderDateTimeText;
 }
 
 function translate(reminderDateTimeText) {
     const ACCENTS_MAP = {
-        'è': 'e',
-        'é': 'e',
-        'ì': 'i',
-        'ò': 'o',
-        'ù': 'u',
+        'i': ['î', 'ï', 'í', 'ī', 'į', 'ì'],
+        'e': ['è', 'é', 'ê', 'ë', 'ē', 'ė', 'ę'],
+        'o': ['ô', 'ö', 'ò', 'ó', 'œ', 'ø', 'ō', 'õ'],
+        'u': ['û', 'ü', 'ù', 'ú', 'ū'],
+        'a': ['à', 'á', 'â', 'ä', 'ã', 'å', 'ā'],
     };
     
-    for(let accent in ACCENTS_MAP) {
-        let englishLetter = ACCENTS_MAP[accent];
-        reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
+    for(let englishLetter in ACCENTS_MAP) {
+        let accents = ACCENTS_MAP[englishLetter];
+        for(let accent of accents) {
+            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
+        }
     }
     for (let foreignLanguage in translationMaps) {
         let foreignLanguageMap = translationMaps[foreignLanguage];

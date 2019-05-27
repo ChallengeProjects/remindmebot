@@ -1,10 +1,10 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
-* parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
-* unit tests for _getDateTextFromOrdinal, both cases
+* unit tests:
+    * parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
     * add unit test for processTime for 23rd of march
-* specific error msg: u need to use am and pm if they entered number > 12
+    * add unit test for parseNonRecurringSingleDate._getDateTextFromOrdinal with chrono (current month)
 * suggest autofix text before time
     * send message "Did you mean?", with "Yes", "No" buttons
     * save reminder in user temp storage, "Yes" button will 
@@ -12,7 +12,7 @@ TODOS:
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first"
 ------------------
-* unit tests for english and italian for parseSingleNonRecurringDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
+* unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
 * Italian:
     * choose language from the beginning to show the right welcome message
     * timezone help message in italian

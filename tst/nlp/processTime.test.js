@@ -1,5 +1,37 @@
 const processTime = require('../../nlp/processTime.js');
 // TODO: actually check the result and not just the length
+
+describe("_splitReminderText", () => {
+    it("should work", () => {
+        let map = {
+            'ricordami il 23 di Marzo di test': {
+                reminderDateTimeText: 'il 23 di Marzo',
+                reminderText: 'test',
+            },
+            "/ricordami ogni giorno alle 9 di mattina e alle 9 di sera di prendere le mie medicien": {
+                reminderDateTimeText: 'ogni giorno alle 9 di mattina e alle 9 di sera',
+                reminderText: 'prendere le mie medicien',
+            },
+            '/ricordami ogni giorno alle 16.00 di mandar e online l’articolo diMr.Apple': {
+                reminderDateTimeText: 'ogni giorno alle 16.00',
+                reminderText: 'mandar e online l’articolo diMr.Apple',
+            },
+            '/ricordami ogni giorno alle 16 di mandare online l’articolo di Mr.Apple': {
+                reminderDateTimeText: 'ogni giorno alle 16',
+                reminderText: 'mandare online l’articolo di Mr.Apple',
+            },
+            '/r in 20 minutes to test that hi': {
+                reminderDateTimeText: 'in 20 minutes',
+                reminderText: 'test that hi',
+            },
+        };
+        for(let key in map) {
+            let value = map[key];
+            expect(processTime._splitReminderText(key)).toEqual(value);
+        }
+    });
+});
+
 describe("getDate", () => {
     it('should work', () => {
         let map = {
