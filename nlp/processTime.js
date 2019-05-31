@@ -3,7 +3,9 @@ const commonTypos = require("./commonTypos.json"),
     parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
     utils = require("./utils.js"),
     errorCodes = require("./errorCodes.js"),
-    translationMaps = require("./translationMaps.json");
+    translationMaps = require("./translationMaps.json"),
+    { wordsToNumbers } = require('words-to-numbers');
+
 
 // logger = require("./logger.js");
 // 
@@ -77,6 +79,8 @@ function _splitReminderText(text) {
 }
 
 function _correctSpellingForDateTimeText(reminderDateTimeText) {
+    reminderDateTimeText = wordsToNumbers(reminderDateTimeText);
+    
     for (let correctWord in commonTypos) {
         for (let incorrectWord of commonTypos[correctWord]) {
             reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
@@ -179,7 +183,7 @@ function getDate(text, userTimezone) {
     }
     else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-        
+        console.log('>>>>', dateToTimesMap);
         // Compute cross product for each date
         let parsedDates = [];
         for(let date in dateToTimesMap) {

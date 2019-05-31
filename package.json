@@ -20,7 +20,8 @@
     "telegraf": "^3.21.2",
     "timemachine": "^0.3.0",
     "winston": "^2.4.2",
-    "winston-papertrail": "^1.0.5"
+    "winston-papertrail": "^1.0.5",
+    "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",

@@ -25,15 +25,35 @@ describe("_splitReminderText", () => {
                 reminderText: 'test that hi',
             },
         };
-        for(let key in map) {
-            let value = map[key];
-            expect(processTime._splitReminderText(key)).toEqual(value);
+        for(let text in map) {
+            let expectedResult = map[text];
+            let result = processTime._splitReminderText(text);
+            expect(result).toEqual(expectedResult);
         }
     });
 });
 
+function assertGetDate(map) {
+    for(let key in map) {
+        let value = map[key];
+        let result = processTime.getDate(key);
+        expect(result.reminderText).toEqual(value.reminderText);
+        if(value.reminderDates) {
+            if(value.reminderDates.datesLength) {
+                expect(result.reminderDates.dates.length).toEqual(value.reminderDates.datesLength);
+            }
+            if(value.reminderDates.recurringDatesLength) {
+                expect(result.reminderDates.recurringDates.length).toEqual(value.reminderDates.recurringDatesLength);
+            }
+            if(value.reminderDates.hasEndingConditionDate !== undefined) {
+                expect(!!result.reminderDates.endingConditionDate).toEqual(value.reminderDates.hasEndingConditionDate);
+            }
+        }
+    }
+}
+
 describe("getDate", () => {
-    it('should work', () => {
+    it('should work in english for non recurring reminders', () => {
         let map = {
             '/remindme at 2 pm to do my homework': {
                 reminderText: 'do my homework',
@@ -71,6 +91,11 @@ describe("getDate", () => {
                     datesLength: 1,
                 },
             },
+        };
+        assertGetDate(map);
+    });
+    it('should work in english for recurring reminders', () => {
+        let map = {
             '/remindme every weekday at 12 pm to call my son in school to check on him': {
                 reminderText: 'call my son in school to check on him',
                 reminderDates: {
@@ -127,7 +152,11 @@ describe("getDate", () => {
                     hasEndingConditionDate: false,
                 }
             },
-            // Italian starts
+        };
+        assertGetDate(map);
+    });
+    it('should work in italian for non recurring reminders', () => {
+        let map = {
             "ricordami tra 10 minuti di controllare il forno": {
                 reminderText: 'controllare il forno',
                 reminderDates: {
@@ -197,6 +226,13 @@ describe("getDate", () => {
                     hasEndingConditionDate: false,
                 }
             },
+        };
+        assertGetDate(map);
+    });
+
+    it('should work in italian for recurring reminders', () => {
+        console.log("-----------------------------");
+        let map = {
             "ricordami ogni giorno della settimana alle 12 di pomeriggio di chiamare mio figlio  ": {
                 reminderText: 'chiamare mio figlio',
                 reminderDates: {
@@ -247,22 +283,7 @@ describe("getDate", () => {
                 }
             },
         };
-        for(let key in map) {
-            let value = map[key];
-            let result = processTime.getDate(key);
-            expect(result.reminderText).toEqual(value.reminderText);
-            if(value.reminderDates) {
-                if(value.reminderDates.datesLength) {
-                    expect(result.reminderDates.dates.length).toEqual(value.reminderDates.datesLength);
-                }
-                if(value.reminderDates.recurringDatesLength) {
-                    expect(result.reminderDates.recurringDates.length).toEqual(value.reminderDates.recurringDatesLength);
-                }
-                if(value.reminderDates.hasEndingConditionDate !== undefined) {
-                    expect(!!result.reminderDates.endingConditionDate).toEqual(value.reminderDates.hasEndingConditionDate);
-                }
-            }
-        }
+        assertGetDate(map);
     });
 });
 // const TIME_ZONE = "America/Los_Angeles";

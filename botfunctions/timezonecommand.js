@@ -20,16 +20,17 @@ You can do this by either sending your location 📍 or by using the /timezone c
 • <code>/timezone PDT</code>
 • <code>/timezone EST</code>
 You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`,
-    'italian': `You need to specify a valid timezone.
-You can do this by either sending your location 📍 or by using the /timezone command:
+    'italian': `Devi scrivere un fuso orario valido.
+Puoi fare questo inviando la tua posizione 📍 o usando il comando /fuso_orario:
 
-<b>Examples:</b>
-• <code>/timezone Europe Italy</code>
-• <code>/timezone America Los Angeles</code>
-• <code>/timezone Africa Cairo</code>
-• <code>/timezone PDT</code>
-• <code>/timezone EST</code>
-You can find your timezone with a map <a href="https://momentjs.com/timezone/">here</a>.`,
+Esempi:
+• /fuso_orario Europe Italy
+• /fuso_orario America Los Angeles
+• /fuso_orario Africa Cairo
+• /fuso_orario PDT
+• /fuso_orario EST
+
+Puoi trovare il tuo fuso orario con la mappa <a href="https://momentjs.com/timezone/">here</a>`,
 };
 
 function _convertCoordinatesToTimezone(latitude, longitude) {

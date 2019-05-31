@@ -1,24 +1,32 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* "Mattina alle 11" should also work "ricordami domani mattina alle 11 di mandare un messaggio a giulia per la strada viaggio nave Roberto"
+* /timezone bug
+    /timezone is not doing anything in beta
+    /timezone kajdkfajs actually worked, shouldnt have worked
 * unit tests:
     * parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
     * add unit test for processTime for 23rd of march
     * add unit test for parseNonRecurringSingleDate._getDateTextFromOrdinal with chrono (current month)
+* /list will list all buttons with dates
+    * recurring reminders deosnt show there, a button to switch to normal recurring reminders
+* setup server instead of polling for bot so its faster (add an option in config to do that)
+    * navigating menus is affected by this
+------------------
+* Italian:
+    * choose language from the beginning to show the right welcome message
+    * bot needs to reply in italian too
+* unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
 * suggest autofix text before time
     * send message "Did you mean?", with "Yes", "No" buttons
     * save reminder in user temp storage, "Yes" button will 
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first"
-------------------
-* unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
-* Italian:
-    * choose language from the beginning to show the right welcome message
-    * timezone help message in italian
-    * bot needs to reply in italian too
 * make a specific help message for the bot when its a group chat to clarify that the user doesnt need to run the command /list@chemistrybot instead just do /list
     * can the bot detect when it has been added to the group and send a message automatically?
+    * also bot should instruct the user to disable privacy settings or make the bot an admin
 * auto search preset reminders
     * user types "@bot snug" and bot will display command: "/r charge snugphones at 8 pm"
     * user taps, bam, reminder set
@@ -38,6 +46,7 @@ TODOS:
 * Delete -> undo
 --------
 LOW PRIORITY:
+* /download -> download all reminders in json/csv format
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
     * callback function that sends the message generates the next one based on the range
@@ -58,7 +67,6 @@ UX DESIGN PROBLEMS:
 * bot said i dont have any reminders, if i dont have any it should show the recurring ones
     * or think of a better way in general to list them all, what if i only had a couple of non recurring reminders
         * then I can either show the recurring ones in the same message or in a different one?
-* setup server instead of polling for bot so its faster (add an option in config to do that)
 * [1 hour] alfred workflow for list reminder bot
     * list all when user does typeahead search
     * selection allows user to

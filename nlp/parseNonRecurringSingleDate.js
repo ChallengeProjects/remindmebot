@@ -140,38 +140,14 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
  *     "the 24th" -> "on <current month> 24"
  */
 function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
-    let month = null,
-        day = null;
-    const MONTHS = moment.months();
-
-    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b((${MONTHS.join("|")}) )?the ([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
-    let indicesFormat1 = { month: 2, day: 3 };
-
-    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b([0-9]+)(st|nd|rd|th)? of (${MONTHS.join("|")})\\b`, 'i'));
-    let indicesFormat2 = { day: 1, month: 3 };
-
-    let match, indices;
-
-    if(!monthDayOrdinalRegexMatchFormat1 && !monthDayOrdinalRegexMatchFormat2) {
+    let result = utils.regexMatchDateTextOrdinal(reminderDateText);
+    if(!result) {
         return null;
     }
-    else if(!monthDayOrdinalRegexMatchFormat1 && !!monthDayOrdinalRegexMatchFormat2) {
-        match = monthDayOrdinalRegexMatchFormat2;
-        indices = indicesFormat2;
-    }
-    else if(!monthDayOrdinalRegexMatchFormat2 && !!monthDayOrdinalRegexMatchFormat1) {
-        match = monthDayOrdinalRegexMatchFormat1;
-        indices = indicesFormat1;
-    }
-    // if they both matched and there is no month in the first one
-    //  then pick the second one
-    else if(!monthDayOrdinalRegexMatchFormat1[indicesFormat1.month]) {
-        match = monthDayOrdinalRegexMatchFormat2;
-        indices = indicesFormat2;
-    }
+    let {regexMatch, indices} = result;
 
-    month = match[indices.month];
-    day = match[indices.day];
+    let month = regexMatch[indices.month];
+    let day = regexMatch[indices.day];
 
     let dateText = "on";
     if (month) {
@@ -184,6 +160,8 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     if (day) {
         dateText += " " + day;
     }
+
+    console.log("dateText=", dateText);
 
     return dateText;
 }
@@ -207,5 +185,6 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
 }
 
 module.exports = {
-    parseNonRecurringSingleDate: parseNonRecurringSingleDate
+    parseNonRecurringSingleDate: parseNonRecurringSingleDate,
+    _getDateTextFromOrdinal: _getDateTextFromOrdinal,
 };

@@ -1,3 +1,5 @@
+const moment = require('moment-timezone');
+
 const TIME_NUMBER_REGEX = '[0-9:]+';
 const MERIDIEM_REGEX = '(a\\.?m\\.?|p\\.?m\\.?)';
 
@@ -32,43 +34,48 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
     str = str.toLowerCase();
 
     // algorithm:
-    //  1- remove any "and" or ","
-    //  2- find time parts using TIME_REGEX
-    //  3- everything else is DateParts, split by TIME_REGEX
-    //  4- create the map from date(s) -> time(s)
+    //  1- find time parts using TIME_REGEX
+    //  2- everything else is DateParts, split by TIME_REGEX
+    //  3- create the map from date(s) -> time(s)
     
-    // remove any "and" or ","
-    str = str
-        .replace(/\band\b|,/g, " ")
-        .replace(/ {1,}/g, " ");
+    str = str.replace(/,/g, " , ").replace(/ {1,}/g, " ");
 
-    const TIME_REGEX = new RegExp(`at\\b(${TIME_NUMBER_REGEX}|${MERIDIEM_REGEX}|at|\\s)+`, 'g');
+    // there can be multiple at's together, example: "at 3 pm at 4 pm"
+    const TIME_REGEX = new RegExp(`at\\b(${TIME_NUMBER_REGEX}|${MERIDIEM_REGEX}|at|,|and|\\s)+`, 'g');
     let timeParts = str.match(TIME_REGEX);
     if(!!timeParts) {
-        timeParts = timeParts.map(x => x.trim());
+        // clean up timeParts from "and" and ","
+        timeParts = timeParts
+            .map(x => x.replace(/\band\b|,/g, " ")
+                .replace(/ {1,}/g, " "))
+            .map(x => x.trim());
+
     }
     else {
         timeParts = [];
     }
 
+    const RANDOM_DELIMITER = "!@#";
     let dateParts = str
-        .replace(TIME_REGEX, "|||")
-        .split("|||")
+        .replace(TIME_REGEX, RANDOM_DELIMITER)
+        .split(RANDOM_DELIMITER)
         .filter(x => !!x) // remove any undefined elements
         .map(x => x.trim().replace(/ {1,}/g, " ")) // trim and remove double spaces
         .filter(x => !!x.length); // remove any empty elements in the list
 
     // create the map and return
-    let dateToTimeMap = {};
+    let datesToTimeMap = {};
     for (let i = 0; i < Math.max(timeParts.length, dateParts.length); i++) {
         if (i == timeParts.length) {
-            dateToTimeMap[dateParts[i]] = [];
+            datesToTimeMap[dateParts[i]] = [];
         }
         else {
-            dateToTimeMap[dateParts[i]] = timeParts[i];
+            datesToTimeMap[dateParts[i]] = timeParts[i];
         }
     }
-    return dateToTimeMap;
+
+    return _seperateDatesInDatesToTimesMap(datesToTimeMap);
+    // return datesToTimeMap;
 }
 
 // [see tests for examples]
@@ -102,7 +109,140 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
         dateToParsedTimesMap[date] = times;
     }
 
-    return dateToParsedTimesMap;
+    // return dateToParsedTimesMap;
+    return _seperateDatesInDatesToTimesMap(dateToParsedTimesMap);
+}
+
+/**
+ * match dates of format "month the nth", "the nth of month"
+ */
+function regexMatchDateTextOrdinal(reminderDateText) {
+    const MONTHS = moment.months();
+
+    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b(on )?(the )?((${MONTHS.join("|")}) )?(the )?([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
+    let indicesFormat1 = { month: 4, day: 6 };
+    let format1Result = {
+        regexMatch: monthDayOrdinalRegexMatchFormat1,
+        indices: indicesFormat1,
+    };
+
+    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b(on )?(the )?([0-9]+)(st|nd|rd|th)? (of )?(${MONTHS.join("|")})\\b`, 'i'));
+    let indicesFormat2 = { day: 3, month: 6 };
+    let format2Result = {
+        regexMatch: monthDayOrdinalRegexMatchFormat2,
+        indices: indicesFormat2,
+    };
+
+
+    let didFormat1Work = !!monthDayOrdinalRegexMatchFormat1;
+    let didFormat2Work = !!monthDayOrdinalRegexMatchFormat2;
+
+    if(!didFormat1Work && !didFormat2Work) {
+        return null;
+    }
+    else if( !didFormat1Work && didFormat2Work) {
+        return format2Result;
+    }
+    else if(!didFormat2Work && didFormat1Work) {
+        return format1Result;
+    }
+    // if they both worked
+    //  1- check if 1 doesnt have a month, then pick 2
+    //  2- check which one comes first in the string using .index and pick that one
+    else if(didFormat1Work && didFormat2Work) {
+        if(!monthDayOrdinalRegexMatchFormat1[indicesFormat1.month]) {
+            return format2Result;
+        }
+
+        if(monthDayOrdinalRegexMatchFormat1.index < monthDayOrdinalRegexMatchFormat2.index) {
+            return format1Result;
+        }
+        return format2Result;
+    }
+}
+
+// {"on 02/03 02/04": ["at 3 pm"]} -> {"on 02/03": ["at 3 pm"], "on 02/04": ["at 3 pm"]}
+// {"on march the 2nd april the 1st": ["at 3 pm"]} -> {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}
+// {"on the 2nd of march april the 1st": ["at 3 pm"]} -> {"on the 2nd of march": ["at 3 pm"], "april the 1st": ["at 3 pm"]}
+// {"on the 2nd of march 1st of april": ["at 3 pm"]} -> {"on the 2nd of march": ["at 3 pm"], "1st of april": ["at 3 pm"]}
+// {"on monday tuesday": ["at 3 pm"]} -> {"on monday": ["at 3 pm"], "tuesday": ["at 3 pm"]}
+function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
+    /**
+     * Algorithm:
+     *  1- extract out all weekday and remove it
+     *  2- extract out all x(x?)/x(x?) and remove it
+     *  3- extract out all "in/every x? <unit>" and remove it
+     *  4- extract out all "xth of <month>" and remove it
+     *  5- extract out all "<month> the xth" and remove it
+     *  6- extract out all "the xth" and remove it
+     */
+    
+    function matchEverything(datesText) {
+        let allParsedDateTexts = [];
+        // the reason im removing any regexMatch I find after I push it is to make sure
+        //  that the ordinal function doesnt match them again
+
+        //////////////////////////////
+        let regexMatches = datesText.match(/\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\b/ig);
+        regexMatches = regexMatches || [];
+        for(let regexMatch of regexMatches) {
+            datesText = datesText.replace(regexMatch, '');
+        }
+        allParsedDateTexts.push(...regexMatches);
+        //////////////////////////////
+        
+        //////////////////////////////
+        // try to match x(x?)/x(x?)
+        regexMatches = datesText.match(/\b(on )?[0-9]([0-9])?\/[0-9]([0-9])?\b/ig);
+        regexMatches = regexMatches || [];
+        for(let regexMatch of regexMatches) {
+            datesText = datesText.replace(regexMatch, '');
+        }
+        allParsedDateTexts.push(...regexMatches);
+        //////////////////////////////
+
+        //////////////////////////////
+        // try to parse units
+        let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
+        units = [...units, ...units.map(u => u + 's')]; // add plural forms too
+        regexMatches = datesText.match(new RegExp(`\\b(every|in) ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+        regexMatches = regexMatches || [];
+        for(let regexMatch of regexMatches) {
+            datesText = datesText.replace(regexMatch, '');
+        }
+        allParsedDateTexts.push(...regexMatches);
+        //////////////////////////////
+
+        while(true) {
+            let result = regexMatchDateTextOrdinal(datesText);
+            if(!result) {
+                break;
+            }
+            let oneDate = result.regexMatch[0];
+            datesText = datesText.replace(oneDate, '');
+            allParsedDateTexts.push(oneDate);
+        }
+        
+        return allParsedDateTexts;
+    }
+    let seperatedDatesToTimesMap = {};
+
+    // if there are no dates in the map (dates = 'undefined', yes apparently
+    //  JS converts it to a string when it's a key)
+    if(Object.keys(datesToTimesMap).length == 1 && Object.keys(datesToTimesMap)[0] == 'undefined') {
+        return datesToTimesMap;
+    }
+
+    for(let datesText in datesToTimesMap) {
+        let times = datesToTimesMap[datesText];
+        let allParsedDateTexts = matchEverything(datesText);
+        if(!!allParsedDateTexts) {
+            for (let dateText of allParsedDateTexts) {
+                seperatedDatesToTimesMap[dateText] = times;
+            }
+        }
+    }
+    return seperatedDatesToTimesMap;
 }
 
 /**
@@ -122,4 +262,6 @@ module.exports = {
     isTimeNumber: isTimeNumber,
     // only exported for unit tests
     _parseTimesStringToArray: _parseTimesStringToArray,
+    _seperateDatesInDatesToTimesMap: _seperateDatesInDatesToTimesMap,
+    regexMatchDateTextOrdinal: regexMatchDateTextOrdinal,
 };
