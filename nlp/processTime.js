@@ -109,28 +109,50 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
-function translate(reminderDateTimeText) {
-    const ACCENTS_MAP = {
-        'i': ['î', 'ï', 'í', 'ī', 'į', 'ì'],
-        'e': ['è', 'é', 'ê', 'ë', 'ē', 'ė', 'ę'],
-        'o': ['ô', 'ö', 'ò', 'ó', 'œ', 'ø', 'ō', 'õ'],
-        'u': ['û', 'ü', 'ù', 'ú', 'ū'],
-        'a': ['à', 'á', 'â', 'ä', 'ã', 'å', 'ā'],
-    };
+function _translate(reminderDateTimeText) {
+    function __convertAccents(reminderDateTimeText) {
+        const ACCENTS_MAP = {
+            'i': ['î', 'ï', 'í', 'ī', 'į', 'ì'],
+            'e': ['è', 'é', 'ê', 'ë', 'ē', 'ė', 'ę'],
+            'o': ['ô', 'ö', 'ò', 'ó', 'œ', 'ø', 'ō', 'õ'],
+            'u': ['û', 'ü', 'ù', 'ú', 'ū'],
+            'a': ['à', 'á', 'â', 'ä', 'ã', 'å', 'ā'],
+        };
+        
+        for(let englishLetter in ACCENTS_MAP) {
+            let accents = ACCENTS_MAP[englishLetter];
+            for(let accent of accents) {
+                reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
+            }
+        }
+        return reminderDateTimeText;
+    }
+
+    function __transliterate(reminderDateTimeText) {
+        for (let foreignLanguage in translationMaps) {
+            let foreignLanguageMap = translationMaps[foreignLanguage];
+            for (let foreignLanguageWord in foreignLanguageMap) {
+                let englishWord = foreignLanguageMap[foreignLanguageWord];
+                reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${foreignLanguageWord}\\b`, 'ig'), englishWord);
+            }
+        }
+        return reminderDateTimeText;
+    }
     
-    for(let englishLetter in ACCENTS_MAP) {
-        let accents = ACCENTS_MAP[englishLetter];
-        for(let accent of accents) {
-            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
-        }
+    // Only italian right now
+    function __specialTranslations(reminderDateTimeText) {
+        // Morning at <time>
+        reminderDateTimeText = reminderDateTimeText.replace(/\bmattina alle ([0-9:]+)/ig, 'at $1 am');
+        // Afternoon at <time>
+        reminderDateTimeText = reminderDateTimeText.replace(/\bpomeriggio alle ([0-9:]+)/ig, 'at $1 pm');
+        // Night at <time>
+        reminderDateTimeText = reminderDateTimeText.replace(/\bsera alle ([0-9:]+)/ig, 'at $1 pm');
+        return reminderDateTimeText;
     }
-    for (let foreignLanguage in translationMaps) {
-        let foreignLanguageMap = translationMaps[foreignLanguage];
-        for (let foreignLanguageWord in foreignLanguageMap) {
-            let englishWord = foreignLanguageMap[foreignLanguageWord];
-            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${foreignLanguageWord}\\b`, 'ig'), englishWord);
-        }
-    }
+
+    reminderDateTimeText = __convertAccents(reminderDateTimeText);
+    reminderDateTimeText = __specialTranslations(reminderDateTimeText);
+    reminderDateTimeText = __transliterate(reminderDateTimeText);
     return reminderDateTimeText;
 }
 
@@ -146,7 +168,7 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
     console.log("before _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     console.log("before translate: '"+reminderDateTimeText+"'");
-    reminderDateTimeText = translate(reminderDateTimeText);
+    reminderDateTimeText = _translate(reminderDateTimeText);
     console.log("after translate: '"+reminderDateTimeText+"'");
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     console.log("after _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");

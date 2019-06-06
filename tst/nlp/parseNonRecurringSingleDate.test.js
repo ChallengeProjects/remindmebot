@@ -7,6 +7,10 @@ describe("_getDateTextFromOrdinal", () => {
             'on january the 24th': 'on january 24',
             'on march 30': 'on march 30',
             'on 30 march': 'on march 30',
+            'in 20 minutes': null,
+            'in 20m': null,
+            'on monday': null,
+            'in 1 week': null,
         };
         
         for(let key in map) {

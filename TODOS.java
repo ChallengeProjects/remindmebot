@@ -1,51 +1,67 @@
-TODOS:
+TODOS: 
 ----------------------
 [Sorted By Priority]
-* "Mattina alle 11" should also work "ricordami domani mattina alle 11 di mandare un messaggio a giulia per la strada viaggio nave Roberto"
-* /timezone bug
+* user studies
+* /timezone bug (https://www.npmjs.com/package/js-levenshtein)
     /timezone is not doing anything in beta
     /timezone kajdkfajs actually worked, shouldnt have worked
+    * use the same thing for autocorrecting date/time (see autocorrect branch)
 * unit tests:
     * parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
     * add unit test for processTime for 23rd of march
     * add unit test for parseNonRecurringSingleDate._getDateTextFromOrdinal with chrono (current month)
-* /list will list all buttons with dates
-    * recurring reminders deosnt show there, a button to switch to normal recurring reminders
+* "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
+* refactoring:
+    * `isOnRequired` variable in the `regexMatchDateTextOrdinal` function is a hack.
+        * We need it because when we parse multiple dates we dont always have the `on` (example: on june the 2nd, april the 1st)
+        * solution: propogate "on" or "every" down and get rid of the isOnRequired variable
+        * (probably do this one later) if user says: "on june the 1st and the 2nd" we need to distribute "june" on both dates too
+    * prepend private method names with "_"
+    * should  getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method
+    * processTime.getDate shouldnt have the cross product logic
+* [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
+* [1 hour] remindme every 1st of month
+    * note: you also need to process ordinal strings like "first"
+* /list should go straight to the reminder if there is only one reminder, or go straight to recurring if there arent any non recurring)
 * setup server instead of polling for bot so its faster (add an option in config to do that)
     * navigating menus is affected by this
 ------------------
-* Italian:
-    * choose language from the beginning to show the right welcome message
-    * bot needs to reply in italian too
+* Make an actual tutorial (see research/tutorial.java)
+* make a gif as a tutorial to be sent with /help or /start show my bot working on all different types of reminders on alfred
+    * see research/gif.java
+* /list will list all buttons with dates
+    * recurring reminders doesnt show up there, a button to switch to normal recurring reminders
+        * or should it show up there?
 * unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
 * suggest autofix text before time
     * send message "Did you mean?", with "Yes", "No" buttons
     * save reminder in user temp storage, "Yes" button will 
-* [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
-* [1 hour] remindme every 1st of month
-    * note: you also need to process ordinal strings like "first"
-* make a specific help message for the bot when its a group chat to clarify that the user doesnt need to run the command /list@chemistrybot instead just do /list
-    * can the bot detect when it has been added to the group and send a message automatically?
-    * also bot should instruct the user to disable privacy settings or make the bot an admin
 * auto search preset reminders
     * user types "@bot snug" and bot will display command: "/r charge snugphones at 8 pm"
     * user taps, bam, reminder set
 * better way to output recurring reminders
-* list inline query typeahead search
+    * that shouldnt be hard, just output the text we got from the user
+* /list inline query typeahead search thru reminders
 * remind me on tuesdayS and wednesdayS at .. to ...
-* remind me first weekend after 04/17 to ..
-    * remind me on the weekend in 2 weeks to..
-* clean up the mess i made from the server commit, the response function should be abstracted
-    * one function to respond to bot
-    * one function to respond to alfred
-    * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
     * Need to store my own message_id somewhere first: https://github.com/telegraf/telegraf/issues/154
-* attach images to reminders
-* sed command to edit texts
 * Delete -> undo
+* make a specific help message for the bot when its a group chat to clarify that the user doesnt need to run the command /list@chemistrybot instead just do /list
+    * can the bot detect when it has been added to the group and send a message automatically? https://stackoverflow.com/questions/52271498/can-i-detect-my-bots-groups-with-telegram-bot-api
 --------
 LOW PRIORITY:
+* To: "en/eny/eno/enena/enaha/enohom" split for arabic
+* ITALIAN:
+    * choose language from the beginning to show the right welcome message
+        * show keyboard buttons
+        * store in settings
+    * bot should to reply in italian too if the user chose italian in settings
+        * shouldnt be hard at all, just make a map per language, get user language from settings
+* multireminder set should just be one remidner and not multiple reminders
+* attach images to reminders
+* sed command to edit texts
+* remind me first weekend after 04/17 to ..
+    * remind me on the weekend in 2 weeks to..
 * /download -> download all reminders in json/csv format
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
@@ -74,6 +90,10 @@ UX DESIGN PROBLEMS:
         * edit time
         * edit text
         * append
+    * clean up the mess i made from the server commit, the response function should be abstracted
+        * one function to respond to bot
+        * one function to respond to alfred
+        * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
 * [1 hour] reminder list
     - how to make a list reminder:
     - when shown/edited, show these options
@@ -108,10 +128,10 @@ non features:
 * install redis or memcached
 -----
 list - list all reminders
-remindme - add a reminder
 timezone - set your timezone
 help - how to use this bot
 about - about this bot
+REMOVED: remindme - add a reminder
 -----------------------------------
 Alfred workflow:
     First time Alfred:

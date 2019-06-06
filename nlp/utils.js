@@ -116,17 +116,25 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
 /**
  * match dates of format "month the nth", "the nth of month"
  */
-function regexMatchDateTextOrdinal(reminderDateText) {
+// TODO: isOnRequired is a hack and i should get rid of it (see TODOS.java for explanation)
+function regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
     const MONTHS = moment.months();
 
-    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b(on )?(the )?((${MONTHS.join("|")}) )?(the )?([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
+    let onMatch;
+    if(isOnRequired) {
+        onMatch = `(on )`;
+    }
+    else {
+        onMatch = `(on )?`;
+    }
+    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(the )?((${MONTHS.join("|")}) )?(the )?([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
     let indicesFormat1 = { month: 4, day: 6 };
     let format1Result = {
         regexMatch: monthDayOrdinalRegexMatchFormat1,
         indices: indicesFormat1,
     };
 
-    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b(on )?(the )?([0-9]+)(st|nd|rd|th)? (of )?(${MONTHS.join("|")})\\b`, 'i'));
+    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b${onMatch}(the )?([0-9]+)(st|nd|rd|th)? (of )?(${MONTHS.join("|")})\\b`, 'i'));
     let indicesFormat2 = { day: 3, month: 6 };
     let format2Result = {
         regexMatch: monthDayOrdinalRegexMatchFormat2,
@@ -214,7 +222,7 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
         //////////////////////////////
 
         while(true) {
-            let result = regexMatchDateTextOrdinal(datesText);
+            let result = regexMatchDateTextOrdinal(datesText, false);
             if(!result) {
                 break;
             }

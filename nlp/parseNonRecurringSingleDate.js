@@ -140,7 +140,7 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
  *     "the 24th" -> "on <current month> 24"
  */
 function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
-    let result = utils.regexMatchDateTextOrdinal(reminderDateText);
+    let result = utils.regexMatchDateTextOrdinal(reminderDateText, true);
     if(!result) {
         return null;
     }
