@@ -12,6 +12,10 @@ module.exports = class ReminderDate {
      * @param  {[String]} options.recurringDates  string of recurring reminder dates (["tomorrow at 5 pm", "on monday at 3 pm"])
      */
     constructor({ date, recurringDates, endingConditionDate }) {
+        if(!date && !recurringDates) {
+            throw 'Either date or recurringDates have to be provided';
+        }
+
         if ((date && recurringDates) || (date && endingConditionDate)) {
             throw 'cant provide both (date and recurringDates) or (date and endingConditionDate)';
         }
@@ -97,7 +101,6 @@ module.exports = class ReminderDate {
             date = this.getDate();
         }
 
-        // console.log("getMilliSecondsFromNow: date=", date.unix(), "now=", moment().unix());
         return (date.unix() - moment().unix()) * 1000;
     }
 

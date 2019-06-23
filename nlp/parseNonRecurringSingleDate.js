@@ -24,20 +24,29 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
     let parsedDateAM = moment.tz(moment(chrono.parseDate(textWitham)).format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
     let d;
     let result;
-
+    let didAMAdd1Day = false;
+    let didPMAdd1Day = false;
     // fix dates before choosing
     if (parsedDateAM.isBefore(currentDate)) {
         parsedDateAM.add(1, 'day');
+        didAMAdd1Day = true;
     }
     if (parsedDatePM.isBefore(currentDate)) {
         parsedDatePM.add(1, 'day');
+        didPMAdd1Day = true;
     }
     if (parsedDateAM.isBefore(parsedDatePM)) {
         d = parsedDateAM;
+        if(didAMAdd1Day) {
+            d.add(-1, 'day');
+        }
         result = chrono.parse(textWitham)[0];
     }
     else {
         d = parsedDatePM;
+        if(didPMAdd1Day) {
+            d.add(-1, 'day');
+        }
         result = chrono.parse(textWithpm)[0];
     }
 
@@ -57,7 +66,7 @@ function isMeridiemImplied(reminderDateTimeText) {
     if (!timePart.length) {
         return false;
     }
-    return !timePart.match(new RegExp(`\b${utils.MERIDIEM_REGEX}\b`, 'i'));
+    return !timePart.match(new RegExp(`\\b${utils.MERIDIEM_REGEX}\\b`, 'i'));
 }
 
 function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
@@ -74,7 +83,7 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     }
 
     let currentDate = moment.tz(userTimezone);
-    // use timemachine to set the server's  date to be the  user's date, so stuff like "in 2 minutes"
+    // use timemachine to set the server's date to be the user's date, so stuff like "in 2 minutes"
     //  can be simply parsed with chrono
     timemachine.config({ dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss") });
 
@@ -90,7 +99,6 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
 
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
-
     if (isMeridiemImplied(reminderDateTimeText)) {
         let fixedReturn = fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText);
         result = fixedReturn.result;
@@ -102,34 +110,37 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
         throw errorCodes.UNKOWN_ERROR;
     }
 
-    let knownValues = result.start.knownValues;
-    let impliedValues = result.start.impliedValues;
-
     let parsedDate;
     parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+
+    parsedDate = _fixDatesInThePast(parsedDate, currentDate, result);
+
+    return parsedDate;
+}
+
+function _fixDatesInThePast(date, currentDate, result) {
+    let knownValues = result.start.knownValues;
+    let impliedValues = result.start.impliedValues;
 
     // if user specified week day and it happens to be in the past
     //  then they probably dont want it to be today (unless they specified the 'day number')
     // Dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
-    // if('weekday' in knownValues && 'day' in impliedValues && (parsedDate.isBefore(currentDate) || parsedDate.isSame(currentDate, 'day'))) {
-    if ('weekday' in knownValues && 'day' in impliedValues && parsedDate.isBefore(currentDate)) {
-        parsedDate.add(7, 'day');
+    // if('weekday' in knownValues && 'day' in impliedValues && (date.isBefore(currentDate) || date.isSame(currentDate, 'day'))) {
+    if ('weekday' in knownValues && 'day' in impliedValues && date.isBefore(currentDate)) {
+        date.add(7, 'day');
     }
 
     // if user specified date  (day and/or month) but didnt specify year, and date is in the past
     // then add one year
-    if (('day' in knownValues || 'month' in knownValues) && 'year' in impliedValues && parsedDate.isBefore(currentDate)) {
-        parsedDate.add(1, 'year');
+    if (('day' in knownValues || 'month' in knownValues) && 'year' in impliedValues && date.isBefore(currentDate)) {
+        date.add(1, 'year');
     }
 
-    // if the date is in the past
-    if (parsedDate.isBefore(currentDate)) {
-        if ('day' in impliedValues) {
-            parsedDate.add(1, 'day');
-        }
+    // if the date is in the past and it is implied
+    if (date.isBefore(currentDate) && 'day' in impliedValues) {
+        date.add(1, 'day');
     }
-
-    return parsedDate;
+    return date;
 }
 
 /**
@@ -160,8 +171,6 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     if (day) {
         dateText += " " + day;
     }
-
-    console.log("dateText=", dateText);
 
     return dateText;
 }

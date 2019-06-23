@@ -1,7 +1,8 @@
 TODOS: 
 ----------------------
 [Sorted By Priority]
-* user studies
+* /remindme in 1.25 hours
+* bug: "/r every second to bam bam"
 * /timezone bug (https://www.npmjs.com/package/js-levenshtein)
     /timezone is not doing anything in beta
     /timezone kajdkfajs actually worked, shouldnt have worked
@@ -26,9 +27,18 @@ TODOS:
 * setup server instead of polling for bot so its faster (add an option in config to do that)
     * navigating menus is affected by this
 ------------------
-* Make an actual tutorial (see research/tutorial.java)
+* Make an actual walkthrough tutorial (see research/tutorial.java)
+* 2 users requested: * only allow admin to use reminder bot in a group
+* 1 user requested: * /appendtoreminder <reminder search text> (to|:) ....
 * make a gif as a tutorial to be sent with /help or /start show my bot working on all different types of reminders on alfred
     * see research/gif.java
+* user studies
+* ITALIAN:
+    * choose language from the beginning to show the right welcome message
+        * show keyboard buttons
+        * store in settings
+    * bot should to reply in italian too if the user chose italian in settings
+        * shouldnt be hard at all, just make a map per language, get user language from settings
 * /list will list all buttons with dates
     * recurring reminders doesnt show up there, a button to switch to normal recurring reminders
         * or should it show up there?
@@ -51,12 +61,6 @@ TODOS:
 --------
 LOW PRIORITY:
 * To: "en/eny/eno/enena/enaha/enohom" split for arabic
-* ITALIAN:
-    * choose language from the beginning to show the right welcome message
-        * show keyboard buttons
-        * store in settings
-    * bot should to reply in italian too if the user chose italian in settings
-        * shouldnt be hard at all, just make a map per language, get user language from settings
 * multireminder set should just be one remidner and not multiple reminders
 * attach images to reminders
 * sed command to edit texts
@@ -79,7 +83,6 @@ UX DESIGN PROBLEMS:
     * /remindme to.. at..
     * /remindme to..
         * when do you want to be reminded?
-* only allow admin to use reminder bot in a group
 * bot said i dont have any reminders, if i dont have any it should show the recurring ones
     * or think of a better way in general to list them all, what if i only had a couple of non recurring reminders
         * then I can either show the recurring ones in the same message or in a different one?

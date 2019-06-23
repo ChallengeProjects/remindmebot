@@ -268,6 +268,7 @@ module.exports = {
     getDateToTimePartsMapFromReminderDateTimeText: getDateToTimePartsMapFromReminderDateTimeText,
     isMeridiem: isMeridiem,
     isTimeNumber: isTimeNumber,
+    MERIDIEM_REGEX: MERIDIEM_REGEX,
     // only exported for unit tests
     _parseTimesStringToArray: _parseTimesStringToArray,
     _seperateDatesInDatesToTimesMap: _seperateDatesInDatesToTimesMap,

@@ -40,7 +40,7 @@ You can also make recurring reminders: /help_with_recurring_reminders
 <b>Check off Reminder</b>: ✅
 `;
 
-const HELP_TEXT_ITALIAN = process.env.NODE_ENV == "developmentd" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Sentiti libero di contattarmi  @bubakazouba nel caso in cui avessi problemi, suggerimenti o segnalazioni di bugs.
+const HELP_TEXT_ITALIAN = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  ` Sentiti libero di contattarmi con il seguente nickname: @bubakazouba nel caso in cui avessi problemi, suggerimenti o segnalazioni di bugs.
 
 1- /fuso_orario per impostare l’ora locale
 2- /lista per vedere la lista di tutti i promemoria
