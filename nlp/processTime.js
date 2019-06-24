@@ -97,7 +97,7 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     // xxxx->xx:xx
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])\b/g, "$1 $2:$3");
 
-    // at x/at xx -> at x:00/ at xx:00
+    // "at x"/"at xx" -> "at x:00"/"at xx:00"
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|until) ([0-1][0-9]|2[0-4])([^:]|$)/g, "$1 $2:00");
 
     // 10w -> 10 weeks,10 w -> 10 weeks
@@ -165,13 +165,9 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
     // 1- correct spelling first so you can translate
     // 2- translate
     // 3- call correctSpelling again because some mappings happen like "week days" or "at 1757" -> "at 17:57"
-    console.log("before _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
-    console.log("before translate: '"+reminderDateTimeText+"'");
     reminderDateTimeText = _translate(reminderDateTimeText);
-    console.log("after translate: '"+reminderDateTimeText+"'");
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
-    console.log("after _correctSpellingForDateTimeText: '"+reminderDateTimeText+"'");
 
     return reminderDateTimeText;
 }
@@ -205,7 +201,7 @@ function getDate(text, userTimezone) {
     }
     else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-        console.log('>>>>', dateToTimesMap);
+        
         // Compute cross product for each date
         let parsedDates = [];
         for(let date in dateToTimesMap) {

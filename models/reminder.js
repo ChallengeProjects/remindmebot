@@ -1,12 +1,7 @@
 const moment = require('moment'),
     { remindUser, encodeHTMLEntities } = require("../botutils.js"),
     ReminderDate = require("./reminderDate.js"),
-    processTime = require('../nlp/processTime.js'),
-    timemachine = require("timemachine");
-// not sure if I need this here, but I had to use it in reminderDate.js
-//  I don't know why I need it there, but I do
-//   without it, "sometimes" moment().unix() would return 0 in reminderDate.js
-timemachine.reset();
+    processTime = require('../nlp/processTime.js');
 
 function generateGUID() {
     function s4() {

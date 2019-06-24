@@ -18,7 +18,6 @@
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.17",
     "telegraf": "^3.21.2",
-    "timemachine": "^0.3.0",
     "winston": "^2.4.2",
     "winston-papertrail": "^1.0.5",
     "words-to-numbers": "^1.5.1"

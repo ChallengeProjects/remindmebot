@@ -1,4 +1,4 @@
-const timemachine = require('timemachine'),
+const timemachine = require('../timemachine.js'),
     utils = require('./utils.js'),
     moment = require('moment-timezone'),
     chrono = require('chrono-node-albinodrought'),
@@ -73,29 +73,15 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     reminderDateTimeText = reminderDateTimeText.trim();
     // remove double spaces in between
     reminderDateTimeText = reminderDateTimeText.split(" ").filter(x => !!x.length).join(" ");
+    // convert on [time] -> at [time] (before _parseCustomDateFormats)
+    reminderDateTimeText = _convertOnTimetoAtTime(reminderDateTimeText);
     // parse dates that chrono wouldn't parse
-    let { monthDay, time } = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
-    if (monthDay) {
-        reminderDateTimeText = "on " + monthDay;
-        if (time) {
-            reminderDateTimeText += " " + time;
-        }
-    }
+    reminderDateTimeText = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
 
     let currentDate = moment.tz(userTimezone);
     // use timemachine to set the server's date to be the user's date, so stuff like "in 2 minutes"
     //  can be simply parsed with chrono
     timemachine.config({ dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss") });
-
-    // capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
-    //  so chrono can parse it as time
-    let onTimeMatch = reminderDateTimeText.match(/^on ([0-9:]+)$/i);
-    if (onTimeMatch) {
-        reminderDateTimeText = `at ${onTimeMatch[1]}`;
-        if (onTimeMatch.indexOf(":") == -1) {
-            reminderDateTimeText += ":00";
-        }
-    }
 
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
@@ -118,7 +104,34 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     return parsedDate;
 }
 
+// capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
+//  so chrono can parse it as time
+function _convertOnTimetoAtTime(reminderDateTimeText) {
+    let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${utils.TIME_NUMBER_REGEX})(\\s(${utils.MERIDIEM_REGEX})?)?$`, 'i'));
+    let timeIndex = 1;
+    let meridiemIndex = 3;
+    
+    if(!onTimeMatch) {
+        return reminderDateTimeText;
+    }
+    let timeText = onTimeMatch[timeIndex];
+    if (timeText.indexOf(":") == -1) {
+        timeText += ":00";
+    }
+    
+    if (onTimeMatch[meridiemIndex]) {
+        return `at ${timeText} ${onTimeMatch[meridiemIndex]}`;
+    }
+    else {
+        return `at ${timeText}`;
+    }
+}
+
+
 function _fixDatesInThePast(date, currentDate, result) {
+    if(!date.isBefore(currentDate)) {
+        return date;
+    }
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
 
@@ -126,19 +139,22 @@ function _fixDatesInThePast(date, currentDate, result) {
     //  then they probably dont want it to be today (unless they specified the 'day number')
     // Dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
     // if('weekday' in knownValues && 'day' in impliedValues && (date.isBefore(currentDate) || date.isSame(currentDate, 'day'))) {
-    if ('weekday' in knownValues && 'day' in impliedValues && date.isBefore(currentDate)) {
+    if ('weekday' in knownValues && 'day' in impliedValues) {
         date.add(7, 'day');
+        return date;
     }
 
     // if user specified date  (day and/or month) but didnt specify year, and date is in the past
     // then add one year
-    if (('day' in knownValues || 'month' in knownValues) && 'year' in impliedValues && date.isBefore(currentDate)) {
+    if (('day' in knownValues || 'month' in knownValues) && 'year' in impliedValues) {
         date.add(1, 'year');
+        return date;
     }
 
     // if the date is in the past and it is implied
-    if (date.isBefore(currentDate) && 'day' in impliedValues) {
+    if ('day' in impliedValues) {
         date.add(1, 'day');
+        return date;
     }
     return date;
 }
@@ -179,18 +195,20 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
  * Attempts to parse dates with ordinals, with or without time provided
  */
 function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
-    // what happens if we dont have monthDay
     let monthDay = _getDateTextFromOrdinal(utils.getDatePartsFromString(reminderDateTimeText)[0], userTimezone);
-    let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText))[0];
-
+    if(!monthDay) {
+        return reminderDateTimeText;
+    }
+    let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText));
+    let time;
     if (!times || times.length == 0) {
-        times = ["at 12 pm"];
+        time = "at 12 pm";
+    }
+    else {
+        time = times[0];
     }
 
-    return {
-        monthDay: monthDay,
-        time: times[0]
-    };
+    return "on " + monthDay + " " + time;
 }
 
 module.exports = {

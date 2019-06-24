@@ -1,17 +1,18 @@
 TODOS: 
 ----------------------
 [Sorted By Priority]
+* unit tests:
+    * move timemachine to "lib" directory and write tests for it
+    * add unit test for parseNonRecurringSingleDate._getDateTextFromOrdinal with chrono (current month)
+    * 15 min: unit tests for _convertOnTimetoAtTime
 * /remindme in 1.25 hours
-* bug: "/r every second to bam bam"
-* /timezone bug (https://www.npmjs.com/package/js-levenshtein)
+* BUG: _getDateTextFromOrdinal always implies the current month when it could mean the next month
+* BUG: "/r every second to bam bam"
+* BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
     /timezone is not doing anything in beta
     /timezone kajdkfajs actually worked, shouldnt have worked
     * use the same thing for autocorrecting date/time (see autocorrect branch)
-* unit tests:
-    * parseRecurringDates unit tests are not checking for endingConditionDate because it needs chrono
-    * add unit test for processTime for 23rd of march
-    * add unit test for parseNonRecurringSingleDate._getDateTextFromOrdinal with chrono (current month)
-* "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
+* BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
 * refactoring:
     * `isOnRequired` variable in the `regexMatchDateTextOrdinal` function is a hack.
         * We need it because when we parse multiple dates we dont always have the `on` (example: on june the 2nd, april the 1st)

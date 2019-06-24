@@ -1,9 +1,5 @@
 const moment = require('moment'),
-    processTime = require('../nlp/processTime.js'),
-    timemachine = require("timemachine");
-// I don't know why I need this here, but I do
-//   without it, "sometimes" moment().unix() would return 0 in this file
-timemachine.reset();
+    processTime = require('../nlp/processTime.js');
 
 module.exports = class ReminderDate {
     /**
