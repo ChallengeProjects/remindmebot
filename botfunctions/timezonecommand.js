@@ -75,7 +75,6 @@ function timezoneCommandCallback(ctx, language) {
     let userId = ctx.chat.id;
     let timezoneInput = ctx.message.text.split(" ").slice(1).join(" "); // remove the first word ("/timezone")
     let parsedTimezone;
-    
     if (!timezoneInput || timezoneInput.length == 0) {
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
@@ -95,7 +94,6 @@ function timezoneCommandCallback(ctx, language) {
     else {
         parsedTimezone = timezoneInput;
     }
-    console.log("parsedTimezone=" + parsedTimezone);
     if (!moment.tz.zone(parsedTimezone)) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
@@ -107,8 +105,15 @@ function timezoneCommandCallback(ctx, language) {
 }
 
 function addToBot(bot) {
-    bot.command('timezone', timezoneCommandCallback, 'english');
-    bot.command('fuso_orario', timezoneCommandCallback, 'italian');
+    bot.command('timezone', (ctx) => {
+        timezoneCommandCallback(ctx, 'english');
+    });
+    bot.command('fuso_orario', (ctx) => {
+        timezoneCommandCallback(ctx, 'italian');
+    });
+    bot.command('fusoorario', (ctx) => {
+        timezoneCommandCallback(ctx, 'italian');
+    });
     bot.on('location', locationCallback);
 }
 

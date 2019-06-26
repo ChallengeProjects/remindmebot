@@ -16,6 +16,7 @@ TODOS:
     * utils: [low priority]
         * regexMatchDateTextOrdinal
         * matchEverything
+* /list should go straight to the reminder if there is only one reminder, or go straight to recurring if there arent any non recurring)
 * BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
     /timezone is not doing anything in beta
     /timezone kajdkfajs actually worked, shouldnt have worked
@@ -27,7 +28,6 @@ TODOS:
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )
-* /list should go straight to the reminder if there is only one reminder, or go straight to recurring if there arent any non recurring)
 * setup server instead of polling for bot so its faster (add an option in config to do that)
     * navigating menus is affected by this
 ------------------
