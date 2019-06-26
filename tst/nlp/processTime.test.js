@@ -122,7 +122,7 @@ describe("getDate", () => {
             '/remindme on the 1st to ...': {
                 reminderText: '...',
                 reminderDates: {
-                    formattedDates: ["06/01/2019:12:00"],
+                    formattedDates: ["07/01/2018:12:00"],
                 },
             },
         };

@@ -175,17 +175,27 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
 
     let month = regexMatch[indices.month];
     let day = regexMatch[indices.day];
+    if(!day || day.length > 2) {
+        return null;
+    }
+    day = day.length == 2 ? day : "0" + day;
 
     let dateText = "on";
     if (month) {
-        dateText += " " + month;
+        month = moment().month(month).format("MM");
+        dateText += " " + month + "/" + day;
     }
-    // if month wasn't provided then get the current month
-    else {
-        dateText += " " + moment.tz(userTimezone).format("MMMM");
-    }
-    if (day) {
-        dateText += " " + day;
+    // if month wasn't provided then get the current month (or next month)
+    else if(!month) {
+        let currentDate = moment.tz(userTimezone);
+        // if the date w/ current month is in the future thats ok
+        let dateWithCurrentMonth = currentDate.format("MM") + "/" + day;
+        if (currentDate.format("MM/DD") <= dateWithCurrentMonth)  {
+            dateText += " " + dateWithCurrentMonth;
+        }
+        else {
+            dateText += " " + currentDate.add(1, 'months').format("MM") + "/" + day;
+        }
     }
 
     return dateText;

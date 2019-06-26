@@ -120,7 +120,6 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
 // TODO: this shouldnt return a regex match, it should return 3 variables:
 //  complete match, day, month
 function regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
-    console.log("input=", reminderDateText);
     const MONTHS = moment.months();
 
     let onMatch;

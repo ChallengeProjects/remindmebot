@@ -4,7 +4,6 @@ TODOS:
 * unit tests:
     * move timemachine to "lib" directory and write tests for it
 * /remindme in 1.25 hours
-* BUG: _getDateTextFromOrdinal always implies the current month when it could mean the next month (if today is june 3 and i said "the 2nd", it should get the 2nd of next month)
 * BUG: "/r every second to bam bam"
 * BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
     /timezone is not doing anything in beta
