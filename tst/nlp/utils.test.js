@@ -31,14 +31,15 @@ describe("isTimeNumber", () => {
 describe("_parseTimesStringToArray", () => {
     it("should work", () => {
         expect(utils._parseTimesStringToArray("at 3")).toEqual(["3"]);
-        expect(utils._parseTimesStringToArray("at 3 4")).toEqual(["3", "4"]);
-        expect(utils._parseTimesStringToArray("at 3,4 pm")).toEqual(["3", "4", "pm"]);
-        expect(utils._parseTimesStringToArray("at 3,4 pm and 5 a.m")).toEqual(["3", "4", "pm", "5", "a.m"]);
+        expect(utils._parseTimesStringToArray("at 3:03 4:30")).toEqual(["3:03", "4:30"]);
+        expect(utils._parseTimesStringToArray("at 3:3,4 pm")).toEqual(["3:3", "4", "pm"]);
+        // input doesnt make sense but thats the expected output..
+        expect(utils._parseTimesStringToArray("at 14,15:20 and 5 a.m")).toEqual(["14", "15:20", "5", "a.m"]);
     });
 });
 
 describe("_seperateDatesInDatesToTimesMap", () => {
-    it('should work', () => {
+    it("should work", () => {
         let keys = [
             {"every wednesday": ["at 3 pm"], }, // 1
             {"every wednesday thursday": ["at 4 pm"], }, // 2
@@ -55,6 +56,7 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"on the 4th and march the 5th": ["u13"]}, // 13
             {"march the 5th, the 4th": ["u14"]}, // 14
             {"in 10 minutes": ["u15"]}, // 15
+            {"tomorrow": ["u16"]}, // 16
         ];
         let values = [
             {"every wednesday": ["at 3 pm"], }, // 1
@@ -72,6 +74,7 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"on the 4th": ["u13"], "march the 5th": ["u13"]}, // 13
             {"march the 5th": ["u14"], "the 4th": ["u14"]}, // 14
             {"in 10 minutes": ["u15"]}, // 15
+            {"tomorrow": ["u16"]}, // 16
         ];
         for(let i = 0; i < keys.length; i++) {
             expect(utils._seperateDatesInDatesToTimesMap(keys[i])).toEqual(values[i]);

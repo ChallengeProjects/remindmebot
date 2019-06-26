@@ -214,4 +214,5 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
 module.exports = {
     parseNonRecurringSingleDate: parseNonRecurringSingleDate,
     _getDateTextFromOrdinal: _getDateTextFromOrdinal,
+    _convertOnTimetoAtTime: _convertOnTimetoAtTime
 };

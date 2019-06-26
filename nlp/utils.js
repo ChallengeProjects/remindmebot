@@ -117,25 +117,29 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
  * match dates of format "month the nth", "the nth of month"
  */
 // TODO: isOnRequired is a hack and i should get rid of it (see TODOS.java for explanation)
+// TODO: this shouldnt return a regex match, it should return 3 variables:
+//  complete match, day, month
 function regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
+    console.log("input=", reminderDateText);
     const MONTHS = moment.months();
 
     let onMatch;
     if(isOnRequired) {
-        onMatch = `(on )`;
+        onMatch = `(?:on )`;
     }
     else {
-        onMatch = `(on )?`;
+        onMatch = `(?:on )?`;
     }
-    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(the )?((${MONTHS.join("|")}) )?(the )?([0-9]+)(st|nd|rd|th)?\\b`, 'i'));
-    let indicesFormat1 = { month: 4, day: 6 };
+    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?(?:(${MONTHS.join("|")}) )?(?:the )?([0-9]+)(?:st|nd|rd|th)?\\b`, 'i'));
+    
+    let indicesFormat1 = { month: 1, day: 2 };
     let format1Result = {
         regexMatch: monthDayOrdinalRegexMatchFormat1,
         indices: indicesFormat1,
     };
 
-    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b${onMatch}(the )?([0-9]+)(st|nd|rd|th)? (of )?(${MONTHS.join("|")})\\b`, 'i'));
-    let indicesFormat2 = { day: 3, month: 6 };
+    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?([0-9]+)(?:st|nd|rd|th)? (?:of )?(${MONTHS.join("|")})\\b`, 'i'));
+    let indicesFormat2 = { day: 1, month: 2 };
     let format2Result = {
         regexMatch: monthDayOrdinalRegexMatchFormat2,
         indices: indicesFormat2,
