@@ -1,6 +1,7 @@
 const parseRecurringDates = require('../../nlp/parseRecurringDates.js'),
     processTime = require('../../nlp/processTime.js');
 
+// TODO: more tests
 describe("_getRecurringDates", () => {
     it('should work', () => {
         let map = {

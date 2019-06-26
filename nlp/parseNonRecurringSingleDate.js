@@ -13,7 +13,7 @@ timemachine.reset();
 // parse the time part of the string
 // try to apply both "am" and "pm" on it
 // choose whatever is closer
-function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText) {
+function _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText) {
     // get text
     let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
@@ -60,7 +60,7 @@ function fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDat
 // because chrono sucks
 // edge case in chrono: if the time is 12:xx am, and you say "at 12:10", it thinks 
 // that the meridiem is a known value
-function isMeridiemImplied(reminderDateTimeText) {
+function _isMeridiemImplied(reminderDateTimeText) {
     let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     // meridiem is not an implied value if there is no time part
     if (!timePart.length) {
@@ -85,8 +85,8 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
 
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
-    if (isMeridiemImplied(reminderDateTimeText)) {
-        let fixedReturn = fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText);
+    if (_isMeridiemImplied(reminderDateTimeText)) {
+        let fixedReturn = _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText);
         result = fixedReturn.result;
         d = fixedReturn.d;
     }

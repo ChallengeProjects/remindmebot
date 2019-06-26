@@ -3,11 +3,11 @@ const moment = require('moment-timezone');
 const TIME_NUMBER_REGEX = '[0-9:]+';
 const MERIDIEM_REGEX = '(a\\.?m\\.?|p\\.?m\\.?)';
 
-function isTimeNumber(word) {
+function _isTimeNumber(word) {
     return !!word.match(new RegExp(`^${TIME_NUMBER_REGEX}$`));
 }
 
-function isMeridiem(word) {
+function _isMeridiem(word) {
     return !!word.match(new RegExp(`^${MERIDIEM_REGEX}$`, 'i'));
 }
 
@@ -269,8 +269,8 @@ module.exports = {
     getDatePartsFromString: getDatePartsFromString,
     getDateToParsedTimesFromReminderDateTime: getDateToParsedTimesFromReminderDateTime,
     getDateToTimePartsMapFromReminderDateTimeText: getDateToTimePartsMapFromReminderDateTimeText,
-    isMeridiem: isMeridiem,
-    isTimeNumber: isTimeNumber,
+    _isMeridiem: _isMeridiem,
+    _isTimeNumber: _isTimeNumber,
     TIME_NUMBER_REGEX: TIME_NUMBER_REGEX,
     MERIDIEM_REGEX: MERIDIEM_REGEX,
     // only exported for unit tests

@@ -1,29 +1,29 @@
 const utils = require("../../nlp/utils.js");
 
-describe("isMeridiem", () => {
+describe("_isMeridiem", () => {
     it("should work", () => {
         let expectedTrue = ["am", "Pm", "a.m.", "p.m.", "a.m", "p.m", "A.m", "P.m", "am"];
         for (let word of expectedTrue) {
-            expect(utils.isMeridiem(word)).toEqual(true);
+            expect(utils._isMeridiem(word)).toEqual(true);
         }
 
         let expectedFalse = [" am", "p..m", "asdfasf", "", " ", "a m"];
         for (let word of expectedFalse) {
-            expect(utils.isMeridiem(word)).toEqual(false);
+            expect(utils._isMeridiem(word)).toEqual(false);
         }
     });
 });
 
-describe("isTimeNumber", () => {
+describe("_isTimeNumber", () => {
     it("should work", () => {
         let expectedTrue = ["3", "4", "15", "05", "304", "503", "3:04", "3:10", "155:1513:10"];
         for (let word of expectedTrue) {
-            expect(utils.isTimeNumber(word)).toEqual(true);
+            expect(utils._isTimeNumber(word)).toEqual(true);
         }
 
         let expectedFalse = ["3am", "3 am", "asdjfask", "d3", "fkj3f:343"];
         for (let word of expectedFalse) {
-            expect(utils.isTimeNumber(word)).toEqual(false);
+            expect(utils._isTimeNumber(word)).toEqual(false);
         }
     });
 });

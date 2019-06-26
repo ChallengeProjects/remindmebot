@@ -60,7 +60,7 @@ function _getRecurringDates(dateText) {
 // 3- if found "^for "
 //      2.1- remove "for"
 //      2.2- prepend "in "
-function convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText) {
+function _convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText) {
     let untilFromRegex = /^until (.*) from (today|now)/i;
     let untilFromMatch = endingDateTimeText.match(untilFromRegex);
     if (untilFromMatch != null) {
@@ -93,7 +93,7 @@ function convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText) {
  *     endingConditionDate: <moment object>
  * }
  */
-function getEndingDateTime(reminderDateTimeText, userTimezone) {
+function _getEndingDateTime(reminderDateTimeText, userTimezone) {
     let delimiterMatch = reminderDateTimeText.match(/ (until|for) /i);
     if (delimiterMatch == null) {
         return null;
@@ -102,7 +102,7 @@ function getEndingDateTime(reminderDateTimeText, userTimezone) {
     let endingDateTimeText = reminderDateTimeText.substr(delimiterMatch.index).trim();
     let endingConditionDate;
     try {
-        endingDateTimeText = convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText);
+        endingDateTimeText = _convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText);
         endingConditionDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(endingDateTimeText, userTimezone);
     } catch (err) {
         throw "Couldn't parse ending condition";
@@ -123,7 +123,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
         return null;
     }
     // check if there is a condition for ending
-    let endingDateTimeResult = getEndingDateTime(reminderDateTimeText, userTimezone);
+    let endingDateTimeResult = _getEndingDateTime(reminderDateTimeText, userTimezone);
     let endingConditionDate;
     if (endingDateTimeResult) {
         reminderDateTimeText = endingDateTimeResult.newReminderDateTimeText;
