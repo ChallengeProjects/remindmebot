@@ -10,8 +10,8 @@ const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timem
 
 const TIMEZONE = "America/Los_Angeles";
 describe("_getDateTextFromOrdinal", () => {
-    timemachine.config({ dateString: TODAY_DATE_STRING });
     it('should work', () => {
+        timemachine.config({ dateString: TODAY_DATE_STRING });
         let map = {
             'on the 24th of january': 'on 01/24',
             'on january the 24th': 'on 01/24',
@@ -24,12 +24,11 @@ describe("_getDateTextFromOrdinal", () => {
             'on the 30th': 'on 06/30',
             'on the 2nd': 'on 07/02'
         };
-        
         for(let key in map) {
             expect(parseNonSingleRecurringDate._getDateTextFromOrdinal(key, TIMEZONE)).toEqual(map[key]);
         }
+        timemachine.reset();
     });
-    timemachine.reset();
 });
 
 describe("_convertOnTimetoAtTime", () => {

@@ -77,14 +77,12 @@ module.exports = class Reminder {
 
     _setTimeoutOneRecurringDate(recurringDate, isResetup) {
         let dateString = recurringDate.dateString;
+        console.log(`before setting: _setTimeoutOneRecurringDate: ${this.getShortenedText(10)} ${recurringDate.nextReminderTime ? recurringDate.nextReminderTime.unix() : "no nextReminderTime yet"}`);
         // if its a re-setup dont change the nextReminderTime
+        // only change the nextReminderTime if its not a Resetup
         if(!isResetup) {
             recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
-        }
-        // one time process
-        // if its a resetup but we dont have a nextReminderTime yet
-        else if(!recurringDate.nextReminderTime) {
-            recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
+            console.log(`after setting _setTimeoutOneRecurringDate: ${this.getShortenedText(10)} ${recurringDate.nextReminderTime.unix()}`);
         }
         this._setTimeout(() => {
             // check if the ending date condition has passed

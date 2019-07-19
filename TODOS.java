@@ -1,4 +1,5 @@
 TODOS: 
+Add an "FN" button ("Friday Night"), only show it when it''s me
 ----------------------
 [Sorted By Priority]
 * unit tests:

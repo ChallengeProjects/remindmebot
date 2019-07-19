@@ -69,7 +69,7 @@ function addRemindersToUserFromUtterance(utterance, ctx) {
 function remindmeCallBack(ctx) {
     let userId = ctx.chat.id;
     let utterance = ctx.message.text;
-    logger.info(`${ctx.chat.id}: COMMAND_REMINDME`);
+    logger.info(`${ctx.chat.id}: COMMAND_REMINDME`, utterance);
 
     if (!UserManager.getUserTimezone(userId)) {
         return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
@@ -78,7 +78,13 @@ function remindmeCallBack(ctx) {
         return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
     }
 
-    let success = addRemindersToUserFromUtterance(utterance, ctx);
+    let success = false;
+    try {
+        success = addRemindersToUserFromUtterance(utterance, ctx);
+    } catch(err) {
+        logger.info(`${ctx.chat.id} COMMAND_REMINDME_FAILED`, utterance);
+    }
+    
     if(success) {
         // Log utterance so I can run tests on new NLP algos later
         logger.info(`${ctx.chat.id}: remindme REMINDER_VALID ${utterance}`);
