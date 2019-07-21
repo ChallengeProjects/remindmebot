@@ -170,8 +170,13 @@ module.exports = class Reminder {
             formattedDate = isShortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
         }
 
-        let disabledText = !this.isEnabled() ? "[Disabled]" : "";
-        return `<code>${disabledText} ${formattedDate}:</code>\n${text}`;
+        if(!this.isEnabled()) {
+            let disabledText = !this.isEnabled() ? "[Disabled]" : "";
+            return `<code>${disabledText} ${formattedDate}:</code>\n${text}`;
+        }
+        else {
+            return `<code>${formattedDate}:</code>\n${text}`;
+        }
     }
 
     getId() {

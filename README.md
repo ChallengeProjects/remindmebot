@@ -1,3 +1,4 @@
+
 ### Bot
 * [Reminder Bot](http://t.me/yastabot)
 
@@ -33,7 +34,11 @@
 * run `npm install`
 
 ### Start
-`./startbot.sh`
+`./startbot.sh prod`
 
 ### Start development
 `./startbot.sh dev`
+
+### Contributing
+* Install the pre-commit githook: `cp githooks/pre-commit .git/hooks/`
+* Feel free to submit issues and pull requests!

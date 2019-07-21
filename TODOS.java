@@ -17,9 +17,7 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
     * utils: [low priority]
         * regexMatchDateTextOrdinal
         * matchEverything
-* /list should go straight to the reminder if there is only one reminder, or go straight to recurring if there arent any non recurring)
 * BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
-    /timezone is not doing anything in beta
     /timezone kajdkfajs actually worked, shouldnt have worked
     * use the same thing for autocorrecting date/time (see autocorrect branch)
 * /list inline query typeahead search thru reminders

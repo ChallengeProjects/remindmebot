@@ -1,6 +1,10 @@
 const UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
+    remindercommand = require("./remindercommand.js"),
+    catchBlocks = require("../errorhandling.js").catchBlocks,
     Extra = require('telegraf/extra');
+
+const NUMBER_OF_REMINDERS_PER_PAGE = 7;
 
 function _listToMatrix(list, n) {
     // split into rows of 7s
@@ -12,58 +16,47 @@ function _listToMatrix(list, n) {
     return listOfLists;
 }
 
-/**
-    searchTerm is optional
-    pageNumber starts from 1
-    isFirstInTransaction - is this the first /list command (i.e cant edit message text)
-*/
-function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstInTransaction) {
-    const NUMBER_OF_REMINDERS_PER_PAGE = 7;
-    pageNumber = Number(pageNumber);
-    if (!searchTerm) {
-        searchTerm = "";
-    }
-    else {
-        logger.info(`${ctx.chat.id}: COMMAND_LIST_SEARCH_TERM`);
-    }
+function _displayOneReminderToTheUser(ctx, allReminders, allRecurringReminders, allNoneRecurringReminders, searchTerm, b64EncodedSearchTerm, isRecurring, nRecurring, nNoneRecurring) {
+    let reminder = allReminders[0];
+    let markup = remindercommand.getReminderMarkup(reminder);
+    let onlyOneReminder = allRecurringReminders.length + allNoneRecurringReminders.length == 1;
+    let headerText;
 
-    let allRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, true);
-    let allNoneRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, false);
-    if (allRecurringReminders == undefined || allNoneRecurringReminders == undefined) {
-        return;
+    // Dont specify ⏱/🔄⏱ if the user only has one reminder TOTAL
+    if(onlyOneReminder) {
+        headerText = `You only have the following reminder ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}:`;
     }
-    let nRecurring, nNoneRecurring;
-    nRecurring = allRecurringReminders.length;
-    nNoneRecurring = allNoneRecurringReminders.length;
-    let allReminders = isRecurring ? allRecurringReminders : allNoneRecurringReminders;
-
-    if (!allReminders) {
-        return ctx.reply("You need to /start first");
-    }
-    let reminders;
-    if (allReminders.length == 0) {
-        pageNumber = 0;
-        reminders = [];
-    }
-    else {
-        let remindersMatrix = _listToMatrix(allReminders, NUMBER_OF_REMINDERS_PER_PAGE);
-        if (pageNumber > remindersMatrix.length) {
-            pageNumber = remindersMatrix.length;
+    else  {
+        headerText = `You only have the following ${isRecurring ? "🔄⏱" : "⏱"} reminder ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}:`;
+        let toggleRecurringButton;
+        if(isRecurring) {
+            toggleRecurringButton = {
+                text: `${nNoneRecurring + " ⏱"}`,
+                callback_data: `LIST_NON_RECURRING_1_${b64EncodedSearchTerm}`,
+                hide: false
+            };
         }
-        reminders = remindersMatrix[pageNumber - 1];
+        else {
+            toggleRecurringButton = {
+                text: `${nRecurring + " 🔄⏱"}`,
+                callback_data: `LIST_RECURRING_1_${b64EncodedSearchTerm}`,
+                hide: false
+            };
+        }
+        markup.reply_markup.inline_keyboard.push([toggleRecurringButton]);
     }
+    
+    let text = headerText + '\n\n' + reminder.getFormattedReminder(false);
+    return ctx.reply(text, markup).catch(catchBlocks);
+}
 
-
-    logger.info(`${userId}: list, isRecurring:${isRecurring} ${searchTerm},${reminders.length} reminders`);
-
-    let markup = Extra.HTML().markup((m) => {
+function _getReminderButtonsMarkup(allReminders, currentPageReminders, pageNumber, b64EncodedSearchTerm, isRecurring, nRecurring, nNoneRecurring) {
+    return Extra.HTML().markup((m) => {
         let reminderButtons = [];
         let i = (pageNumber - 1) * NUMBER_OF_REMINDERS_PER_PAGE + 1;
-        for (let reminder of reminders) {
+        for (let reminder of currentPageReminders) {
             reminderButtons.push(m.callbackButton(String(i++), `VIEW_${reminder.getId()}`));
         }
-
-        let b64EncodedSearchTerm = Buffer.from(searchTerm).toString('base64');
 
         let paginationButtons = [];
         if (pageNumber > 1) {
@@ -87,15 +80,84 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
 
         return m.inlineKeyboard([reminderButtons, paginationButtons]);
     });
+}
 
-    let remindersList = [];
-    let i = (pageNumber - 1) * NUMBER_OF_REMINDERS_PER_PAGE + 1;
-    for (let reminder of reminders) {
-        remindersList.push(`<b>${i++})</b> ${reminder.getFormattedReminder(true)}`);
+/**
+    searchTerm is optional
+    pageNumber starts from 1
+    isRecurring can be specified as true,false or non specified as null/undefined
+    isFirstInTransaction - is this the first /list command (i.e cant edit message text)
+*/
+function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstInTransaction) {
+    pageNumber = Number(pageNumber);
+    if (!searchTerm) {
+        searchTerm = "";
+    }
+    else {
+        logger.info(`${ctx.chat.id}: COMMAND_LIST_SEARCH_TERM`);
+    }
+    let b64EncodedSearchTerm = Buffer.from(searchTerm).toString('base64');
+
+    let allRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, true);
+    let allNoneRecurringReminders = UserManager.getUserSortedFutureReminders(userId, searchTerm, false);
+    if (allRecurringReminders == undefined || allNoneRecurringReminders == undefined) {
+        return;
+    }
+    let nRecurring, nNoneRecurring;
+    nRecurring = allRecurringReminders.length;
+    nNoneRecurring = allNoneRecurringReminders.length;
+
+    // if isRecurring wasn't specified
+    if(isRecurring === null || isRecurring === undefined) {
+        if(allNoneRecurringReminders.length == 0) {
+            isRecurring = true;
+        }
+        else {
+            isRecurring = false;
+        }
+    }
+    let allReminders = isRecurring ? allRecurringReminders : allNoneRecurringReminders;
+
+    if (!allReminders) {
+        return ctx.reply("You need to /start first");
     }
 
+    // if we just have one, display it to the user
+    if(allReminders.length == 1) {
+        return _displayOneReminderToTheUser(ctx, allReminders, allRecurringReminders,
+            allNoneRecurringReminders, searchTerm, b64EncodedSearchTerm,
+            isRecurring, nRecurring, nNoneRecurring);
+    }
+
+    let currentPageReminders;
+    if (allReminders.length == 0) {
+        pageNumber = 0;
+        currentPageReminders = [];
+    }
+    else {
+        let currentPageRemindersMatrix = _listToMatrix(allReminders, NUMBER_OF_REMINDERS_PER_PAGE);
+        // if user deleted reminders, make sure we 
+        if (pageNumber > currentPageRemindersMatrix.length) {
+            pageNumber = currentPageRemindersMatrix.length;
+        }
+        currentPageReminders = currentPageRemindersMatrix[pageNumber - 1];
+    }
+
+
+    logger.info(`${userId}: list, isRecurring:${isRecurring} ${searchTerm},${currentPageReminders.length} reminders`);
+
+    let markup = _getReminderButtonsMarkup(allReminders, currentPageReminders, pageNumber, b64EncodedSearchTerm, isRecurring, nRecurring, nNoneRecurring);
+
+    // create 
+    let remindersList = [];
+    let i = (pageNumber - 1) * NUMBER_OF_REMINDERS_PER_PAGE + 1;
+    for (let reminder of currentPageReminders) {
+        remindersList.push(`<b>${i++})</b>  ${reminder.getFormattedReminder(true)}`);
+    }
+    let body = remindersList.join("\n——————————————\n");
+
     if (!remindersList.length) {
-        let noRemindersMessage = `You have no ${isRecurring ? "🔄⏱" : "⏱"} reminders ${searchTerm.length != 0 ? "with the search query: " + searchTerm : ""}`;
+        let noRemindersMessage = `You have no ${isRecurring ? "🔄⏱" : "⏱"} reminders ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}`;
         if (isFirstInTransaction) {
             return ctx.reply(noRemindersMessage, markup);
         }
@@ -104,12 +166,10 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
         }
     }
 
-    let body = remindersList.join("\n——————————————\n");
-
     let footer = '\n\nChoose number to view or edit:';
 
     let header = `You have ${isRecurring ? nRecurring + " 🔄⏱" : nNoneRecurring + " ⏱"} reminders:` + "\n" +
-        (searchTerm.length != 0 ? `Search query: ${searchTerm}` : "") + "\n\n";
+        (searchTerm.length != 0 ? `Search query ${searchTerm}` : "") + "\n\n";
 
     if (isFirstInTransaction) {
         return ctx.reply(header + body + footer, markup);
@@ -140,10 +200,11 @@ function addToBot(bot) {
     });
 
     let listCmdCallback = ctx => {
+        logger.info(`${ctx.chat.id}: COMMAND_LIST`);
         let userId = ctx.chat.id;
         let searchTerm = ctx.message.text.split(" ")[1];
         let pageNumber = 1;
-        _displayList(ctx, userId, searchTerm, pageNumber, false, true);
+        _displayList(ctx, userId, searchTerm, pageNumber, null, true);
     };
     bot.command('list', listCmdCallback);
     bot.command('lista', listCmdCallback);

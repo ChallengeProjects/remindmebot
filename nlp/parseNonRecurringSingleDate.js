@@ -3,7 +3,6 @@ const timemachine = require('../timemachine.js'),
     moment = require('moment-timezone'),
     chrono = require('chrono-node-albinodrought'),
     errorCodes = require("./errorCodes.js");
-timemachine.reset();
 
 /**
  * Fix the Meridiem if it was implied by the chrono library (because it sucks)
