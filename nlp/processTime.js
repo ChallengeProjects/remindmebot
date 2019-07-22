@@ -4,6 +4,7 @@ const commonTypos = require("./commonTypos.json"),
     utils = require("./utils.js"),
     errorCodes = require("./errorCodes.js"),
     translationMaps = require("./translationMaps.json"),
+    // one,two,three -> 1,2,3
     { wordsToNumbers } = require('words-to-numbers');
 
 
@@ -79,8 +80,15 @@ function _splitReminderText(text) {
 }
 
 function _correctSpellingForDateTimeText(reminderDateTimeText) {
+    // stupid library converting "second" -> "2", in "/r in every second"
+    // temp fix until i find another library
+    const SECOND_TEMP_REPLACEMENT = "∞§¶";
+    reminderDateTimeText = reminderDateTimeText.replace(/((?:every|in)? ([.0-9] )?)second\b/, "$1" + SECOND_TEMP_REPLACEMENT);
+    // one,two,three -> 1,2,3
     reminderDateTimeText = wordsToNumbers(reminderDateTimeText);
-    
+    reminderDateTimeText = reminderDateTimeText.replace(SECOND_TEMP_REPLACEMENT, "second");
+
+    // Now fix the typos
     for (let correctWord in commonTypos) {
         for (let incorrectWord of commonTypos[correctWord]) {
             reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
@@ -156,6 +164,45 @@ function _translate(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
+function _convertFractionUnitsToIntegers(reminderDateTimeText) {
+    let map = {
+        'second': { factor: 1, nextUnit: 'seconds' },
+        'seconds': { factor: 1, nextUnit: 'seconds' },
+        'minute': { factor: 60, nextUnit: 'seconds' },
+        'minutes': { factor: 60, nextUnit: 'seconds' },
+        'hour': { factor: 60, nextUnit: 'minutes' },
+        'hours': { factor: 60, nextUnit: 'minutes' },
+        'day': { factor: 24, nextUnit: 'hours' },
+        'days': { factor: 24, nextUnit: 'hours' },
+        'week': { factor: 7, nextUnit: 'days' },
+        'weeks': { factor: 7, nextUnit: 'days' },
+        'month': { factor: 4, nextUnit: 'weeks' },
+        'months': { factor: 4, nextUnit: 'weeks' },
+        'year': { factor: 52, nextUnit: 'weeks' },
+        'years': { factor: 52, nextUnit: 'weeks' },
+    };
+    let units = Object.keys(map);
+
+    let regexMatches = reminderDateTimeText.match(new RegExp(`\\b(every|in) ([.0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+    regexMatches = regexMatches || [];
+    for (let regexMatch of regexMatches) {
+        // only if there is a number
+        if (!!regexMatch.match(/.*[.0-9]+.*/)) {
+            let prefix = regexMatch.split(" ")[0];
+            let number = parseFloat(regexMatch.split(" ")[1]);
+            let unit = regexMatch.split(" ")[2];
+            // if its a fraction
+            if (number != parseInt(number)) {
+                number = Math.round(number * map[unit].factor);
+                unit = map[unit].nextUnit;
+            }
+            let regexMatchReplacement = prefix + " " + number + " " + unit;
+            reminderDateTimeText = reminderDateTimeText.replace(regexMatch, regexMatchReplacement);
+        }
+    }
+    return reminderDateTimeText;
+}
+
 function preProcessReminderDateTimeText(reminderDateTimeText) {
     // remove double spaces from text
     reminderDateTimeText = reminderDateTimeText.replace(/ {1,}/g, " ");
@@ -168,6 +215,8 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
     reminderDateTimeText = _translate(reminderDateTimeText);
     reminderDateTimeText = _correctSpellingForDateTimeText(reminderDateTimeText);
+
+    reminderDateTimeText = _convertFractionUnitsToIntegers(reminderDateTimeText);
 
     return reminderDateTimeText;
 }

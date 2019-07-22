@@ -83,8 +83,12 @@ module.exports = class User {
     getSerializableObject() {
         let serializableReminderObject = {};
         for (let reminderId in this.reminders) {
-            if (!this.reminders[reminderId].isInThePast()) {
-                serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
+            try {
+                if (!this.reminders[reminderId].isInThePast()) {
+                    serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
+                }
+            } catch (err) {
+                console.log("Couldn't serialzie reminder: ", reminderId);
             }
         }
         let serializableTimezoneObject;
@@ -112,7 +116,11 @@ module.exports = class User {
         }
         let deserializedReminders = {};
         for (let reminderId in serializedUserObject.reminders) {
-            deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone);
+            try {
+                deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone);
+            } catch (err) {
+                console.log("Couldn't deserialize reminder: ", reminderId);
+            }
         }
         let deserializedUser = new User(serializedUserObject.id, serializedUserObject.username, timezone);
         deserializedUser.reminders = deserializedReminders;

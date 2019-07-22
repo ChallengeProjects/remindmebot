@@ -13,7 +13,11 @@ const BACKUP_DIRECTORY_PATH = path.resolve(__dirname, 'users_backup');
 function updateStorage() {
     let serializedUsers = {};
     for (let userId in users) {
-        serializedUsers[userId] = users[userId].getSerializableObject();
+        try {
+            serializedUsers[userId] = users[userId].getSerializableObject();
+        } catch (err) {
+            console.log("Couldn't serialize user: ", userId);
+        }
     }
 
     fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(serializedUsers));
@@ -157,7 +161,11 @@ module.exports = class UserManager {
             let serializedUsers = JSON.parse(usersSerialized);
             let deserializedUsers = {};
             for (let userId in serializedUsers) {
-                deserializedUsers[userId] = User.deserialize(serializedUsers[userId]);
+                try {
+                    deserializedUsers[userId] = User.deserialize(serializedUsers[userId]);
+                } catch (err) {
+                    console.log("Couldn't deserialize user: ", userId);
+                }
             }
             return deserializedUsers;
         }

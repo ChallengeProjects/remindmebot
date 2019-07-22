@@ -105,6 +105,10 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
 
 // capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
 //  so chrono can parse it as time
+// This is needed because of 2 reasons
+//  1- To be more flexible with users that like to use "on" as a prefix to time
+//  2- More importantly, parseRecurringDates._convertEndingDateTimeTextToReminderDateTimeText
+//      does not differentiate dates and times, it simply prefixes them both with "on"
 function _convertOnTimetoAtTime(reminderDateTimeText) {
     let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${utils.TIME_NUMBER_REGEX})(\\s(${utils.MERIDIEM_REGEX})?)?$`, 'i'));
     let timeIndex = 1;

@@ -17,13 +17,13 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
     * utils: [low priority]
         * regexMatchDateTextOrdinal
         * matchEverything
+    * processTime: _convertFractionUnitsToIntegers
 * BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
     /timezone kajdkfajs actually worked, shouldnt have worked
     * use the same thing for autocorrecting date/time (see autocorrect branch)
 * /list inline query typeahead search thru reminders
-* /remindme in 1.25 hours
-* BUG: "/r every second to bam bam"
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
+* Refactor units logic in nlp/parseRecurrignDates and nlp/utils
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )
