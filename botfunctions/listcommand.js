@@ -157,7 +157,14 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     let body = remindersList.join("\n——————————————\n");
 
     if (!remindersList.length) {
-        let noRemindersMessage = `You have no ${isRecurring ? "🔄⏱" : "⏱"} reminders ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}`;
+        let reminderType;
+        if(nRecurring + nNoneRecurring == 0) {
+            reminderType = "";
+        }
+        else {
+            reminderType = (isRecurring ? "🔄⏱" : "⏱") + " ";
+        }
+        let noRemindersMessage = `You have no ${reminderType}reminders ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}`;
         if (isFirstInTransaction) {
             return ctx.reply(noRemindersMessage, markup);
         }

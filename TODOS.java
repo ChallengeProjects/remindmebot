@@ -55,12 +55,6 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
         * (probably do this one later) if user says: "on june the 1st and the 2nd" we need to distribute "june" on both dates too
     * should  getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method
     * processTime.getDate shouldnt have the cross product logic
-* ITALIAN:
-    * choose language from the beginning to show the right welcome message
-        * show keyboard buttons
-        * store in settings
-    * bot should to reply in italian too if the user chose italian in settings
-        * shouldnt be hard at all, just make a map per language, get user language from settings
 * /list will list all buttons with dates
     * recurring reminders doesnt show up there, a button to switch to normal recurring reminders
         * or should it show up there?
@@ -91,9 +85,12 @@ UX DESIGN PROBLEMS:
     * /remindme to.. at..
     * /remindme to..
         * when do you want to be reminded?
-* bot said i dont have any reminders, if i dont have any it should show the recurring ones
-    * or think of a better way in general to list them all, what if i only had a couple of non recurring reminders
-        * then I can either show the recurring ones in the same message or in a different one?
+* ITALIAN:
+    * choose language from the beginning to show the right welcome message
+        * show keyboard buttons
+        * store in settings
+    * bot should to reply in italian too if the user chose italian in settings
+        * shouldnt be hard at all, just make a map per language, get user language from settings
 * [1 hour] alfred workflow for list reminder bot
     * list all when user does typeahead search
     * selection allows user to
@@ -138,11 +135,12 @@ non features:
 * docker for the whole thing
 * install redis or memcached
 -----
-list - list all reminders
-timezone - set your timezone
-help - how to use this bot
-about - about this bot
-REMOVED: remindme - add a reminder
+command list for bot father:
+    list - list all reminders
+    timezone - set your timezone
+    help - how to use this bot
+    about - about this bot
+    REMOVED: remindme - add a reminder
 -----------------------------------
 Alfred workflow:
     First time Alfred:
