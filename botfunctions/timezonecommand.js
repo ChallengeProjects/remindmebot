@@ -3,7 +3,7 @@ const
     UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
     moment = require("moment-timezone"),
-    autocorrect = require('autocorrect')({ words: moment.tz.names() }),
+    autocorrect = require("../utils/autocorrect.js"),
     config = require("../config.json")[process.env.NODE_ENV],
     googleMapsClient = require('@google/maps').createClient({
         key: config.googleMapsClientKey
@@ -53,6 +53,7 @@ function _convertCoordinatesToTimezone(latitude, longitude) {
     });
 }
 
+// function to be called when user sends a location
 function locationCallback(ctx) {
     const userId = ctx.from.id;
     const userLatitude = Number(ctx.message.location.latitude);
@@ -74,34 +75,34 @@ function locationCallback(ctx) {
 function timezoneCommandCallback(ctx, language) {
     let userId = ctx.chat.id;
     let timezoneInput = ctx.message.text.split(" ").slice(1).join(" "); // remove the first word ("/timezone")
-    let parsedTimezone;
+
+    // respond with the help message if the user didn't provide a timezone
     if (!timezoneInput || timezoneInput.length == 0) {
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
-    // if timezone is not one of the valid moment timezones
-    if (!moment.tz.zone(timezoneInput)) {
-        // try to get it from the short names list
-        // Example moment.tz([2012, 5], 'America/Los_Angeles').format('z') == 'PDT'
-        let timezoneShortNamesMap = new Map(moment.tz.names().map(timezoneLongName => [moment.tz([2012, 5], timezoneLongName).format('z').toUpperCase(), timezoneLongName]));
-        if (timezoneShortNamesMap.has(timezoneInput.toUpperCase())) {
-            parsedTimezone = timezoneShortNamesMap.get(timezoneInput.toUpperCase()); // get the long name from here
-        }
-        // just try to autocorrect then
-        else {
-            parsedTimezone = autocorrect(timezoneInput);
-        }
-    }
-    else {
-        parsedTimezone = timezoneInput;
-    }
-    if (!moment.tz.zone(parsedTimezone)) {
+
+    // Example moment.tz([2012, 5], 'America/Los_Angeles').format('z') == 'PDT'
+    // map: {'PDT': 'America/Los_Angeles', ..}
+    let timezoneShortNamesMap = new Map(moment.tz.names().map(timezoneLongName => 
+        [moment.tz([2012, 5], timezoneLongName).format('z').toUpperCase(), timezoneLongName]
+    ));
+    let listOfTimezones = [...moment.tz.names(), ...timezoneShortNamesMap.keys()];
+    // timezone will be used to confirm with user
+    let parsedTimezone = autocorrect.autocorrect(timezoneInput, listOfTimezones, 1/3);
+    if(parsedTimezone == null) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
+    // timezone will be used to give to moment (moment can't take the short form)
+    let timezoneForMoment = parsedTimezone;
+    if(timezoneShortNamesMap.has(timezoneForMoment)) {
+        timezoneForMoment = timezoneShortNamesMap.get(timezoneForMoment);
+    }
+    
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput}`);
 
-    UserManager.setUserTimezone(userId, parsedTimezone);
-    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + timezoneInput + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
+    UserManager.setUserTimezone(userId, timezoneForMoment);
+    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + parsedTimezone + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
 }
 
 function addToBot(bot) {

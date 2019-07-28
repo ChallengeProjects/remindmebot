@@ -1,5 +1,4 @@
 TODOS: 
-Add an "FN" button ("Friday Night"), only show it when it''s me
 ----------------------
 [Sorted By Priority]
 * unit tests:
@@ -17,14 +16,13 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
     * utils: [low priority]
         * regexMatchDateTextOrdinal
         * matchEverything
-    * processTime: _convertFractionUnitsToIntegers
-* BUG: /timezone (https://www.npmjs.com/package/js-levenshtein)
-    /timezone kajdkfajs actually worked, shouldnt have worked
-    * use the same thing for autocorrecting date/time (see autocorrect branch)
+    * processTime:
+        * _convertFractionUnitsToIntegers
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
 * Refactor units logic in nlp/parseRecurrignDates and nlp/utils
 * [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
+    * remindme on saturdays
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )
 * setup server instead of polling for bot so its faster (add an option in config to do that)
@@ -33,7 +31,7 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
 * Make an actual walkthrough tutorial (see research/tutorial.java)
 * make a gif as a tutorial to be sent with /help or /start show my bot working on all different types of reminders on alfred
     * see research/gif.java
-* user studies
+* UXR studies (right after i do the tutorial)
 * suggest autofix text before time
     * send message "Did you mean?", with "Yes", "No" buttons
     * save reminder in user temp storage, "Yes" button will 
@@ -42,9 +40,9 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
     * user taps, bam, reminder set
 * better way to output recurring reminders
     * that shouldnt be hard, just output the text we got from the user
-* remind me on tuesdayS and wednesdayS at .. to ...
 * use this to reply to my own message when user snoozes: ctx.reply(message, extra.inReplyTo(message.message_id))
     * Need to store my own message_id somewhere first: https://github.com/telegraf/telegraf/issues/154
+    * store in the reminder objevt the latest message_id?
 * Delete -> undo
 * make a specific help message for the bot when its a group chat to clarify that the user doesnt need to run the command /list@chemistrybot instead just do /list
     * can the bot detect when it has been added to the group and send a message automatically? https://stackoverflow.com/questions/52271498/can-i-detect-my-bots-groups-with-telegram-bot-api
@@ -53,15 +51,16 @@ Add an "FN" button ("Friday Night"), only show it when it''s me
         * We need it because when we parse multiple dates we dont always have the `on` (example: on june the 2nd, april the 1st)
         * solution: propogate "on" or "every" down and get rid of the isOnRequired variable
         * (probably do this one later) if user says: "on june the 1st and the 2nd" we need to distribute "june" on both dates too
-    * should  getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method
+    * should getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method?
     * processTime.getDate shouldnt have the cross product logic
+        * refactor date x time cross product logic somewhere
+* 1 user requested: * /appendtoreminder <reminder search text> (to|:) ....
+--------
+LOW PRIORITY:
 * /list will list all buttons with dates
     * recurring reminders doesnt show up there, a button to switch to normal recurring reminders
         * or should it show up there?
 * 2 users requested: * only allow admin to use reminder bot in a group
-* 1 user requested: * /appendtoreminder <reminder search text> (to|:) ....
---------
-LOW PRIORITY:
 * To: "en/eny/eno/enena/enaha/enohom" split for arabic
 * multireminder set should just be one remidner and not multiple reminders
 * attach images to reminders
@@ -158,3 +157,5 @@ Alfred workflow:
     Lists inline
     Choose to view then u get the option to edit
 -----------------------------------
+Problems of scale:
+    * Im not using a database

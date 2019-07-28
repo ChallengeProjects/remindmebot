@@ -4,7 +4,10 @@ const winston = require('winston'),
 require('winston-papertrail').Papertrail;
 
 if (!config.papertrail) {
-    module.exports = { info: console.log };
+    let customLogger = function(log) {
+        console.log("[" + new Date() + "]", log);
+    };
+    module.exports = { info: customLogger };
 }
 else {
     let winstonPapertrail = new winston.transports.Papertrail(config.papertrail);
