@@ -18,13 +18,13 @@ TODOS:
         * matchEverything
     * processTime:
         * _convertFractionUnitsToIntegers
+    * need unit tests for remind me every 2 mondays, remind me in 2 mondays
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
 * Refactor units logic in nlp/parseRecurrignDates and nlp/utils
-* [1 hour] remindme every 2 saturdays OR every 2 weeks starting saturday
-    * remindme on saturdays
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )
+* Remind me a week before 08/31, remind me 2 days before 08/31..
 * setup server instead of polling for bot so its faster (add an option in config to do that)
     * navigating menus is affected by this
 ------------------

@@ -5,33 +5,24 @@ function _getRecurringDates(dateText) {
     dateText = dateText.replace(/(,|and)/ig, ' ');
 
     // try to parse units
-    let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
+    let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     units = [...units, ...units.map(u => u + 's')]; // add plural forms too
     
-    let unitMatches = dateText.match(new RegExp(`every ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
-    
+    let unitMatches = dateText.match(new RegExp(`([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
     let dates = [];
     if (unitMatches) {
         for(let unitMatch of unitMatches) {
             let split = unitMatch.split(" ");
             let frequency, unit;
-            if(split.length == 3) { // unit is there "every 3 minutes"
-                frequency = parseInt(split[1].trim());
-                unit = split[2];
-            }
-            else { // no unit
-                frequency = 1;
+            if(split.length == 2) { // frequency is there "every 3 minutes"
+                frequency = parseInt(split[0].trim());
                 unit = split[1];
             }
+            else { // no frequency "every minute"
+                frequency = 1;
+                unit = split[0];
+            }
             dates.push(`in ${frequency} ${unit}`);
-        }
-    }
-
-    // try to parse week days
-    let weekDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    for (let weekDay of weekDays) {
-        if (dateText.match(new RegExp(`\\b${weekDay}\\b`, 'i'))) {
-            dates.push(`on ${weekDay}`);
         }
     }
     return dates;
@@ -134,7 +125,6 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     // /remindme every monday, tuesday at 8am, 3 pm and wednesday at 2 pm -> {"monday, tuesday": ["at 8 am", "at 3 pm"]
     //  , "wednesday": "at 2 pm"}
     let dateTextToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-
     for(let dateText in dateTextToTimesMap) {
         let times = dateTextToTimesMap[dateText];
         let dates = _getRecurringDates(dateText);

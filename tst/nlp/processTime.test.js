@@ -133,7 +133,7 @@ describe("getDate", () => {
             '/remindme every weekday at 12 pm to call my son in school to check on him': {
                 reminderText: 'call my son in school to check on him',
                 reminderDates: {
-                    recurringDates: ["on monday at 12:00 pm", "on tuesday at 12:00 pm", "on wednesday at 12:00 pm", "on thursday at 12:00 pm", "on friday at 12:00 pm"],
+                    recurringDates: ["in 1 monday at 12:00 pm", "in 1 tuesday at 12:00 pm", "in 1 wednesday at 12:00 pm", "in 1 thursday at 12:00 pm", "in 1 friday at 12:00 pm"],
                 },
             },
             '/remindme every hour until 6 pm to log my work': {
@@ -153,27 +153,27 @@ describe("getDate", () => {
             '/remindme every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to take my vitamins': {
                 reminderText: 'take my vitamins',
                 reminderDates: {
-                    recurringDates: ["on tuesday at 3 pm", "on tuesday at 4 pm", "on wednesday at 3 pm", "on wednesday at 4 pm", "on saturday at 9 am"],
+                    recurringDates: ["in 1 tuesday at 3 pm", "in 1 tuesday at 4 pm", "in 1 wednesday at 3 pm", "in 1 wednesday at 4 pm", "in 1 saturday at 9 am"],
                 }
             },
             'fakarny kol youm etnen warba3 at 5 pm w kol youm talat at 7,8 am to test': {
                 reminderText: 'test',
                 reminderDates: {
-                    recurringDates: ["on monday at 5 pm", "on wednesday at 5 pm", "on tuesday at 7 am", "on tuesday at 8 am"],
+                    recurringDates: ["in 1 monday at 5 pm", "in 1 wednesday at 5 pm", "in 1 tuesday at 7 am", "in 1 tuesday at 8 am"],
                 },
             },
             '/remindme every weekday at 9 am and every weekend at 11 am to open up the store': {
                 reminderText: 'open up the store',
                 reminderDates: {
-                    recurringDates: ["on monday at 9 am", "on tuesday at 9 am", "on wednesday at 9 am",
-                        "on thursday at 9 am", "on friday at 9 am", "on saturday at 11:00 am", "on sunday at 11:00 am"
+                    recurringDates: ["in 1 monday at 9 am", "in 1 tuesday at 9 am", "in 1 wednesday at 9 am",
+                        "in 1 thursday at 9 am", "in 1 friday at 9 am", "in 1 saturday at 11:00 am", "in 1 sunday at 11:00 am"
                     ],
                 }
             },
             '/remindme every monday and every tuesday to test': {
                 reminderText: 'test',
                 reminderDates: {
-                    recurringDates: ['on monday', 'on tuesday'],
+                    recurringDates: ['in 1 monday', 'in 1 tuesday'],
                 }
             },
             '/remindme every minute and every hour to test': {
@@ -256,7 +256,7 @@ describe("getDate", () => {
             "ricordami ogni giorno della settimana alle 12 di pomeriggio di chiamare mio figlio  ": {
                 reminderText: 'chiamare mio figlio',
                 reminderDates: {
-                    recurringDates: ["on monday at 12:00 pm", "on tuesday at 12:00 pm", "on wednesday at 12:00 pm", "on thursday at 12:00 pm", "on friday at 12:00 pm"],
+                    recurringDates: ["in 1 monday at 12:00 pm", "in 1 tuesday at 12:00 pm", "in 1 wednesday at 12:00 pm", "in 1 thursday at 12:00 pm", "in 1 friday at 12:00 pm"],
                 }
             },
             "ricordami ogni ora sino alle 6 di pomeriggio di registrare il mio lavoro ": {
@@ -275,13 +275,13 @@ describe("getDate", () => {
             "/ricordami ogni domenica  alle 10 di mattina di lavare i panni": {
                 reminderText: 'lavare i panni',
                 reminderDates: {
-                    recurringDates: ["on sunday at 10:00 am"],
+                    recurringDates: ["in 1 sunday at 10:00 am"],
                 }
             },
             "/ricordami ogni lunedì, mercoledì e venerdi alle 5 di pomeriggio di andare via dal lavoro per prendere i bambini": {
                 reminderText: 'andare via dal lavoro per prendere i bambini',
                 reminderDates: {
-                    recurringDates: ["on monday at 5 pm", "on wednesday at 5 pm", "on friday at 5 pm"],
+                    recurringDates: ["in 1 monday at 5 pm", "in 1 wednesday at 5 pm", "in 1 friday at 5 pm"],
                 }
             },
             "/ricordami ogni 2 ore di controllare la mia mail": {

@@ -73,7 +73,6 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
             datesToTimeMap[dateParts[i]] = timeParts[i];
         }
     }
-
     return _seperateDatesInDatesToTimesMap(datesToTimeMap);
     // return datesToTimeMap;
 }
@@ -81,7 +80,6 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
 // [see tests for examples]
 function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
     let dateToTimeMap = getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText);
-
     let dateToParsedTimesMap = {};
 
     for (let date in dateToTimeMap) {
@@ -194,7 +192,19 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
         //  that the ordinal function doesnt match them again
 
         //////////////////////////////
-        let regexMatches = datesText.match(/\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\b/ig);
+        // try to parse units
+        let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        units = [...units, ...units.map(u => u + 's')]; // add plural forms too
+        let regexMatches = datesText.match(new RegExp(`\\b(every|in) ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+        regexMatches = regexMatches || [];
+        for(let regexMatch of regexMatches) {
+            datesText = datesText.replace(regexMatch, '');
+        }
+        allParsedDateTexts.push(...regexMatches);
+        //////////////////////////////
+        
+        /////////////////////////////////
+        regexMatches = datesText.match(/\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\b/ig);
         regexMatches = regexMatches || [];
         for(let regexMatch of regexMatches) {
             datesText = datesText.replace(regexMatch, '');
@@ -205,18 +215,6 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
         //////////////////////////////
         // try to match x(x?)/x(x?)
         regexMatches = datesText.match(/\b(on )?[0-9]([0-9])?\/[0-9]([0-9])?\b/ig);
-        regexMatches = regexMatches || [];
-        for(let regexMatch of regexMatches) {
-            datesText = datesText.replace(regexMatch, '');
-        }
-        allParsedDateTexts.push(...regexMatches);
-        //////////////////////////////
-
-        //////////////////////////////
-        // try to parse units
-        let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
-        units = [...units, ...units.map(u => u + 's')]; // add plural forms too
-        regexMatches = datesText.match(new RegExp(`\\b(every|in) ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
         regexMatches = regexMatches || [];
         for(let regexMatch of regexMatches) {
             datesText = datesText.replace(regexMatch, '');

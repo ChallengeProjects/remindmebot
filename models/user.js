@@ -88,7 +88,7 @@ module.exports = class User {
                     serializableReminderObject[reminderId] = this.reminders[reminderId].getSerializableObject();
                 }
             } catch (err) {
-                console.log("Couldn't serialzie reminder: ", reminderId);
+                console.log("Couldn't serialize reminder: ", reminderId);
             }
         }
         let serializableTimezoneObject;

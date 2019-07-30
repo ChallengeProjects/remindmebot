@@ -21,19 +21,19 @@ describe("parseRecurringDates", () => {
                 endingConditionDate: undefined
             },
             'every monday at 2 am and tuesday at 3 pm and every 2 days at 9 am': {
-                recurringDates: ['on monday at 2 am', 'on tuesday at 3 pm', 'in 2 days at 9 am'],
+                recurringDates: ['in 1 monday at 2 am', 'in 1 tuesday at 3 pm', 'in 2 days at 9 am'],
                 endingConditionDate: undefined,
             },
             'every monday, tuesday at 6,7 pm': {
-                recurringDates: ['on monday at 6 pm', 'on monday at 7 pm', 'on tuesday at 6 pm', 'on tuesday at 7 pm'],
+                recurringDates: ['in 1 monday at 6 pm', 'in 1 monday at 7 pm', 'in 1 tuesday at 6 pm', 'in 1 tuesday at 7 pm'],
                 endingConditionDate: undefined,
             },
             'every monday,tuesday at 6,7 pm': {
-                recurringDates: ['on monday at 6 pm', 'on monday at 7 pm', 'on tuesday at 6 pm', 'on tuesday at 7 pm'],
+                recurringDates: ['in 1 monday at 6 pm', 'in 1 monday at 7 pm', 'in 1 tuesday at 6 pm', 'in 1 tuesday at 7 pm'],
                 endingConditionDate: undefined,
             },
             'every thursday and friday at 6,7 pm': {
-                recurringDates: ['on thursday at 6 pm', 'on thursday at 7 pm', 'on friday at 6 pm', 'on friday at 7 pm'],
+                recurringDates: ['in 1 thursday at 6 pm', 'in 1 thursday at 7 pm', 'in 1 friday at 6 pm', 'in 1 friday at 7 pm'],
                 endingConditionDate: undefined,
             },
             '/remindme every minute and every hour to test': {
@@ -50,7 +50,7 @@ describe("parseRecurringDates", () => {
     it('should work with italian too (after preProcessing)', () => {
         let map = {
             'ogni giorno della settimana alle 12 di pomeriggio': {
-                recurringDates: ['on monday at 12:00 pm', 'on tuesday at 12:00 pm', 'on wednesday at 12:00 pm', 'on thursday at 12:00 pm', 'on friday at 12:00 pm'],
+                recurringDates: ['in 1 monday at 12:00 pm', 'in 1 tuesday at 12:00 pm', 'in 1 wednesday at 12:00 pm', 'in 1 thursday at 12:00 pm', 'in 1 friday at 12:00 pm'],
                 endingConditionDate: undefined
             },
             'ogni ora sino alle 6 di pomeriggio': {
@@ -62,11 +62,11 @@ describe("parseRecurringDates", () => {
                 endingConditionDate: undefined,
             },
             'ogni domenica  alle 10 di mattina': {
-                recurringDates: ['on sunday at 10:00 am'],
+                recurringDates: ['in 1 sunday at 10:00 am'],
                 endingConditionDate: undefined,
             },
             'ogni lunedì, mercoledì e venerdi alle 5 di pomeriggio': {
-                recurringDates: ['on monday at 5 pm', 'on wednesday at 5 pm', 'on friday at 5 pm'],
+                recurringDates: ['in 1 monday at 5 pm', 'in 1 wednesday at 5 pm', 'in 1 friday at 5 pm'],
                 endingConditionDate: undefined,
             },
             'ogni 2 ore': {

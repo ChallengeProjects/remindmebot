@@ -227,10 +227,10 @@ function getDate(text, userTimezone) {
     text = text.trim();
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     
-    reminderDateTimeText =  preProcessReminderDateTimeText(reminderDateTimeText);
+    reminderDateTimeText = preProcessReminderDateTimeText(reminderDateTimeText);
 
     let recurringDatesResult = null;
-
+    
     try {
         recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
     } catch(err) {
@@ -250,7 +250,7 @@ function getDate(text, userTimezone) {
     }
     else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-        
+
         // Compute cross product for each date
         let parsedDates = [];
         for(let date in dateToTimesMap) {

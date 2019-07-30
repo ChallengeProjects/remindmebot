@@ -36,14 +36,14 @@ function _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDa
     }
     if (parsedDateAM.isBefore(parsedDatePM)) {
         d = parsedDateAM;
-        if(didAMAdd1Day) {
+        if (didAMAdd1Day) {
             d.add(-1, 'day');
         }
         result = chrono.parse(textWitham)[0];
     }
     else {
         d = parsedDatePM;
-        if(didPMAdd1Day) {
+        if (didPMAdd1Day) {
             d.add(-1, 'day');
         }
         result = chrono.parse(textWithpm)[0];
@@ -113,15 +113,15 @@ function _convertOnTimetoAtTime(reminderDateTimeText) {
     let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${utils.TIME_NUMBER_REGEX})(\\s(${utils.MERIDIEM_REGEX})?)?$`, 'i'));
     let timeIndex = 1;
     let meridiemIndex = 3;
-    
-    if(!onTimeMatch) {
+
+    if (!onTimeMatch) {
         return reminderDateTimeText;
     }
     let timeText = onTimeMatch[timeIndex];
     if (timeText.indexOf(":") == -1) {
         timeText += ":00";
     }
-    
+
     if (onTimeMatch[meridiemIndex]) {
         return `at ${timeText} ${onTimeMatch[meridiemIndex]}`;
     }
@@ -132,9 +132,6 @@ function _convertOnTimetoAtTime(reminderDateTimeText) {
 
 
 function _fixDatesInThePast(date, currentDate, result) {
-    if(!date.isBefore(currentDate)) {
-        return date;
-    }
     let knownValues = result.start.knownValues;
     let impliedValues = result.start.impliedValues;
 
@@ -142,8 +139,12 @@ function _fixDatesInThePast(date, currentDate, result) {
     //  then they probably dont want it to be today (unless they specified the 'day number')
     // Dont use .diff(, 'day') because it will calculate 24 hours, we want to make sure they are on different days, not strictly 24 hours difference
     // if('weekday' in knownValues && 'day' in impliedValues && (date.isBefore(currentDate) || date.isSame(currentDate, 'day'))) {
-    if ('weekday' in knownValues && 'day' in impliedValues) {
+    if ((date.isBefore(currentDate) || date.isSame(currentDate, 'day')) && 'weekday' in knownValues && 'day' in impliedValues) {
         date.add(7, 'day');
+        return date;
+    }
+
+    if (!date.isBefore(currentDate)) {
         return date;
     }
 
@@ -171,14 +172,14 @@ function _fixDatesInThePast(date, currentDate, result) {
  */
 function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     let result = utils.regexMatchDateTextOrdinal(reminderDateText, true);
-    if(!result) {
+    if (!result) {
         return null;
     }
-    let {regexMatch, indices} = result;
+    let { regexMatch, indices } = result;
 
     let month = regexMatch[indices.month];
     let day = regexMatch[indices.day];
-    if(!day || day.length > 2) {
+    if (!day || day.length > 2) {
         return null;
     }
     day = day.length == 2 ? day : "0" + day;
@@ -189,11 +190,11 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
         dateText += " " + month + "/" + day;
     }
     // if month wasn't provided then get the current month (or next month)
-    else if(!month) {
+    else if (!month) {
         let currentDate = moment.tz(userTimezone);
         // if the date w/ current month is in the future thats ok
         let dateWithCurrentMonth = currentDate.format("MM") + "/" + day;
-        if (currentDate.format("MM/DD") <= dateWithCurrentMonth)  {
+        if (currentDate.format("MM/DD") <= dateWithCurrentMonth) {
             dateText += " " + dateWithCurrentMonth;
         }
         else {
@@ -204,13 +205,69 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     return dateText;
 }
 
+// "in <n> <weekday>" -> "on 08/03"
+function _parseInNWeekdays(reminderDateTimeText, userTimezone) {
+    // try to parse units
+    let weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    weekdays = [...weekdays, ...weekdays.map(u => u + 's')]; // add plural forms too
+    let match = reminderDateTimeText.match(new RegExp(`in ([0-9]+ )?(${weekdays.join("|")})\\b`, 'ig'));
+    let n, weekday;
+    if (!match) {
+        return null;
+    }
+    match = match[0];
+    let split = match.split(" ");
+    if (split.length == 3) { // n is there "every 3 minutes"
+        n = parseInt(split[1].trim());
+        weekday = split[2];
+    }
+    else { // no n
+        n = 1;
+        weekday = split[1];
+    }
+    // remove the s
+    if (weekday[weekday.length - 1] == "s") {
+        weekday = weekday.substr(0, weekday.length - 1);
+    }
+
+    // Algorithm:
+    //  1- compute "on <weekday>"
+    //  2- add n-1 weeks to the resulting date
+    //  3- return "on mm/dd"
+
+    // 1-
+    let currentDate = moment.tz(userTimezone);
+    // use timemachine to set the server's date to be the user's date, so stuff like "in 2 minutes"
+    //  can be simply parsed with chrono
+    timemachine.config({ dateString: moment.tz(userTimezone).format("MMMM DD, YYYY HH:mm:ss") });
+
+    let newReminderDateTimeText = `on ${weekday}`;
+    let d = moment(chrono.parseDate(newReminderDateTimeText));
+    let result = chrono.parse(newReminderDateTimeText)[0];
+    timemachine.reset();
+
+    let parsedDate;
+    parsedDate = moment.tz(d.format("YYYY-MM-DDTHH:mm:ss"), userTimezone);
+    parsedDate = _fixDatesInThePast(parsedDate, currentDate, result);
+
+    // 2-
+    parsedDate.add(n - 1, 'weeks');
+    // 3-
+    return parsedDate.format("MM/DD");
+}
+
 /**
  * Attempts to parse dates with ordinals, with or without time provided
+ * 1- month day w(/o) ordinal
+ * 2- in [0-9] saturdays
  */
 function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     let monthDay = _getDateTextFromOrdinal(utils.getDatePartsFromString(reminderDateTimeText)[0], userTimezone);
-    if(!monthDay) {
-        return reminderDateTimeText;
+    if (!monthDay) {
+        monthDay = _parseInNWeekdays(reminderDateTimeText, userTimezone);
+        if (!monthDay) {
+            return reminderDateTimeText;
+        }
     }
     let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText));
     let time;
@@ -220,8 +277,7 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     else {
         time = times[0];
     }
-
-    return "on " + monthDay + " " + time;
+    return monthDay + " " + time;
 }
 
 module.exports = {
