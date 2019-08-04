@@ -243,7 +243,7 @@ function getDate(text, userTimezone) {
         return {
             reminderText: reminderText,
             reminderDates: {
-                recurringDates: recurringDates,
+                recurringDates: [...new Set(recurringDates)],
                 endingConditionDate: endingConditionDate,
             }
         };

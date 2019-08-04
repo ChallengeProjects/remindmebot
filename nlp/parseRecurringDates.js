@@ -25,7 +25,7 @@ function _getRecurringDates(dateText) {
             dates.push(`in ${frequency} ${unit}`);
         }
     }
-    return dates;
+    return [...new Set(dates)];
 }
 
 /**
@@ -125,6 +125,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     // /remindme every monday, tuesday at 8am, 3 pm and wednesday at 2 pm -> {"monday, tuesday": ["at 8 am", "at 3 pm"]
     //  , "wednesday": "at 2 pm"}
     let dateTextToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
+
     for(let dateText in dateTextToTimesMap) {
         let times = dateTextToTimesMap[dateText];
         let dates = _getRecurringDates(dateText);
@@ -147,7 +148,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     }
 
     return {
-        recurringDates: recurringDates,
+        recurringDates: [... new Set(recurringDates)],
         endingConditionDate: endingConditionDate,
     };
 }

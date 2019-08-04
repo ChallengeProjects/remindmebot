@@ -6,6 +6,9 @@ describe("_getRecurringDates", () => {
     it('should work', () => {
         let map = {
             'every 2 days': ['in 2 days'],
+            'every 3 hours': ['in 3 hours'],
+            'every 3 hours, 3 minutes': ['in 3 hours', 'in 3 minutes'],
+            'every 3 mondays, 2 tuesdays': ['in 3 mondays', 'in 2 tuesdays'],
         };
         for (let key in map) {
             expect(parseRecurringDates._getRecurringDates(key)).toEqual(map[key]);
@@ -38,6 +41,10 @@ describe("parseRecurringDates", () => {
             },
             '/remindme every minute and every hour to test': {
                 recurringDates: ['in 1 minute', 'in 1 hour'],
+                endingConditionDate: undefined,
+            },
+            '/remindme every 3 mondays, 2 tuesdays': {
+                recurringDates: ['in 3 mondays', 'in 2 tuesdays'],
                 endingConditionDate: undefined,
             },
         };

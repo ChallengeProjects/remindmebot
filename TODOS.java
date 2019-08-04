@@ -18,7 +18,7 @@ TODOS:
         * matchEverything
     * processTime:
         * _convertFractionUnitsToIntegers
-    * need unit tests for remind me every 2 mondays, remind me in 2 mondays
+    * unit tests for: _parseCustomDateFormats
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
 * Refactor units logic in nlp/parseRecurrignDates and nlp/utils

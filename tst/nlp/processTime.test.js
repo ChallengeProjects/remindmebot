@@ -182,6 +182,12 @@ describe("getDate", () => {
                     recurringDates: ['in 1 minute', 'in 1 hours'],
                 }
             },
+            '/remindme every 2 mondays and every 3 saturdays to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDates: ['in 2 mondays', 'in 3 saturdays'],
+                }
+            },
         };
         assertGetDate(map);
     });

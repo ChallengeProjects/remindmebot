@@ -6,6 +6,8 @@ const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timem
  * 06/03: Sunday, 06/04: Monday, 06/05: Tuesday,
  * 06/06: Wednesday 06/07: Thursday, 06/08: Friday,
  * 06/09: Saturday
+ * ---
+ * 06/10: Sunday, 06/11: Monday
  */
 
 const TIMEZONE = "America/Los_Angeles";
@@ -13,19 +15,45 @@ describe("_getDateTextFromOrdinal", () => {
     it('should work', () => {
         timemachine.config({ dateString: TODAY_DATE_STRING });
         let map = {
-            'on the 24th of january': 'on 01/24',
-            'on january the 24th': 'on 01/24',
-            'on march 30': 'on 03/30',
-            'on 30 march': 'on 03/30',
+            'on the 24th of january': '01/24',
+            'on january the 24th': '01/24',
+            'on march 30': '03/30',
+            'on 30 march': '03/30',
             'in 20 minutes': null,
             'in 20m': null,
             'on monday': null,
+            'in 2 mondays': null,
             'in 1 week': null,
-            'on the 30th': 'on 06/30',
-            'on the 2nd': 'on 07/02'
+            'on the 30th': '06/30',
+            'on the 2nd': '07/02'
         };
         for(let key in map) {
             expect(parseNonSingleRecurringDate._getDateTextFromOrdinal(key, TIMEZONE)).toEqual(map[key]);
+        }
+        timemachine.reset();
+    });
+});
+
+describe("_parseInNWeekdays", () => {
+    it('should work', () => {
+        timemachine.config({ dateString: TODAY_DATE_STRING });
+        let map = {
+            'on the 24th of january': null,
+            'on january the 24th': null,
+            'on march 30': null,
+            'on 30 march': null,
+            'in 20 minutes': null,
+            'in 20m': null,
+            'on monday': null,
+            'in 2 mondays': '06/11',
+            'in 1 tuesdays': '06/05',
+            'in 4 Wednesdays': '06/27',
+            'in 1 week': null,
+            'on the 30th': null,
+            'on the 2nd': null
+        };
+        for(let key in map) {
+            expect(parseNonSingleRecurringDate._parseInNWeekdays(key, TIMEZONE)).toEqual(map[key]);
         }
         timemachine.reset();
     });

@@ -184,10 +184,10 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
     }
     day = day.length == 2 ? day : "0" + day;
 
-    let dateText = "on";
+    let dateText;
     if (month) {
         month = moment().month(month).format("MM");
-        dateText += " " + month + "/" + day;
+        dateText = month + "/" + day;
     }
     // if month wasn't provided then get the current month (or next month)
     else if (!month) {
@@ -195,10 +195,10 @@ function _getDateTextFromOrdinal(reminderDateText, userTimezone) {
         // if the date w/ current month is in the future thats ok
         let dateWithCurrentMonth = currentDate.format("MM") + "/" + day;
         if (currentDate.format("MM/DD") <= dateWithCurrentMonth) {
-            dateText += " " + dateWithCurrentMonth;
+            dateText = dateWithCurrentMonth;
         }
         else {
-            dateText += " " + currentDate.add(1, 'months').format("MM") + "/" + day;
+            dateText = currentDate.add(1, 'months').format("MM") + "/" + day;
         }
     }
 
@@ -277,11 +277,12 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     else {
         time = times[0];
     }
-    return monthDay + " " + time;
+    return "on " + monthDay + " " + time;
 }
 
 module.exports = {
     parseNonRecurringSingleDate: parseNonRecurringSingleDate,
     _getDateTextFromOrdinal: _getDateTextFromOrdinal,
+    _parseInNWeekdays: _parseInNWeekdays,
     _convertOnTimetoAtTime: _convertOnTimetoAtTime
 };

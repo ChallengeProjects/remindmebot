@@ -195,7 +195,7 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
         // try to parse units
         let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         units = [...units, ...units.map(u => u + 's')]; // add plural forms too
-        let regexMatches = datesText.match(new RegExp(`\\b(every|in) ([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+        let regexMatches = datesText.match(new RegExp(`\\b(every |in |on |this )?([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
         regexMatches = regexMatches || [];
         for(let regexMatch of regexMatches) {
             datesText = datesText.replace(regexMatch, '');
@@ -232,7 +232,7 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
             allParsedDateTexts.push(oneDate);
         }
         
-        return allParsedDateTexts;
+        return [...new Set(allParsedDateTexts)];
     }
     let seperatedDatesToTimesMap = {};
 

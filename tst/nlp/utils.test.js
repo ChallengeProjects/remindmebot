@@ -57,6 +57,8 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"march the 5th, the 4th": ["u14"]}, // 14
             {"in 10 minutes": ["u15"]}, // 15
             {"tomorrow": ["u16"]}, // 16
+            {"in 2 tuesdays": ["u17"]}, // 17
+            {"every 2 wednesdays and every thursday": ["u18"]},
         ];
         let values = [
             {"every wednesday": ["at 3 pm"], }, // 1
@@ -75,6 +77,8 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"march the 5th": ["u14"], "the 4th": ["u14"]}, // 14
             {"in 10 minutes": ["u15"]}, // 15
             {"tomorrow": ["u16"]}, // 16
+            {"in 2 tuesdays": ["u17"]}, // 17
+            {"every 2 wednesdays": ["u18"], "every thursday": ["u18"]},
         ];
         for(let i = 0; i < keys.length; i++) {
             expect(utils._seperateDatesInDatesToTimesMap(keys[i])).toEqual(values[i]);
@@ -110,10 +114,10 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
                 "in 2 days": "at 3 4 pm",
                 "every wednesday": "at 3 pm",
             },
-            "in 2 days and in 4 weeks at 3 4 pm and every wednesday at 3 pm": {
+            "in 2 days and in 4 weeks at 3 4 pm and every 2 wednesdays at 3 pm": {
                 "in 2 days": "at 3 4 pm",
                 "in 4 weeks": "at 3 4 pm",
-                "every wednesday": "at 3 pm",
+                "every 2 wednesdays": "at 3 pm",
             },
             "on wednesday": {
                 "on wednesday": [],
@@ -155,6 +159,14 @@ describe("getDateToParsedTimesFromReminderDateTime", () => {
             "on tuesday, monday at 3 pm": {
                 "on tuesday": ["at 3 pm"],
                 "monday": ["at 3 pm"],
+            },
+            "every 3 wednesdays, every 2 tuesdays at 4 pm to": {
+                "every 3 wednesdays": ["at 4 pm"],
+                "every 2 tuesdays": ["at 4 pm"],
+            },
+            "every 3 wednesdays, 2 tuesdays at 4 pm to": {
+                "every 3 wednesdays": ["at 4 pm"],
+                "2 tuesdays": ["at 4 pm"],
             },
         };
         for (let key in map) {
