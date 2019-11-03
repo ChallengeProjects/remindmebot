@@ -1,11 +1,21 @@
 TODOS: 
 ----------------------
 [Sorted By Priority]
+* bugs:
+    * /r on aug 26 to ..
+    * /r on friday the 23rd at 7 pm to ..
+    * simple replace:
+        * /r tonight at 10pm to ..
+            * tonight -> ""
+        * /r today at 8 that test
+            * today -> ""
+        * /r next week to investigate
+            * next -> "in 1"
 * unit tests:
     HIGH PRIORITY:
         * parseNonRecurringSingleDate:
             * _fixImpliedMeridiemOfChronoResult
-            * parseNonRecurringSingleDate: * unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
+            * parseNonRecurringSingleDate
             * _fixDatesInThePast
     LOW PRIORITY:
         * move timemachine to "lib" directory and write tests for it
@@ -18,10 +28,9 @@ TODOS:
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
 * BUG: if NLP takes "/r to test", it just returns an empty list when it should throw an error
-* Refactor units logic in nlp/parseRecurrignDates and nlp/utils
 * [1 hour] remindme every 1st of month
-    * note: you also need to process ordinal strings like "first" (solution for this wouold be to )
-* Remind me a week before 08/31, remind me 2 days before 08/31..
+    * note: you also need to process ordinal strings like "first"
+* Remind me 1 week before 09/02
 * setup server instead of polling for bot so its faster (add an option in config to do that)
     * navigating menus is affected by this
 ------------------
@@ -63,7 +72,6 @@ LOW PRIORITY:
 * attach images to reminders
 * sed command to edit texts
 * remind me first weekend after 04/17 to ..
-    * remind me on the weekend in 2 weeks to..
 * /download -> download all reminders in json/csv format
 * [1 hour] add random reminder /remindme every [3-7] hours
     * random flag and parameters (i guess range in this case)
@@ -128,8 +136,6 @@ non features:
     * setTimeout reminders
 * move the edit stuff in another module, refactor everything
 * middleware that runs before every call to check if user exists, if not it creates it
-* docker for the whole thing
-* install redis or memcached
 -----
 command list for bot father:
     list - list all reminders

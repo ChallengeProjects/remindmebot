@@ -106,8 +106,7 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])\b/g, "$1 $2:$3");
 
     // "at x"/"at xx" -> "at x:00"/"at xx:00"
-    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|until) ([0-1][0-9]|2[0-4])([^:]|$)/g, "$1 $2:00");
-
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|until) ([0-1][0-9]|2[0-4])([^:]|$)/g, "$1 $2:00$3");
     // 10w -> 10 weeks,10 w -> 10 weeks
     reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)w\b/ig, "$1 weeks");
     reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)d\b/ig, "$1 days");
