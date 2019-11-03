@@ -2,25 +2,22 @@ TODOS:
 ----------------------
 [Sorted By Priority]
 * unit tests:
-    * parseNonRecurringSingleDate:
-        * _fixImpliedMeridiemOfChronoResult
-        * _isMeridiemImplied
-        * parseNonRecurringSingleDate: * unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
-        * _fixDatesInThePast
-        * _parseCustomDateFormats
-    * move timemachine to "lib" directory and write tests for it
-    * parseRecurringDates
-        * _convertEndingDateTimeTextToReminderDateTimeText
-        * _getEndingDateTime
-        * _getRecurringDates
-    * utils: [low priority]
-        * regexMatchDateTextOrdinal
-        * matchEverything
-    * processTime:
-        * _convertFractionUnitsToIntegers
-    * unit tests for: _parseCustomDateFormats
+    HIGH PRIORITY:
+        * parseNonRecurringSingleDate:
+            * _fixImpliedMeridiemOfChronoResult
+            * parseNonRecurringSingleDate: * unit tests for english and italian for parseNonRecurringSingleDate ["tra 10 minuti" ,"tra 1 ora" ,"tra tre minuti" ,"alle 10" ,"il 23 di Marzo" ,"alle 2 di pomeriggio" ,"domani alle 5 di pomeriggio" ,"tra 5 minuti" ,"mercoledì" ,"il 5 Gennaio"]
+            * _fixDatesInThePast
+    LOW PRIORITY:
+        * move timemachine to "lib" directory and write tests for it
+        * parseRecurringDates
+            * _convertEndingDateTimeTextToReminderDateTimeText
+            * _getEndingDateTime
+        * utils:
+            * regexMatchDateTextOrdinal
+            * matchEverything
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
+    * when it gets disabled then enabled
 * Refactor units logic in nlp/parseRecurrignDates and nlp/utils
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )

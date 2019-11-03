@@ -284,5 +284,6 @@ module.exports = {
     getDate: getDate,
     //only exported for unit tests
     _splitReminderText: _splitReminderText,
+    _convertFractionUnitsToIntegers: _convertFractionUnitsToIntegers,
     preProcessReminderDateTimeText: preProcessReminderDateTimeText,
 };

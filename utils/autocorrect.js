@@ -16,7 +16,6 @@ function autocorrect(word, list, percentageThreshold) {
             minDistance = d;
         }
     }
-    console.log(minDistance, minDistance/word.length);
     if(minDistance / word.length > percentageThreshold) {
         return null;
     }

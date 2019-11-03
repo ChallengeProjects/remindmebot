@@ -263,15 +263,19 @@ function _parseInNWeekdays(reminderDateTimeText, userTimezone) {
  */
 function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
     let monthDay = _getDateTextFromOrdinal(utils.getDatePartsFromString(reminderDateTimeText)[0], userTimezone);
+    // if not date text ordinal, try in N weekdays
     if (!monthDay) {
         monthDay = _parseInNWeekdays(reminderDateTimeText, userTimezone);
+        // if not that either, just return as it is
         if (!monthDay) {
             return reminderDateTimeText;
         }
     }
+
     let times = Object.values(utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText));
     let time;
-    if (!times || times.length == 0) {
+    // if undefined, or if there arent any values, or if there is only one value of an empty array
+    if (!times || times.length == 0 || (times.length == 1 && times[0].length == 0)) {
         time = "at 12 pm";
     }
     else {
@@ -282,7 +286,9 @@ function _parseCustomDateFormats(reminderDateTimeText, userTimezone) {
 
 module.exports = {
     parseNonRecurringSingleDate: parseNonRecurringSingleDate,
+    _isMeridiemImplied: _isMeridiemImplied,
     _getDateTextFromOrdinal: _getDateTextFromOrdinal,
     _parseInNWeekdays: _parseInNWeekdays,
-    _convertOnTimetoAtTime: _convertOnTimetoAtTime
+    _convertOnTimetoAtTime: _convertOnTimetoAtTime,
+    _parseCustomDateFormats: _parseCustomDateFormats,
 };

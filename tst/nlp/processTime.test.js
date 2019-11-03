@@ -42,6 +42,23 @@ describe("_splitReminderText", () => {
     });
 });
 
+describe("_convertFractionUnitsToIntegers", () => {
+    it("should work", () => {
+        let map = {
+            "in 2.5 minutes": `in ${2.5*60} seconds`,
+            "every 5.5 hours": `every ${5.5*60} minutes`,
+            "every 1.5 weeks": `every ${11} days`,
+            "in 2.5 minutes, 50 seconds": `in ${2.5*60} seconds, 50 seconds`,
+        };
+
+        for (let reminderDateTimeText in map) {
+            let expectedResult = map[reminderDateTimeText];
+            let result = processTime._convertFractionUnitsToIntegers(reminderDateTimeText);
+            expect(result).toEqual(expectedResult);
+        }
+    });
+});
+
 function assertGetDate(map) {
     timemachine.config({ dateString: TODAY_DATE_STRING });
     for (let key in map) {

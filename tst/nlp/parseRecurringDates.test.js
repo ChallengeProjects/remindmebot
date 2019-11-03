@@ -5,6 +5,7 @@ const parseRecurringDates = require('../../nlp/parseRecurringDates.js'),
 describe("_getRecurringDates", () => {
     it('should work', () => {
         let map = {
+            'every 30 minutes some text to ignore': ['in 30 minutes'],
             'every 2 days': ['in 2 days'],
             'every 3 hours': ['in 3 hours'],
             'every 3 hours, 3 minutes': ['in 3 hours', 'in 3 minutes'],
