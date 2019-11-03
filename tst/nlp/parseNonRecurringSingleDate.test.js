@@ -12,6 +12,24 @@ const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timem
 
 const TIMEZONE = "America/Los_Angeles";
 
+describe("_addInToUnits", () => {
+    it("should work", () => {
+        let map = {
+            "5 minutes": "in 5 minutes",
+            "2 saturdays": "in 2 saturdays",
+            // dont change
+            "on 02/03": "on 02/03",
+            "in 5 minutes": "in 5 minutes",
+            "at 4 pm": "at 4 pm",
+            "on saturday": "on saturday",
+            "saturday": "saturday",
+        };
+        for(let key in map) {
+            expect(parseNonSingleRecurringDate._addInToUnits(key, TIMEZONE)).toEqual(map[key]);
+        }
+    });
+});
+
 describe("_parseCustomDateFormats", () => {
     it("should work", () => {
         timemachine.config({ dateString: TODAY_DATE_STRING });
@@ -20,6 +38,7 @@ describe("_parseCustomDateFormats", () => {
             "on the 5th at 4pm": "on 06/05 at 4 pm",
             "on the 4th of march": "on 03/04 at 12 pm",
             "in 5 days at 2 pm": "in 5 days at 2 pm",
+            "on 02/03": "on 02/03",
         };
         for(let key in map) {
             expect(parseNonSingleRecurringDate._parseCustomDateFormats(key, TIMEZONE)).toEqual(map[key]);
@@ -42,7 +61,8 @@ describe("_getDateTextFromOrdinal", () => {
             'in 2 mondays': null,
             'in 1 week': null,
             'on the 30th': '06/30',
-            'on the 2nd': '07/02'
+            'on the 2nd': '07/02',
+            'on 02/03': null,
         };
         for(let key in map) {
             expect(parseNonSingleRecurringDate._getDateTextFromOrdinal(key, TIMEZONE)).toEqual(map[key]);

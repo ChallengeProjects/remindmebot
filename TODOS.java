@@ -13,11 +13,11 @@ TODOS:
             * _convertEndingDateTimeTextToReminderDateTimeText
             * _getEndingDateTime
         * utils:
-            * regexMatchDateTextOrdinal
             * matchEverything
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
+* BUG: if NLP takes "/r to test", it just returns an empty list when it should throw an error
 * Refactor units logic in nlp/parseRecurrignDates and nlp/utils
 * [1 hour] remindme every 1st of month
     * note: you also need to process ordinal strings like "first" (solution for this wouold be to )

@@ -2,6 +2,8 @@ const moment = require('moment-timezone');
 
 const TIME_NUMBER_REGEX = '[0-9:]+';
 const MERIDIEM_REGEX = '(a\\.?m\\.?|p\\.?m\\.?)';
+let UNITS = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+UNITS = [...UNITS, ...UNITS.map(u => u + 's')]; // add plural forms too
 
 function _isTimeNumber(word) {
     return !!word.match(new RegExp(`^${TIME_NUMBER_REGEX}$`));
@@ -127,7 +129,7 @@ function regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
     else {
         onMatch = `(?:on )?`;
     }
-    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?(?:(${MONTHS.join("|")}) )?(?:the )?([0-9]+)(?:st|nd|rd|th)?\\b`, 'i'));
+    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?(?:(${MONTHS.join("|")}) )?(?:the )?([0-9]+)(?:st|nd|rd|th|$)`, 'i'));
     
     let indicesFormat1 = { month: 1, day: 2 };
     let format1Result = {
@@ -193,9 +195,7 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
 
         //////////////////////////////
         // try to parse units
-        let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        units = [...units, ...units.map(u => u + 's')]; // add plural forms too
-        let regexMatches = datesText.match(new RegExp(`\\b(every |in |on |this )?([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+        let regexMatches = datesText.match(new RegExp(`\\b(every |in |on |this )?([0-9]+ )?(${UNITS.join("|")})\\b`, 'ig'));
         regexMatches = regexMatches || [];
         for(let regexMatch of regexMatches) {
             datesText = datesText.replace(regexMatch, '');
@@ -214,7 +214,7 @@ function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
         
         //////////////////////////////
         // try to match x(x?)/x(x?)
-        regexMatches = datesText.match(/\b(on )?[0-9]([0-9])?\/[0-9]([0-9])?\b/ig);
+        regexMatches = datesText.match(/\b(on )?[0-9]([0-9])?\/[0-9]([0-9])?(\/[0-9][0-9]|\/[0-9][0-9][0-9][0-9])?\b/ig);
         regexMatches = regexMatches || [];
         for(let regexMatch of regexMatches) {
             datesText = datesText.replace(regexMatch, '');
@@ -271,8 +271,9 @@ module.exports = {
     _isTimeNumber: _isTimeNumber,
     TIME_NUMBER_REGEX: TIME_NUMBER_REGEX,
     MERIDIEM_REGEX: MERIDIEM_REGEX,
+    UNITS: UNITS,
+    regexMatchDateTextOrdinal: regexMatchDateTextOrdinal,
     // only exported for unit tests
     _parseTimesStringToArray: _parseTimesStringToArray,
     _seperateDatesInDatesToTimesMap: _seperateDatesInDatesToTimesMap,
-    regexMatchDateTextOrdinal: regexMatchDateTextOrdinal,
 };

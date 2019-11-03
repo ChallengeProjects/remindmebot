@@ -38,47 +38,83 @@ describe("_parseTimesStringToArray", () => {
     });
 });
 
+describe("regexMatchDateTextOrdinal", () => {
+    it("should work with isOnRequired = true", () => {
+        let map = {
+            "on march the 3rd": { "month": "march", "day": "3" },
+            "on august the 25th": { "month": "august", "day": "25" },
+            "on june 20": { "month": "june", "day": "20"},
+            "on the 25th of march": { "month": "march", "day": "25"},
+            "on september 22nd": {"month": "september", "day": "22"},
+            "on september 22": {"month": "september", "day": "22"},
+            "on 22 of september": {"month": "september", "day": "22"},
+            "on 22nd of september": {"month": "september", "day": "22"},
+            "in 2 saturdays": null,
+            "on saturday": null,
+            "5": null,
+            "in 8 minutes": null,
+            "on 02/03": null,
+            "on 9/15/2020": null,
+        };
+        for (let key in map) {
+            let result = utils.regexMatchDateTextOrdinal(key, true);
+            if (map[key] == null) {
+                expect(result).toEqual(null);
+            }
+            else {
+                let { regexMatch, indices } = result;
+                expect(regexMatch[indices.month]).toEqual(map[key].month);
+                expect(regexMatch[indices.day]).toEqual(map[key].day);
+            }
+        }
+    });
+});
+
 describe("_seperateDatesInDatesToTimesMap", () => {
     it("should work", () => {
         let keys = [
             {"every wednesday": ["at 3 pm"], }, // 1
             {"every wednesday thursday": ["at 4 pm"], }, // 2
             {"on 02/03, 02/04": ["at 3 pm"]}, // 3
-            {"on march the 2nd, april the 1st": ["at 3 pm"]}, // 4
-            {"on the 2nd of march, april the 1st": ["at 3 pm"]}, // 5
-            {"on the 2nd of march, 1st of april": ["at 3 pm"]}, // 6
-            {"on the 2nd of march, the 1st of april": ["at 3 pm"]}, // 7
-            {"on march the 2nd, the 1st of april": ["at 3 pm"]}, // 8
-            {"on march the 2nd, april the 1st": ["at 3 pm"]}, // 9
-            {"on monday and tuesday": ["at 3 pm"]}, // 10
-            {"on the 4th": ["u11"]}, // 11
-            {"on the 4th and 5th of march": ["u12"]}, // 12
-            {"on the 4th and march the 5th": ["u13"]}, // 13
-            {"march the 5th, the 4th": ["u14"]}, // 14
-            {"in 10 minutes": ["u15"]}, // 15
-            {"tomorrow": ["u16"]}, // 16
-            {"in 2 tuesdays": ["u17"]}, // 17
-            {"every 2 wednesdays and every thursday": ["u18"]},
+            {"on 02/03/2019": ["at 3 pm"]}, // 4
+            {"on march the 2nd, april the 1st": ["at 3 pm"]}, // 5
+            {"on the 2nd of march, april the 1st": ["at 3 pm"]}, // 6
+            {"on the 2nd of march, 1st of april": ["at 3 pm"]}, // 7
+            {"on the 2nd of march, the 1st of april": ["at 3 pm"]}, // 8
+            {"on march the 2nd, the 1st of april": ["at 3 pm"]}, // 9
+            {"on march the 2nd, april the 1st": ["at 3 pm"]}, // 10
+            {"on monday and tuesday": ["at 3 pm"]}, // 11
+            {"on the 4th": ["u11"]}, // 12
+            {"on the 4th and 5th of march": ["u12"]}, // 13
+            {"on the 4th and march the 5th": ["u13"]}, // 14
+            {"march the 5th, the 4th": ["u14"]}, // 15
+            {"in 10 minutes": ["u15"]}, // 16
+            {"10 minutes": ["u15"]}, // 17
+            {"tomorrow": ["u16"]}, // 18
+            {"in 2 tuesdays": ["u17"]}, // 19
+            {"every 2 wednesdays and every thursday": ["u18"]}, // 20
         ];
         let values = [
             {"every wednesday": ["at 3 pm"], }, // 1
             {"every wednesday": ["at 4 pm"], "thursday": ["at 4 pm"]}, // 2
             {"on 02/03": ["at 3 pm"], "02/04": ["at 3 pm"]}, // 3
-            {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 4
-            {"on the 2nd of march": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 5
-            {"on the 2nd of march": ["at 3 pm"], "1st of april": ["at 3 pm"]}, // 6
-            {"on the 2nd of march": ["at 3 pm"], "the 1st of april": ["at 3 pm"]}, // 7
-            {"on march the 2nd": ["at 3 pm"], "the 1st of april": ["at 3 pm"]}, // 8
-            {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 9
-            {"on monday": ["at 3 pm"], "tuesday": ["at 3 pm"]}, // 10
-            {"on the 4th": ["u11"]}, // 11
-            {"on the 4th": ["u12"], "5th of march": ["u12"]}, // 12
-            {"on the 4th": ["u13"], "march the 5th": ["u13"]}, // 13
-            {"march the 5th": ["u14"], "the 4th": ["u14"]}, // 14
-            {"in 10 minutes": ["u15"]}, // 15
-            {"tomorrow": ["u16"]}, // 16
-            {"in 2 tuesdays": ["u17"]}, // 17
-            {"every 2 wednesdays": ["u18"], "every thursday": ["u18"]},
+            {"on 02/03/2019": ["at 3 pm"]}, // 4
+            {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 5
+            {"on the 2nd of march": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 6
+            {"on the 2nd of march": ["at 3 pm"], "1st of april": ["at 3 pm"]}, // 7
+            {"on the 2nd of march": ["at 3 pm"], "the 1st of april": ["at 3 pm"]}, // 8
+            {"on march the 2nd": ["at 3 pm"], "the 1st of april": ["at 3 pm"]}, // 9
+            {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}, // 10
+            {"on monday": ["at 3 pm"], "tuesday": ["at 3 pm"]}, // 11
+            {"on the 4th": ["u11"]}, // 12
+            {"on the 4th": ["u12"], "5th of march": ["u12"]}, // 13
+            {"on the 4th": ["u13"], "march the 5th": ["u13"]}, // 14
+            {"march the 5th": ["u14"], "the 4th": ["u14"]}, // 15
+            {"in 10 minutes": ["u15"]}, // 16
+            {"10 minutes": ["u15"]}, // 17
+            {"tomorrow": ["u16"]}, // 18
+            {"in 2 tuesdays": ["u17"]}, // 19
+            {"every 2 wednesdays": ["u18"], "every thursday": ["u18"]}, // 20
         ];
         for(let i = 0; i < keys.length; i++) {
             expect(utils._seperateDatesInDatesToTimesMap(keys[i])).toEqual(values[i]);
@@ -91,6 +127,9 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
         let map = {
             "on 02/03 at 3": {
                 "on 02/03": "at 3",
+            },
+            "on 02/03/2019 at 3": {
+                "on 02/03/2019": "at 3",
             },
             "on 02/03, 02/04,02/05 at 3, 4 pm and 5 am": {
                 "on 02/03": "at 3 4 pm 5 am",
@@ -121,6 +160,12 @@ describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
             },
             "on wednesday": {
                 "on wednesday": [],
+            },
+            "in 5 minutes": {
+                "in 5 minutes": [],
+            },
+            "5 minutes": {
+                "5 minutes": [],
             }
         };
         for (let key in map) {
@@ -144,6 +189,9 @@ describe("getDateToParsedTimesFromReminderDateTime", () => {
             },
             "on 02/03 at 3, 4 pm and 5 am": {
                 "on 02/03": ["at 3 pm", "at 4 pm", "at 5 am"]
+            },
+            "on 02/03/2019 at 3, 4 pm and 5 am": {
+                "on 02/03/2019": ["at 3 pm", "at 4 pm", "at 5 am"]
             },
             "every wednesday at 3, 4 pm and 5 am and every tuesday at 3 pm": {
                 "every wednesday": ["at 3 pm", "at 4 pm", "at 5 am"],

@@ -41,6 +41,9 @@ function addRemindersToUserFromUtterance(utterance, ctx) {
 
     try {
         var { reminderText, reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
+        if (!reminderText || !reminderDates || reminderDates.length == 0) {
+            throw "Something went wrong with NLP nothing was returned and no exception was thrown.";
+        }
     } catch (err) {
         if(err == errorCodes.NO_DELIMITER_PROVIDED) {
             ctx.replyWithHTML("Sorry, I wasn't able to understand.\n<b>Looks like your reminder was missing a 'to' or a 'that'.</b>\nTry /help").catch(catchBlocks);
@@ -110,7 +113,8 @@ function addToBot(bot) {
     ];
 
     const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS, ...ITALIAN_VARIANTS];
-    bot.hears(new RegExp(`(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
+
+    bot.hears(new RegExp(`^(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
         ctx.message.text = `/remindme ${ctx.match[2]}`;
         remindmeCallBack(ctx);
     });

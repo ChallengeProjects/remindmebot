@@ -74,6 +74,8 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     reminderDateTimeText = reminderDateTimeText.split(" ").filter(x => !!x.length).join(" ");
     // convert on [time] -> at [time] (before _parseCustomDateFormats)
     reminderDateTimeText = _convertOnTimetoAtTime(reminderDateTimeText);
+    // convert [N units] -> in [N units] (before _parseCustomDateFormats)
+    reminderDateTimeText = _addInToUnits(reminderDateTimeText);
     // parse dates that chrono wouldn't parse
     reminderDateTimeText = _parseCustomDateFormats(reminderDateTimeText, userTimezone);
 
@@ -128,6 +130,17 @@ function _convertOnTimetoAtTime(reminderDateTimeText) {
     else {
         return `at ${timeText}`;
     }
+}
+
+// <number> <unit> -> in <number> <unit>
+// 5 minutes -> in 5 minutes
+// 2 saturdays -> in 2 saturdays
+function _addInToUnits(reminderDateTimeText) {
+    let regex = new RegExp(`^[0-9]+ (${utils.UNITS.join("|")})`, 'i');
+    if (!!reminderDateTimeText.match(regex)) {
+        return "in " + reminderDateTimeText;
+    }
+    return reminderDateTimeText;
 }
 
 
@@ -291,4 +304,5 @@ module.exports = {
     _parseInNWeekdays: _parseInNWeekdays,
     _convertOnTimetoAtTime: _convertOnTimetoAtTime,
     _parseCustomDateFormats: _parseCustomDateFormats,
+    _addInToUnits: _addInToUnits,
 };

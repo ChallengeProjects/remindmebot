@@ -5,10 +5,7 @@ function _getRecurringDates(dateText) {
     dateText = dateText.replace(/(,|and)/ig, ' ');
 
     // try to parse units
-    let units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    units = [...units, ...units.map(u => u + 's')]; // add plural forms too
-    
-    let unitMatches = dateText.match(new RegExp(`([0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+    let unitMatches = dateText.match(new RegExp(`([0-9]+ )?(${utils.UNITS.join("|")})\\b`, 'ig'));
     let dates = [];
     if (unitMatches) {
         for(let unitMatch of unitMatches) {

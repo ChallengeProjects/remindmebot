@@ -183,7 +183,7 @@ function _convertFractionUnitsToIntegers(reminderDateTimeText) {
     };
     let units = Object.keys(map);
 
-    let regexMatches = reminderDateTimeText.match(new RegExp(`\\b(every|in) ([.0-9]+ )?(${units.join("|")})\\b`, 'ig'));
+    let regexMatches = reminderDateTimeText.match(new RegExp(`\\b(every|in) ([.0-9]+) (${units.join("|")})\\b`, 'ig'));
     regexMatches = regexMatches || [];
     for (let regexMatch of regexMatches) {
         // only if there is a number

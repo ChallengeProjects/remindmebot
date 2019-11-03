@@ -33,6 +33,15 @@ describe("_splitReminderText", () => {
                 reminderDateTimeText: 'in 20 minutes',
                 reminderText: 'test that hi',
             },
+            // test weird input
+            '/r in 30 minutes remind me to test': {
+                reminderDateTimeText: 'in 30 minutes remind me',
+                reminderText: 'test',
+            },
+            '/r to test': {
+                reminderDateTimeText: '',
+                reminderText: 'test',
+            }
         };
         for (let text in map) {
             let expectedResult = map[text];
@@ -142,6 +151,36 @@ describe("getDate", () => {
                     formattedDates: ["07/01/2018:12:00"],
                 },
             },
+            '/r in 30 minute to hihi': {
+                reminderText: "hihi",
+                reminderDates: {
+                    formattedDates: ["06/03/2018:12:30"],
+                },
+            },
+            '/r 30 minutes to t': {
+                reminderText: "t",
+                reminderDates: {
+                    formattedDates: ["06/03/2018:12:30"],
+                },
+            },
+            '/r on 02/03 to t': {
+                reminderText: "t",
+                reminderDates: {
+                    formattedDates: ["02/03/2019:12:00"],
+                },
+            },
+            '/r on 02/03/2019 to t': {
+                reminderText: "t",
+                reminderDates: {
+                    formattedDates: ["02/03/2019:12:00"],
+                },
+            },
+            '/r on 02/03/21 to t': {
+                reminderText: "t",
+                reminderDates: {
+                    formattedDates: ["02/03/2021:12:00"],
+                },
+            },
         };
         assertGetDate(map);
     });
@@ -204,6 +243,13 @@ describe("getDate", () => {
                 reminderDates: {
                     recurringDates: ['in 2 mondays', 'in 3 saturdays'],
                 }
+            },
+            // test weird input
+            '/r every 30 minutes remind me to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    recurringDates: ['in 30 minute'],
+                },
             },
         };
         assertGetDate(map);
