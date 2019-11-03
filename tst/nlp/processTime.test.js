@@ -157,6 +157,7 @@ describe("getDate", () => {
                     formattedDates: ["06/03/2018:12:30"],
                 },
             },
+            // missing in
             '/r 30 minutes to t': {
                 reminderText: "t",
                 reminderDates: {
@@ -179,6 +180,31 @@ describe("getDate", () => {
                 reminderText: "t",
                 reminderDates: {
                     formattedDates: ["02/03/2021:12:00"],
+                },
+            },
+            // missing on/at
+            '/r 5 am to t': {
+                reminderText: "t",
+                reminderDates: {
+                    formattedDates: ["06/04/2018:05:00"],
+                },
+            },
+            '/remindme 10 am tomorrow to ..': {
+                reminderText: "..",
+                reminderDates: {
+                    formattedDates: ["06/04/2018:10:00"],
+                },
+            },
+            '/remindme tuesday at 11 am to ..': {
+                reminderText: "..",
+                reminderDates: {
+                    formattedDates: ["06/05/2018:11:00"],
+                },
+            },
+            '/remindme tuesday 11 am to ..': {
+                reminderText: "..",
+                reminderDates: {
+                    formattedDates: ["06/05/2018:11:00"],
                 },
             },
         };

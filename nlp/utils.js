@@ -42,28 +42,32 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
     
     str = str.replace(/,/g, " , ").replace(/ {1,}/g, " ");
 
+
     // there can be multiple at's together, example: "at 3 pm at 4 pm"
-    const TIME_REGEX = new RegExp(`at\\b(${TIME_NUMBER_REGEX}|${MERIDIEM_REGEX}|at|,|and|\\s)+`, 'g');
-    let timeParts = str.match(TIME_REGEX);
-    if(!!timeParts) {
-        // clean up timeParts from "and" and ","
-        timeParts = timeParts
-            .map(x => x.replace(/\band\b|,/g, " ")
-                .replace(/ {1,}/g, " "))
-            .map(x => x.trim());
+    const TIME_REGEX_WITH_AT = new RegExp(`at\\b(${TIME_NUMBER_REGEX}|${MERIDIEM_REGEX}|at|,|and|\\s)+`, 'g');
+    const TIME_REGEX_NO_AT = new RegExp(`\\b(${TIME_NUMBER_REGEX} ${MERIDIEM_REGEX})(?:|at|,|and|\\s)+`, 'g');
 
-    }
-    else {
-        timeParts = [];
-    }
-
+    let timeParts = [...(str.match(TIME_REGEX_WITH_AT) || []), ...(str.replace(TIME_REGEX_WITH_AT, "").match(TIME_REGEX_NO_AT) || [])];
+    
     const RANDOM_DELIMITER = "!@#";
+    // get the dates list by splitting on the time pieces
+
+    // replace any time part with the delimiter
+    for (let timePart of timeParts) {
+        str = str.replace(timePart, RANDOM_DELIMITER);
+    }
+    
     let dateParts = str
-        .replace(TIME_REGEX, RANDOM_DELIMITER)
-        .split(RANDOM_DELIMITER)
+        .split(RANDOM_DELIMITER) // now split with the delimiter
         .filter(x => !!x) // remove any undefined elements
         .map(x => x.trim().replace(/ {1,}/g, " ")) // trim and remove double spaces
         .filter(x => !!x.length); // remove any empty elements in the list
+
+    // clean up timeParts from "and" and ","
+    timeParts = timeParts
+        .map(x => x.replace(/\band\b|,/g, " ")
+            .replace(/ {1,}/g, " "))
+        .map(x => x.trim());
 
     // create the map and return
     let datesToTimeMap = {};

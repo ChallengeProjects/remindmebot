@@ -30,6 +30,8 @@ describe("_isTimeNumber", () => {
 
 describe("_parseTimesStringToArray", () => {
     it("should work", () => {
+        expect(utils._parseTimesStringToArray("3")).toEqual(["3"]);
+        expect(utils._parseTimesStringToArray("3 pm")).toEqual(["3", "pm"]);
         expect(utils._parseTimesStringToArray("at 3")).toEqual(["3"]);
         expect(utils._parseTimesStringToArray("at 3:03 4:30")).toEqual(["3:03", "4:30"]);
         expect(utils._parseTimesStringToArray("at 3:3,4 pm")).toEqual(["3:3", "4", "pm"]);
@@ -55,6 +57,8 @@ describe("regexMatchDateTextOrdinal", () => {
             "in 8 minutes": null,
             "on 02/03": null,
             "on 9/15/2020": null,
+            "at 5 pm": null,
+            "5 pm": null,
         };
         for (let key in map) {
             let result = utils.regexMatchDateTextOrdinal(key, true);
@@ -93,6 +97,8 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"tomorrow": ["u16"]}, // 18
             {"in 2 tuesdays": ["u17"]}, // 19
             {"every 2 wednesdays and every thursday": ["u18"]}, // 20
+            {"undefined": ["at 2 pm"]}, // 21
+            {"undefined": ["2 pm"]}, // 22
         ];
         let values = [
             {"every wednesday": ["at 3 pm"], }, // 1
@@ -115,6 +121,8 @@ describe("_seperateDatesInDatesToTimesMap", () => {
             {"tomorrow": ["u16"]}, // 18
             {"in 2 tuesdays": ["u17"]}, // 19
             {"every 2 wednesdays": ["u18"], "every thursday": ["u18"]}, // 20
+            {"undefined": ["at 2 pm"]}, // 21
+            {"undefined": ["2 pm"]}, // 22
         ];
         for(let i = 0; i < keys.length; i++) {
             expect(utils._seperateDatesInDatesToTimesMap(keys[i])).toEqual(values[i]);
@@ -125,6 +133,15 @@ describe("_seperateDatesInDatesToTimesMap", () => {
 describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
     it("should work", () => {
         let map = {
+            "at 3": {
+                "undefined": "at 3",
+            },
+            "at 3 and at 4": {
+                "undefined": "at 3 at 4",
+            },
+            "7 pm": {
+                "undefined": "7 pm",
+            },
             "on 02/03 at 3": {
                 "on 02/03": "at 3",
             },
@@ -183,6 +200,9 @@ describe("getDateToParsedTimesFromReminderDateTime", () => {
             },
             "at 3 and at 4": {
                 "undefined": ["at 3", "at 4"],
+            },
+            "7 pm": {
+                "undefined": ["at 7 pm"],
             },
             "on 02/03 at 3": {
                 "on 02/03": ["at 3"]
