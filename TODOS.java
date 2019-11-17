@@ -1,16 +1,29 @@
 TODOS: 
 ----------------------
 [Sorted By Priority]
-* bugs:
-    * /r on aug 26 to ..
-    * /r on friday the 23rd at 7 pm to ..
-    * simple replace:
-        * /r tonight at 10pm to ..
-            * tonight -> ""
-        * /r today at 8 that test
-            * today -> ""
-        * /r next week to investigate
-            * next -> "in 1"
+* take care of redundancy:
+    * take the more accurate information from the 2:
+        * /r on friday the 23rd         [IGNORE "FRIDAY"]   -> /r on the 23rd at 7 pm to ...
+        * /r tonight at 8 pm            [IGNORE "TONIGHT"]  -> /r at 8 pm to ...
+        * /r tomorrow morning/evening at 11 am  [IGNORE "morning"]  -> /r tomorrow at 11 am
+        * /r today at 2 pm              [IGNORE "TODAY"]    -> /r at 2 pm to ...
+        * /r next week on friday -> /r in 1 week on friday [/s/1 week/2/]  -> /r in 2 friday to ...
+        * /r in 2 weeks on friday       [IGNORE "WEEKS ON"] -> /r in 2 friday to ...
+    * but make sure these work:
+        * /r on friday
+        * /r today (when is today?)
+        * /r morning/noon/afternoon/evening/tonight
+            * /r tomorrow morning/evening
+        * /r next week -> /r in 1 week
+        * /r next week on friday -> /r in 2 friday
+    * unit tests:
+        "/r on friday the 23rd", "/r tonight at 8 pm", "/r tomorrow morning at 11 am", "/r tomorrow evening at 6 pm",
+        "/r today at 2 pm", "/r next week on friday", "/r in 2 weeks on friday", "/r today", "/r in the morning",
+        "/r in the afternoon", "/r tonight", "/r next week"
+* remove need for "to" -> "/r at 8 am text text"
+    * this will make it easier to flip the order later
+    * should i have a did you mean msg with yes/no buttons?
+* "/r to .. at 8 tomorrow"
 * unit tests:
     HIGH PRIORITY:
         * parseNonRecurringSingleDate:
@@ -60,9 +73,9 @@ TODOS:
     * should getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method?
     * processTime.getDate shouldnt have the cross product logic
         * refactor date x time cross product logic somewhere
-* 1 user requested: * /appendtoreminder <reminder search text> (to|:) ....
 --------
 LOW PRIORITY:
+* /appendtoreminder <reminder search text> (to|:) ....
 * /list will list all buttons with dates
     * recurring reminders doesnt show up there, a button to switch to normal recurring reminders
         * or should it show up there?

@@ -22,6 +22,7 @@ function _splitReminderText(text) {
     const SPLIT_DELIMITERS = {
         TO: "to".toLowerCase(),
         THAT: "that".toLowerCase(),
+        ABOUT: "about".toLowerCase(),
         DI: "di".toLowerCase(), // "to" in Italian
         CHE: "che".toLowerCase(), // "that" in Italian
     };
@@ -239,6 +240,9 @@ function getDate(text, userTimezone) {
     if (recurringDatesResult) {
         let recurringDates = recurringDatesResult.recurringDates;
         let endingConditionDate = recurringDatesResult.endingConditionDate;
+        if (!recurringDates || !recurringDates.length) {
+            throw errorCodes.UNKOWN_ERROR;
+        }
         return {
             reminderText: reminderText,
             reminderDates: {
@@ -265,7 +269,9 @@ function getDate(text, userTimezone) {
                 }
             }
         }
-        
+        if (!parsedDates || !parsedDates.length) {
+            throw errorCodes.UNKOWN_ERROR;
+        }
         return {
             reminderText: reminderText,
             reminderDates: { dates: parsedDates }

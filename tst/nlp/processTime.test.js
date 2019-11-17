@@ -3,7 +3,7 @@ const processTime = require('../../nlp/processTime.js'),
 
 const DATE_FORMAT = "MM/DD/YYYY:HH:mm";
 const TIME_ZONE = "America/Los_Angeles";
-const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timemachine
+const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timemachine (Thats a sunday)
 /**
  * 06/03: Sunday, 06/04: Monday, 06/05: Tuesday,
  * 06/06: Wednesday 06/07: Thursday, 06/08: Friday,
@@ -103,6 +103,18 @@ function assertGetDate(map) {
 describe("getDate", () => {
     it('should work in english for non recurring reminders', () => {
         let map = {
+            // '/r next week to test': {
+            //     reminderText: 'test',
+            //     reminderDates: {
+            //         formattedDates: ["06/10/2018:12:00"],
+            //     }
+            // },
+            // '/r next week on thursday to test': {
+            //     reminderText: 'test',
+            //     reminderDates: {
+            //         formattedDates: ["06/15/2018:12:00"],
+            //     }
+            // },
             '/remindme at 2 pm to do my homework': {
                 reminderText: 'do my homework',
                 reminderDates: {
