@@ -27,7 +27,6 @@ TODOS:
 * unit tests:
     HIGH PRIORITY:
         * parseNonRecurringSingleDate:
-            * _fixImpliedMeridiemOfChronoResult
             * parseNonRecurringSingleDate
             * _fixDatesInThePast
     LOW PRIORITY:
@@ -97,6 +96,10 @@ LOW PRIORITY:
         * setting invalid reminders
         * /start
     * setup autorotation for the log file so it doesnt max out
+* add ability to configure timezone for timemachine.js
+  * this is important since timemachine.js utilizes the time zone of the machine its currently on.
+    due to this, we currently assume in our tests that machine times are in the PST time zone. later on if our developers or CI/CD
+    machines are running in different time zones, this may cause our unit tests to fail in an unreliable manner.
 UX DESIGN PROBLEMS:
     * autocorrect on list search
     * /remindme to.. at..

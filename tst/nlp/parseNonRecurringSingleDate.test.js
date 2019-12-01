@@ -1,7 +1,9 @@
 const parseNonSingleRecurringDate = require('../../nlp/parseNonRecurringSingleDate.js'),
-    timemachine = require("../../timemachine.js");
+    timemachine = require("../../timemachine.js"),
+    moment = require('moment-timezone');
 
 const TODAY_DATE_STRING = "June 3, 2018 12:00:00"; // string to be used in timemachine
+const TODAY_DATE_STRING_4AM = "June 3, 2018 4:00:00"; // string to be used in timemachine
 /**
  * 06/03: Sunday, 06/04: Monday, 06/05: Tuesday,
  * 06/06: Wednesday 06/07: Thursday, 06/08: Friday,
@@ -128,5 +130,35 @@ describe("_isMeridiemImplied", () => {
         for(let key in map) {
             expect(parseNonSingleRecurringDate._isMeridiemImplied(key)).toEqual(map[key]);
         }
+    });
+});
+
+describe("_fixImpliedMeridiemOfChronoResult", () => {
+    it("should create date with correct meridiem given the current time is in pm", () => {
+        timemachine.config({ dateString: TODAY_DATE_STRING });
+        let map = {
+            "at 2": "Sun Jun 03 2018 14:00:00 GMT-0700",
+            "at 3:04": "Sun Jun 03 2018 15:04:00 GMT-0700",
+            "at 12:03": "Sun Jun 03 2018 12:03:00 GMT-0700",
+        };
+        for(let key in map) {
+            let impliedMeridiemDateOutput = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(TIMEZONE, key).d;
+            expect(impliedMeridiemDateOutput.toString()).toEqual(map[key]);
+        }
+        timemachine.reset();
+    });
+    it("should create date with correct meridiem given the current time is in am", () => {
+        timemachine.config({ dateString: TODAY_DATE_STRING_4AM });
+        let map = {
+            "at 2": "Sun Jun 03 2018 14:00:00 GMT-0700",
+            "at 3:04": "Sun Jun 03 2018 15:04:00 GMT-0700",
+            "at 5:03": "Sun Jun 03 2018 05:03:00 GMT-0700",
+            "at 11:03": "Sun Jun 03 2018 11:03:00 GMT-0700",
+        };
+        for(let key in map) {
+            let impliedMeridiemDateOutput = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(TIMEZONE, key).d;
+            expect(impliedMeridiemDateOutput.toString()).toEqual(map[key]);
+        }
+        timemachine.reset();
     });
 });

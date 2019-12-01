@@ -12,7 +12,7 @@ const timemachine = require('../timemachine.js'),
 // parse the time part of the string
 // try to apply both "am" and "pm" on it
 // choose whatever is closer
-function _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText) {
+function _fixImpliedMeridiemOfChronoResult(userTimezone, reminderDateTimeText) {
     // get text
     let timePart = Object.values(utils.getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText))[0];
     let textWithpm = reminderDateTimeText.replace(timePart, timePart + " pm");
@@ -26,6 +26,7 @@ function _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDa
     let didAMAdd1Day = false;
     let didPMAdd1Day = false;
     // fix dates before choosing
+    let currentDate = moment.tz(userTimezone);
     if (parsedDateAM.isBefore(currentDate)) {
         parsedDateAM.add(1, 'day');
         didAMAdd1Day = true;
@@ -87,7 +88,7 @@ function parseNonRecurringSingleDate(reminderDateTimeText, userTimezone) {
     let d = moment(chrono.parseDate(reminderDateTimeText));
     let result = chrono.parse(reminderDateTimeText)[0];
     if (_isMeridiemImplied(reminderDateTimeText)) {
-        let fixedReturn = _fixImpliedMeridiemOfChronoResult(currentDate, userTimezone, reminderDateTimeText);
+        let fixedReturn = _fixImpliedMeridiemOfChronoResult(userTimezone, reminderDateTimeText);
         result = fixedReturn.result;
         d = fixedReturn.d;
     }
@@ -305,4 +306,5 @@ module.exports = {
     _convertOnTimetoAtTime: _convertOnTimetoAtTime,
     _parseCustomDateFormats: _parseCustomDateFormats,
     _addInToUnits: _addInToUnits,
+    _fixImpliedMeridiemOfChronoResult: _fixImpliedMeridiemOfChronoResult,
 };
