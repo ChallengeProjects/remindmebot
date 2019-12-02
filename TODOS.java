@@ -27,8 +27,7 @@ TODOS:
 * unit tests:
     HIGH PRIORITY:
         * parseNonRecurringSingleDate:
-            * parseNonRecurringSingleDate
-            * _fixDatesInThePast
+            * add further test coverage of `_fixDatesInThePast`. there are numerous combinations of known and implied values and dates which should also be tested.
     LOW PRIORITY:
         * move timemachine to "lib" directory and write tests for it
         * parseRecurringDates

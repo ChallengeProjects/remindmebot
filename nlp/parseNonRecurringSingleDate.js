@@ -307,4 +307,5 @@ module.exports = {
     _parseCustomDateFormats: _parseCustomDateFormats,
     _addInToUnits: _addInToUnits,
     _fixImpliedMeridiemOfChronoResult: _fixImpliedMeridiemOfChronoResult,
+    _fixDatesInThePast: _fixDatesInThePast,
 };

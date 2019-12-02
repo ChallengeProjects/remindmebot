@@ -162,3 +162,101 @@ describe("_fixImpliedMeridiemOfChronoResult", () => {
         timemachine.reset();
     });
 });
+
+describe("parseNonRecurringSingleDate", () => {
+    it("should work", () => {
+        timemachine.config({ dateString: TODAY_DATE_STRING_4AM });
+        let map = {
+            "at 2": moment("2018-06-03T14:00:00", TIMEZONE),
+            "at 3:04": moment("2018-06-03T15:04:00", TIMEZONE),
+            "at 5:03": moment("2018-06-03T05:03:00", TIMEZONE),
+            "at 11:03": moment("2018-06-03T11:03:00", TIMEZONE),
+        };
+        for(let key in map) {
+            let parsedDate = parseNonSingleRecurringDate.parseNonRecurringSingleDate(key, TIMEZONE);
+            expect(parsedDate.isSame(map[key])).toBe(true);
+        }
+        timemachine.reset();
+    });
+});
+
+describe("_fixDatesInThePast", () => {
+    it("should return the date as is if its not in the past and weekday isn't specified", () => {
+        let placeholder_int = 1;
+
+        let currentDate = moment("2018-06-03T12:00:00", TIMEZONE);
+        let dateToBeFixed = moment("2018-06-03T13:00:00", TIMEZONE);
+        let chronoResult = {
+          start: {
+            knownValues: {
+                day: placeholder_int,
+                hour: placeholder_int,
+            },
+            impliedValues: {
+            },
+          },
+        };
+
+        let fixedDate = parseNonSingleRecurringDate._fixDatesInThePast(dateToBeFixed, currentDate, chronoResult);
+        expect(fixedDate.isSame(moment("2018-06-03T13:00:00", TIMEZONE))).toBe(true);
+    });
+
+    it("should add a week if the input date is in the past and we've specified a weekday", () => {
+        let placeholder_int = 1;
+
+        let currentDate = moment("2018-06-03T12:00:00", TIMEZONE);
+        let dateToBeFixed = moment("2018-06-03T12:00:00", TIMEZONE);
+        let chronoResult = {
+          start: {
+            knownValues: {
+                weekday: placeholder_int,
+            },
+            impliedValues: {
+                day: placeholder_int,
+            },
+          },
+        };
+
+        let fixedDate = parseNonSingleRecurringDate._fixDatesInThePast(dateToBeFixed, currentDate, chronoResult);
+        expect(fixedDate.isSame(moment("2018-06-10T12:00:00", TIMEZONE))).toBe(true);
+    });
+
+    it("should add a year if the input date is in the past and we've only specified the day", () => {
+        let placeholder_int = 1;
+
+        let currentDate = moment("2018-06-03T12:00:00", TIMEZONE);
+        let dateToBeFixed = moment("2018-06-01T12:00:00", TIMEZONE);
+        let chronoResult = {
+          start: {
+            knownValues: {
+                day: placeholder_int,
+            },
+            impliedValues: {
+                year: placeholder_int,
+            },
+          },
+        };
+
+        let fixedDate = parseNonSingleRecurringDate._fixDatesInThePast(dateToBeFixed, currentDate, chronoResult);
+        expect(fixedDate.isSame(moment("2019-06-01T12:00:00", TIMEZONE))).toBe(true);
+    });
+
+    it("should return the next day if the input date is in the past but the day, month, and year are not specified", () => {
+        let placeholder_int = 1;
+
+        let currentDate = moment("2018-06-03T12:00:00", TIMEZONE);
+        let dateToBeFixed = moment("2018-06-03T08:00:00", TIMEZONE);
+        let chronoResult = {
+          start: {
+            knownValues: {
+            },
+            impliedValues: {
+                day: placeholder_int,
+            },
+          },
+        };
+
+        let fixedDate = parseNonSingleRecurringDate._fixDatesInThePast(dateToBeFixed, currentDate, chronoResult);
+        expect(fixedDate.isSame(moment("2018-06-04T08:00:00", TIMEZONE))).toBe(true);
+    });
+});
