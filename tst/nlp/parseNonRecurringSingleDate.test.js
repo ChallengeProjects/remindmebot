@@ -136,19 +136,21 @@ describe("_isMeridiemImplied", () => {
 describe("_fixImpliedMeridiemOfChronoResult", () => {
     it("should create date with correct meridiem given the current time is in pm", () => {
         timemachine.config({ dateString: TODAY_DATE_STRING });
+        let currentDate = moment();
         let map = {
             "at 2": moment("2018-06-03T14:00:00"),
             "at 3:04": moment("2018-06-03T15:04:00"),
             "at 12:03": moment("2018-06-03T12:03:00"),
         };
         for(let key in map) {
-            let fixedDate = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(TIMEZONE, key).d;
+            let fixedDate = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(currentDate, TIMEZONE, key).d;
             expect(fixedDate.isSame(map[key])).toBe(true);
         }
         timemachine.reset();
     });
     it("should create date with correct meridiem given the current time is in am", () => {
         timemachine.config({ dateString: TODAY_DATE_STRING_4AM });
+        let currentDate = moment();
         let map = {
             "at 2": moment("2018-06-03T14:00:00"),
             "at 3:04": moment("2018-06-03T15:04:00"),
@@ -156,7 +158,7 @@ describe("_fixImpliedMeridiemOfChronoResult", () => {
             "at 11:03": moment("2018-06-03T11:03:00"),
         };
         for(let key in map) {
-            let fixedDate = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(TIMEZONE, key).d;
+            let fixedDate = parseNonSingleRecurringDate._fixImpliedMeridiemOfChronoResult(currentDate, TIMEZONE, key).d;
             expect(fixedDate.isSame(map[key])).toBe(true);
         }
         timemachine.reset();
