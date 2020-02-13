@@ -1,10 +1,18 @@
-TODOS: 
+TODOS:
 ----------------------
 [Sorted By Priority]
-* specific error message for tonight
-    * if bot included 
-* add a command for /complain
+* bugs:
+    * timezone: 
+        * timezone: TIMEZONE_LOCATION_ERROR, "TIMEZONE_INVALID:"
+        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur"]
+    * reminder bot "at 9:30" for "enter time" gave error
+* dont need at for time defined like this 9:30
+* specific error message for tonight/morning
+    * if reminder included the word "tonight"/"morning" send this message
+* support time at the end (see Bear for examples)
+* start designing the tree thing using classes and stuff
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
+* month with no day should still work: "/r in august to test"
 * take care of redundancy:
     * take the more accurate information from the 2:
         * /r on friday the 23rd         [IGNORE "FRIDAY"]   -> /r on the 23rd at 7 pm to ...
@@ -24,14 +32,7 @@ TODOS:
         "/r on friday the 23rd", "/r tonight at 8 pm", "/r tomorrow morning at 11 am", "/r tomorrow evening at 6 pm",
         "/r today at 2 pm", "/r next week on friday", "/r in 2 weeks on friday", "/r today", "/r in the morning",
         "/r in the afternoon", "/r tonight", "/r next week"
-* remove need for "to" -> "/r at 8 am text text"
-    * this will make it easier to flip the order later
-    * should i have a did you mean msg with yes/no buttons?
-    * write a script take takes all logs of VALID_REMINDER
-        * parses it
-        * gets all the words that work before the "to"
-        * then write the auto to generator in the bot with it
-* "/r to .. at 8 tomorrow"
+* add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
@@ -109,11 +110,11 @@ UX DESIGN PROBLEMS:
 -----
 Lower priority:
     * To: "en/eny/eno/enena/enaha/enohom" split for arabic
-    * ITALIAN:
+    * ARABIC:
         * choose language from the beginning to show the right welcome message
             * show keyboard buttons
             * store in settings
-        * bot should to reply in italian too if the user chose italian in settings
+        * bot should to reply in arabic too if the user chose arabic in settings
             * shouldnt be hard at all, just make a map per language, get user language from settings
 -----
 big effort:

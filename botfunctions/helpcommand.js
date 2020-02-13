@@ -4,9 +4,7 @@ const logger = require("../logger.js"),
     config = require("../config.json");
 
 
-const HELP_TEXT_ENGLISH = process.env.NODE_ENV == "developmentd" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you have any questions, feature requests or bug reports.
-per l'italiano: /aiuto
-
+const HELP_TEXT_ENGLISH = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you have any questions, feature requests or bug reports.
 1- /timezone to set your timezone
 2- /list to list all of your reminders
     * You can do "/list work" to only list reminders the contain the word "work"
@@ -40,36 +38,6 @@ You can also make recurring reminders: /help_with_recurring_reminders
 <b>Check off Reminder</b>: ✅
 `;
 
-const HELP_TEXT_ITALIAN = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  ` Sentiti libero di contattarmi con il seguente nickname: @bubakazouba nel caso in cui avessi problemi, suggerimenti o segnalazioni di bugs.
-
-1- /fuso_orario per impostare l’ora locale
-2- /lista per vedere la lista di tutti i promemoria
-    * Puoi scrivere “/list impegno” per mostrare tutti i promemoria che contengono la parola “impegno”
-3- /aiuto per aiuto
-4- Usa il comando /ricordami per creare un nuovo promemoria
-
-Formula generale: /ricordami [data/orario] di/che [qualcosa].
-Non dimenticarti il “di” o “che”
-
-Esempi:
-
-    • /ricordami alle 2 di pomeriggio di fare i compiti
-    • /ricordami domani alle 5 di pomeriggio di fare i compiti
-    • /r tra 5 minuti di controllare il forno
-    • /ricordami mercoledì di prendere i bambini da scuola
-    • ricordami il 5 Gennaio che oggi è il mio compleanno
-    • ricordami ogni giorno della settimana alle 12 di pomeriggio di chiamare mio figlio  
-    • ricordami ogni ora sino alle 6 di pomeriggio di registrare il mio lavoro 
-
-Puoi anche creare promemoria ricorrenti: /aiuto_con_promemoria_ricorrenti
-
-<b>Modifica l’orario promemoria</b>: ✏️⏱
-<b>Modifica il testo promemoria</b>: ✏️📖
-<b>Elimina promemoria</b>: 🗑️
-<b>Attiva promemoria</b>: 🔔
-<b>Disattiva promemoria</b>: 🔕
-<b>Spunta il reminder</b>: ✅`;
-
 const HELP_WITH_RECURRING_REMINDERS_TEXT_ENGLISH = `To setup recurring reminders:
 /remindme every day at 9 am and 9 pm to take my medicine
 /remindme every sunday at 10 am to do my laundry
@@ -79,21 +47,9 @@ const HELP_WITH_RECURRING_REMINDERS_TEXT_ENGLISH = `To setup recurring reminders
 
 keyword is <b>every</b>`;
 
-const HELP_WITH_RECURRING_REMINDERS_TEXT_ITALIAN = `Per configurareil tuo promemoria ricorrente:
-/ricordami ogni giorno alle 9 di mattina e alle 9 di sera di prendere le mie medicien
-/ricordami ogni domenica  alle 10 di mattina di lavare i panni
-/ricordami ogni lunedì, mercoledì e venerdi alle 5 di pomeriggio di andare via dal lavoro per prendere i bambini
-/ricordami ogni 2 ore di controllare la mia mail
-`;
-
 const ABOUT_TEXT = `This bot was created by @bubakazouba. The source code is available on <a href='https://github.com/bubakazouba/remindmebot'>Github</a>.\nContact me for feature requests or bug reports!`;
 
 function addToBot(bot) {
-    bot.command('aiuto', ctx => {
-        logger.info(`${ctx.chat.id}: COMMAND_HELP`);
-        return ctx.replyWithHTML(HELP_TEXT_ITALIAN).catch(catchBlocks);
-    });
-
     bot.command('help', ctx => {
         logger.info(`${ctx.chat.id}: COMMAND_HELP`);
         return ctx.replyWithHTML(HELP_TEXT_ENGLISH).catch(catchBlocks);
@@ -103,20 +59,10 @@ function addToBot(bot) {
         return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT_ENGLISH).catch(catchBlocks);
     });
 
-    bot.command('aiuto_con_promemoria_ricorrenti', ctx => {
-        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT_ITALIAN).catch(catchBlocks);
-    });
-
     bot.command('start', ctx => {
         logger.info(`${ctx.chat.id}: COMMAND_START`);
         UserManager.addUser(ctx.chat.id, ctx.chat.username);
         return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things.' + '\n' + HELP_TEXT_ENGLISH).catch(catchBlocks);
-    });
-
-    bot.command('start_italian', ctx => {
-        logger.info(`${ctx.chat.id}: COMMAND_START`);
-        UserManager.addUser(ctx.chat.id, ctx.chat.username);
-        return ctx.replyWithHTML('Ciao👋! Questo è un semplice BOT che ti aiuterà a ricordare qualcosa.' + '\n' + HELP_TEXT_ITALIAN).catch(catchBlocks);
     });
 
     bot.command('about', ctx => {

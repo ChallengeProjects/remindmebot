@@ -10,8 +10,8 @@ function remindUser(reminder) {
     let isRecurring = reminder.isRecurring();
 
     const SNOOZE_MAP = {
-        '15M': 15 * 60 * 1000,
-        "30M": 30 * 60 * 1000,
+        '¼H': 15 * 60 * 1000,
+        "½H": 30 * 60 * 1000,
         "1H": 60 * 60 * 1000,
         "3H": 3 * 60 * 60 * 1000,
         "1D": 24 * 60 * 60 * 1000,

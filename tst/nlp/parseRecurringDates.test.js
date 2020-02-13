@@ -1,5 +1,4 @@
-const parseRecurringDates = require('../../nlp/parseRecurringDates.js'),
-    processTime = require('../../nlp/processTime.js');
+const parseRecurringDates = require('../../nlp/parseRecurringDates.js');
 
 // TODO: more tests
 describe("_getRecurringDates", () => {
@@ -52,40 +51,6 @@ describe("parseRecurringDates", () => {
         for (let key in map) {
             let result = parseRecurringDates.parseRecurringDates(key);
             expect(result).toEqual(map[key]);
-        }
-    });
-
-    it('should work with italian too (after preProcessing)', () => {
-        let map = {
-            'ogni giorno della settimana alle 12 di pomeriggio': {
-                recurringDates: ['in 1 monday at 12:00 pm', 'in 1 tuesday at 12:00 pm', 'in 1 wednesday at 12:00 pm', 'in 1 thursday at 12:00 pm', 'in 1 friday at 12:00 pm'],
-                endingConditionDate: undefined
-            },
-            'ogni ora sino alle 6 di pomeriggio': {
-                recurringDates: ['in 1 hours'],
-                endingConditionDate: ['at 6 pm'],
-            },
-            'ogni giorno alle 9 di mattina e alle 9 di sera': {
-                recurringDates: ['in 1 days at 9 am', 'in 1 days at 9 pm'],
-                endingConditionDate: undefined,
-            },
-            'ogni domenica  alle 10 di mattina': {
-                recurringDates: ['in 1 sunday at 10:00 am'],
-                endingConditionDate: undefined,
-            },
-            'ogni lunedì, mercoledì e venerdi alle 5 di pomeriggio': {
-                recurringDates: ['in 1 monday at 5 pm', 'in 1 wednesday at 5 pm', 'in 1 friday at 5 pm'],
-                endingConditionDate: undefined,
-            },
-            'ogni 2 ore': {
-                recurringDates: ['in 2 hours'],
-                endingConditionDate: undefined,
-            },
-        };
-        for (let reminderDateTimeText in map) {
-            let preProcessedReminderDateTimeText = processTime.preProcessReminderDateTimeText(reminderDateTimeText);
-            let result = parseRecurringDates.parseRecurringDates(preProcessedReminderDateTimeText);
-            expect(result.recurringDates).toEqual(map[reminderDateTimeText].recurringDates);
         }
     });
 });

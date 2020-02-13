@@ -108,11 +108,7 @@ function addToBot(bot) {
     ];
     FRANCO_ARAB_VARIANTS.push(...FRANCO_ARAB_VARIANTS.map(x => 'yasta ' + x));
 
-    const ITALIAN_VARIANTS = [
-        'ricordami',
-    ];
-
-    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS, ...ITALIAN_VARIANTS];
+    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS];
 
     bot.hears(new RegExp(`^(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
         ctx.message.text = `/remindme ${ctx.match[2]}`;
@@ -121,7 +117,6 @@ function addToBot(bot) {
 
     const COMMANDS_VARIANTS = ['r', 'remindme',
         ...(FRANCO_ARAB_VARIANTS.filter(x => x.indexOf(" ") == -1)),
-        ...(ITALIAN_VARIANTS.filter(x => x.indexOf(" ") == -1)),
     ];
     for(let commandVariant of COMMANDS_VARIANTS) {
         bot.command(commandVariant, remindmeCallBack);

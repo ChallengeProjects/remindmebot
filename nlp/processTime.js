@@ -17,62 +17,78 @@ const commonTypos = require("./commonTypos.json"),
  * Example: /remindme to/every ... at ... to abcdef -> 
  * { reminderText: "abcdef", reminderDateTimeText: "to/every ... at ..."}
  */
+
+function _escapeRegExp(string){
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
 function _splitReminderText(text) {
-    // get the index of the first delimiter
-    const SPLIT_DELIMITERS = {
-        TO: "to".toLowerCase(),
-        THAT: "that".toLowerCase(),
-        ABOUT: "about".toLowerCase(),
-        DI: "di".toLowerCase(), // "to" in Italian
-        CHE: "che".toLowerCase(), // "that" in Italian
-    };
-    // words in reminder date time text (am, pm, months)
-    const ITALIAN_DI_PREFIXES = ["sera", "mattina", "pomeriggio", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio",
-        "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"].map(x => x.toLowerCase());
-    // Find the minimum index of any split delimiter
-    let selectedSplitDelimiterIndex = Number.MAX_VALUE;
-    let selectedSplitDelimiter = null;
-    for (let splitDelimiter of Object.values(SPLIT_DELIMITERS)) {
-        let matchResult = text.match(new RegExp(`\\b${splitDelimiter}\\b`, 'i'));
-        if(!matchResult) {
-            continue;
+    let delimiters = ['[0-9]+', ':', '-', '/', ',', ' '];
+    function _removeDelimiter(reminderText) {
+        let words = reminderText.split(/\s/).filter(x => !(x == ""));
+        // if first word is a reminder datetime/text delimiter, skip it
+        if (["to", "that", "about", "for"].indexOf(words[0].toLowerCase()) != -1) {
+            return reminderText.substr(words[0].length+1);
         }
-        
-        // Make sure its not the italian edge case "di Genanio" -> "of january"
-        if(splitDelimiter == SPLIT_DELIMITERS.DI) {
-            let foundIt = false;
-            // Get 2 words starting from the "Di"
-            // Example: "/r il 21 di Maggio alle 17.57 di andare a fare la spesa" ->
-            //  ["di Maggio",  "di andare"] 
-            // let test = text.slice(matchResult.index).split(" ").slice(0, 2).join(" ");
-            let testRegexMatches = text.match(new RegExp(`\\bdi ([^ ]+)\\b`, 'ig'));
-            for(let match of testRegexMatches) {
-                // take the match without the italian month
-                let secondWord = match.split(" ")[1];
-                if(ITALIAN_DI_PREFIXES.indexOf(secondWord.toLowerCase()) == -1) {
-                    matchResult = text.match(new RegExp(`\\b${match}\\b`, 'i'));
-                    foundIt = true;
-                    break; // dont continue to the next "Di"
-                }
+        else {
+            return reminderText;
+        }
+    }
+    function _guessDelimimterIndex(str) {
+        let delimitersRegex = new RegExp(`(${delimiters.join("|")})`, 'i');
+        let els = str.split(delimitersRegex).filter(x => !(x == ""));
+        let firstNonDateTimeWord;
+        let lastDelimiters = [];
+        for (let i in els) {
+            let el = els[i];
+            // save any delimiters in case it was followed by a non datetime word
+            // then append it at the end
+            if (el.match(/\sand\s|[0-9]+|:|-|\/|\.|,/ig)) {
+                lastDelimiters.push(el);
             }
-            if(!foundIt) {
-                continue;
+            else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|a)$/ig)
+                && !el.match(/^(weekday|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday|second|minute|hour|day|week|month|year)s?$/ig)
+                && el != " "
+            ) {
+                firstNonDateTimeWord = lastDelimiters.join('') + el;
+                console.log("firstNonDateTimeWord=" + firstNonDateTimeWord);
+                break;
+            }
+            else {
+                lastDelimiters = [];
             }
         }
         
-        let currentIndex = matchResult.index;
-        if (currentIndex < selectedSplitDelimiterIndex) {
-            selectedSplitDelimiter = splitDelimiter;
-            selectedSplitDelimiterIndex = currentIndex;
+        if (!firstNonDateTimeWord) {
+            throw 'NO_GUESS_FOUND';
         }
+        
+        let wordMatch = str.match(new RegExp(`(^|\\s)(${_escapeRegExp(firstNonDateTimeWord)})(${delimiters.join("|")}|\\s|$)`, 'i'));
+        console.log("wordMatch=", wordMatch[2], wordMatch.index);
+        return {
+            // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstNonDateTimeWord =".")
+            selectedSplitDelimiterIndex: wordMatch.index,
+            firstWord: wordMatch[2],
+        };
     }
 
-    if (selectedSplitDelimiterIndex == Number.MAX_VALUE) {
-        throw errorCodes.NO_DELIMITER_PROVIDED;
+    let reminderText;
+    let reminderDateTimeText;
+
+    try {
+        let preProcessedText = preProcessReminderDateTimeText(text);
+        preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
+        let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText);
+        reminderDateTimeText = preProcessedText.slice(0, selectedSplitDelimiterIndex);
+        // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstWord =".")
+        console.log("text=", text, "x=" + text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')));
+        reminderText = text.substr(text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')).index);
+        console.log("reminderText=", reminderText);
+        reminderText = _removeDelimiter(reminderText);
+    } catch (err) {
+        console.log('>>>.', text);
+        throw 'NO_GUESS_FOUND';
     }
 
-    let reminderText = text.slice(selectedSplitDelimiterIndex + selectedSplitDelimiter.length);
-    let reminderDateTimeText = text.slice(text.indexOf(" ") + 1, selectedSplitDelimiterIndex); // ignore the first word (the command /remindme)
 
     return {
         reminderText: reminderText.trim(),
@@ -126,10 +142,10 @@ function _translate(reminderDateTimeText) {
             'u': ['û', 'ü', 'ù', 'ú', 'ū'],
             'a': ['à', 'á', 'â', 'ä', 'ã', 'å', 'ā'],
         };
-        
-        for(let englishLetter in ACCENTS_MAP) {
+
+        for (let englishLetter in ACCENTS_MAP) {
             let accents = ACCENTS_MAP[englishLetter];
-            for(let accent of accents) {
+            for (let accent of accents) {
                 reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
             }
         }
@@ -146,15 +162,9 @@ function _translate(reminderDateTimeText) {
         }
         return reminderDateTimeText;
     }
-    
-    // Only italian right now
+
+    // Useless right now
     function __specialTranslations(reminderDateTimeText) {
-        // Morning at <time>
-        reminderDateTimeText = reminderDateTimeText.replace(/\bmattina alle ([0-9:]+)/ig, 'at $1 am');
-        // Afternoon at <time>
-        reminderDateTimeText = reminderDateTimeText.replace(/\bpomeriggio alle ([0-9:]+)/ig, 'at $1 pm');
-        // Night at <time>
-        reminderDateTimeText = reminderDateTimeText.replace(/\bsera alle ([0-9:]+)/ig, 'at $1 pm');
         return reminderDateTimeText;
     }
 
@@ -225,15 +235,24 @@ function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
+    // let reminderText, reminderDateTimeText;
+    // try {
+    //     let _result = _splitReminderText(text, preProcessReminderDateTimeText);
+    //     reminderText = _result.reminderText;
+    //     reminderDateTimeText = _result.reminderDateTimeText;
+    // } catch(err) {
+    //     let _result = _splitReminderText(text, preProcessReminderDateTimeText(text));
+    //     reminderText = _result.reminderText;
+    //     reminderDateTimeText = _result.reminderDateTimeText;
+    // }
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
-    
     reminderDateTimeText = preProcessReminderDateTimeText(reminderDateTimeText);
 
     let recurringDatesResult = null;
-    
+
     try {
         recurringDatesResult = parseRecurringDates.parseRecurringDates(reminderDateTimeText, userTimezone);
-    } catch(err) {
+    } catch (err) {
         () => {}; // no-op so eslint doesnt complain
     }
 
@@ -250,19 +269,17 @@ function getDate(text, userTimezone) {
                 endingConditionDate: endingConditionDate,
             }
         };
-    }
-    else {
+    } else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
 
         // Compute cross product for each date
         let parsedDates = [];
-        for(let date in dateToTimesMap) {
-            if(!dateToTimesMap[date].length) {
+        for (let date in dateToTimesMap) {
+            if (!dateToTimesMap[date].length) {
                 let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(date, userTimezone);
                 parsedDates.push(parsedDate);
-            }
-            else {
-                for(let time of dateToTimesMap[date]) {
+            } else {
+                for (let time of dateToTimesMap[date]) {
                     let dateTimeText = date + " " + time;
                     let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(dateTimeText, userTimezone);
                     parsedDates.push(parsedDate);
