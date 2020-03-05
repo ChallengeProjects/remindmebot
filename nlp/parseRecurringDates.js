@@ -1,28 +1,28 @@
 const utils = require('./utils.js'),
     parseNonRecurringSingleDate = require('./parseNonRecurringSingleDate');
 
-function _getRecurringDates(dateText) {
+// convert recurring date to re-processable date
+// every 2 days -> in 2 days
+function _converRecurringDate(dateText) {
     dateText = dateText.replace(/(,|and)/ig, ' ');
 
     // try to parse units
-    let unitMatches = dateText.match(new RegExp(`([0-9]+ )?(${utils.UNITS.join("|")})\\b`, 'ig'));
-    let dates = [];
-    if (unitMatches) {
-        for(let unitMatch of unitMatches) {
-            let split = unitMatch.split(" ");
-            let frequency, unit;
-            if(split.length == 2) { // frequency is there "every 3 minutes"
-                frequency = parseInt(split[0].trim());
-                unit = split[1];
-            }
-            else { // no frequency "every minute"
-                frequency = 1;
-                unit = split[0];
-            }
-            dates.push(`in ${frequency} ${unit}`);
+    let unitMatch = dateText.match(new RegExp(`([0-9]+ )?(${utils.UNITS.join("|")})\\b`, 'i'));
+    let date;
+    if (!!unitMatch) {
+        let split = unitMatch[0].split(" ");
+        let frequency, unit;
+        if(split.length == 2) { // frequency is there "every 3 minutes"
+            frequency = parseInt(split[0].trim());
+            unit = split[1];
         }
+        else { // no frequency "every minute"
+            frequency = 1;
+            unit = split[0];
+        }
+        date = `in ${frequency} ${unit}`;
     }
-    return [...new Set(dates)];
+    return date;
 }
 
 /**
@@ -125,21 +125,19 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
 
     for(let dateText in dateTextToTimesMap) {
         let times = dateTextToTimesMap[dateText];
-        let dates = _getRecurringDates(dateText);
-        if (!dates || !dates.length) {
-            return null;
+        let date = _converRecurringDate(dateText);
+        if (!date) {
+            continue;
         }
         
-        // if there was no time provided, then its just the dates
+        // if there was no time provided, then its just the date
         if (!times || !times.length) {
-            recurringDates.push(...dates);
+            recurringDates.push(date);
         }
-        // otherwise return [dates]x[times]
+        // otherwise return datex[times]
         else {
-            for (let date of dates) {
-                for (let time of times) {
-                    recurringDates.push(date + " " + time);
-                }
+            for (let time of times) {
+                recurringDates.push(date + " " + time);
             }
         }
     }
@@ -152,5 +150,5 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
 module.exports = {
     parseRecurringDates: parseRecurringDates,
     // exported only for unit tests
-    _getRecurringDates: _getRecurringDates,
+    _converRecurringDate: _converRecurringDate,
 };

@@ -33,16 +33,6 @@ describe("_splitReminderText", () => {
             expect(result).toEqual(expectedResult);
         }
     });
-    fit("should work when there isn't a delimiter", () => {
-        let map = {
-            
-        };
-        for (let text in map) {
-            let expectedResult = map[text];
-            let result = processTime._splitReminderText(text);
-            expect(result).toEqual(expectedResult);
-        }
-    });
     it("should work when there isn't a delimiter", () => {
         let map = {
             '/r in 40 minutes hand dry the ted baker': {
@@ -54,7 +44,7 @@ describe("_splitReminderText", () => {
                 reminderText: 't',
             },
             '/r on tue t': {
-                reminderDateTimeText: 'on tue',
+                reminderDateTimeText: 'on tuesday',
                 reminderText: 't',
             },
             '/remindme at 5 do my homework': {
@@ -1852,7 +1842,15 @@ function assertGetDate(map) {
     timemachine.config({ dateString: TODAY_DATE_STRING });
     for (let key in map) {
         let expectedResult = map[key];
-        let result = processTime.getDate(key, TIME_ZONE);
+        let result;
+        try {
+            result = processTime.getDate(key, TIME_ZONE);
+        }
+        catch (err) {
+            console.log(`'${key}' failed with an exception: ${err}`);
+            expect(false).toEqual(true);
+        }
+        
         expect(result.reminderText).toEqual(expectedResult.reminderText);
         if (expectedResult.reminderDates) {
 

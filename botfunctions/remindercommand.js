@@ -108,7 +108,7 @@ function addToBot(bot) {
     ];
     FRANCO_ARAB_VARIANTS.push(...FRANCO_ARAB_VARIANTS.map(x => 'yasta ' + x));
 
-    const VARIANTS = ['remind me', ...FRANCO_ARAB_VARIANTS];
+    const VARIANTS = ['r', 'remind me', ...FRANCO_ARAB_VARIANTS];
 
     bot.hears(new RegExp(`^(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
         ctx.message.text = `/remindme ${ctx.match[2]}`;

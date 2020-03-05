@@ -242,6 +242,10 @@ describe("getDateToParsedTimesFromReminderDateTime", () => {
             "in 2 saturdays": {
                 "in 2 saturdays": [],
             },
+            "every 3 mondays, 2 tuesdays": {
+                "every 3 mondays": [],
+                "2 tuesdays": [],
+            }
         };
         for (let key in map) {
             expect(utils.getDateToParsedTimesFromReminderDateTime(key)).toEqual(map[key]);

@@ -26,7 +26,7 @@ function _splitReminderText(text) {
     function _removeDelimiter(reminderText) {
         let words = reminderText.split(/\s/).filter(x => !(x == ""));
         // if first word is a reminder datetime/text delimiter, skip it
-        if (["to", "that", "about", "for"].indexOf(words[0].toLowerCase()) != -1) {
+        if (["to", "that", "about"].indexOf(words[0].toLowerCase()) != -1) {
             return reminderText.substr(words[0].length+1);
         }
         else {
@@ -50,7 +50,6 @@ function _splitReminderText(text) {
                 && el != " "
             ) {
                 firstNonDateTimeWord = lastDelimiters.join('') + el;
-                console.log("firstNonDateTimeWord=" + firstNonDateTimeWord);
                 break;
             }
             else {
@@ -63,7 +62,6 @@ function _splitReminderText(text) {
         }
         
         let wordMatch = str.match(new RegExp(`(^|\\s)(${_escapeRegExp(firstNonDateTimeWord)})(${delimiters.join("|")}|\\s|$)`, 'i'));
-        console.log("wordMatch=", wordMatch[2], wordMatch.index);
         return {
             // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstNonDateTimeWord =".")
             selectedSplitDelimiterIndex: wordMatch.index,
@@ -80,12 +78,9 @@ function _splitReminderText(text) {
         let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText);
         reminderDateTimeText = preProcessedText.slice(0, selectedSplitDelimiterIndex);
         // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstWord =".")
-        console.log("text=", text, "x=" + text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')));
         reminderText = text.substr(text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')).index);
-        console.log("reminderText=", reminderText);
         reminderText = _removeDelimiter(reminderText);
     } catch (err) {
-        console.log('>>>.', text);
         throw 'NO_GUESS_FOUND';
     }
 
@@ -134,24 +129,6 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
 }
 
 function _translate(reminderDateTimeText) {
-    function __convertAccents(reminderDateTimeText) {
-        const ACCENTS_MAP = {
-            'i': ['î', 'ï', 'í', 'ī', 'į', 'ì'],
-            'e': ['è', 'é', 'ê', 'ë', 'ē', 'ė', 'ę'],
-            'o': ['ô', 'ö', 'ò', 'ó', 'œ', 'ø', 'ō', 'õ'],
-            'u': ['û', 'ü', 'ù', 'ú', 'ū'],
-            'a': ['à', 'á', 'â', 'ä', 'ã', 'å', 'ā'],
-        };
-
-        for (let englishLetter in ACCENTS_MAP) {
-            let accents = ACCENTS_MAP[englishLetter];
-            for (let accent of accents) {
-                reminderDateTimeText = reminderDateTimeText.replace(new RegExp(accent, 'g'), englishLetter);
-            }
-        }
-        return reminderDateTimeText;
-    }
-
     function __transliterate(reminderDateTimeText) {
         for (let foreignLanguage in translationMaps) {
             let foreignLanguageMap = translationMaps[foreignLanguage];
@@ -163,13 +140,6 @@ function _translate(reminderDateTimeText) {
         return reminderDateTimeText;
     }
 
-    // Useless right now
-    function __specialTranslations(reminderDateTimeText) {
-        return reminderDateTimeText;
-    }
-
-    reminderDateTimeText = __convertAccents(reminderDateTimeText);
-    reminderDateTimeText = __specialTranslations(reminderDateTimeText);
     reminderDateTimeText = __transliterate(reminderDateTimeText);
     return reminderDateTimeText;
 }
@@ -231,20 +201,27 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
+function _getDateTimeCrossProduct(dateToTimesMap) {
+    let dateTimes = [];
+    for (let date in dateToTimesMap) {
+        if (!dateToTimesMap[date].length) {
+            dateTimes.push(date);
+        }
+        else {
+            for (let time of dateToTimesMap[date]) {
+                let dateTimeText = date + " " + time;
+                dateTimes.push(dateTimeText);
+            }
+        }
+    }
+    return dateTimes;
+}
+
 function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
-    // let reminderText, reminderDateTimeText;
-    // try {
-    //     let _result = _splitReminderText(text, preProcessReminderDateTimeText);
-    //     reminderText = _result.reminderText;
-    //     reminderDateTimeText = _result.reminderDateTimeText;
-    // } catch(err) {
-    //     let _result = _splitReminderText(text, preProcessReminderDateTimeText(text));
-    //     reminderText = _result.reminderText;
-    //     reminderDateTimeText = _result.reminderDateTimeText;
-    // }
+    
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     reminderDateTimeText = preProcessReminderDateTimeText(reminderDateTimeText);
 
@@ -272,20 +249,9 @@ function getDate(text, userTimezone) {
     } else {
         let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
 
-        // Compute cross product for each date
-        let parsedDates = [];
-        for (let date in dateToTimesMap) {
-            if (!dateToTimesMap[date].length) {
-                let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(date, userTimezone);
-                parsedDates.push(parsedDate);
-            } else {
-                for (let time of dateToTimesMap[date]) {
-                    let dateTimeText = date + " " + time;
-                    let parsedDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(dateTimeText, userTimezone);
-                    parsedDates.push(parsedDate);
-                }
-            }
-        }
+        let parsedDates = _getDateTimeCrossProduct(dateToTimesMap)
+            .map(dateTimeText => parseNonRecurringSingleDate.parseNonRecurringSingleDate(dateTimeText, userTimezone));
+
         if (!parsedDates || !parsedDates.length) {
             throw errorCodes.UNKOWN_ERROR;
         }

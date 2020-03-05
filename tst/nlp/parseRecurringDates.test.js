@@ -1,17 +1,15 @@
 const parseRecurringDates = require('../../nlp/parseRecurringDates.js');
 
-// TODO: more tests
-describe("_getRecurringDates", () => {
+describe("_converRecurringDate", () => {
     it('should work', () => {
         let map = {
-            'every 30 minutes some text to ignore': ['in 30 minutes'],
-            'every 2 days': ['in 2 days'],
-            'every 3 hours': ['in 3 hours'],
-            'every 3 hours, 3 minutes': ['in 3 hours', 'in 3 minutes'],
-            'every 3 mondays, 2 tuesdays': ['in 3 mondays', 'in 2 tuesdays'],
+            'every 30 minutes some text to ignore': 'in 30 minutes',
+            'every 2 days': 'in 2 days',
+            'every 3 hours': 'in 3 hours',
+            'every 3 mondays': 'in 3 mondays',
         };
         for (let key in map) {
-            expect(parseRecurringDates._getRecurringDates(key)).toEqual(map[key]);
+            expect(parseRecurringDates._converRecurringDate(key)).toEqual(map[key]);
         }
     });
 });
@@ -47,6 +45,10 @@ describe("parseRecurringDates", () => {
                 recurringDates: ['in 3 mondays', 'in 2 tuesdays'],
                 endingConditionDate: undefined,
             },
+            "every 3 hours": {
+                recurringDates: ['in 3 hours'],
+                endingConditionDate: undefined,
+            }
         };
         for (let key in map) {
             let result = parseRecurringDates.parseRecurringDates(key);
