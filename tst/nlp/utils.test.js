@@ -1,19 +1,7 @@
 const utils = require("../../nlp/utils.js"),
     { NLPContainer, NLPDate, NLPTime, NLPInterval } = require("../../nlp/models/date.js");
 
-describe("_parseTimesStringToArray", () => {
-    it("should work", () => {
-        expect(utils._parseTimesStringToArray("3")).toEqual(["3"]);
-        expect(utils._parseTimesStringToArray("3 pm")).toEqual(["3", "pm"]);
-        expect(utils._parseTimesStringToArray("at 3")).toEqual(["3"]);
-        expect(utils._parseTimesStringToArray("at 3:03 4:30")).toEqual(["3:03", "4:30"]);
-        expect(utils._parseTimesStringToArray("at 3:3,4 pm")).toEqual(["3:3", "4", "pm"]);
-        // input doesnt make sense but thats the expected output..
-        expect(utils._parseTimesStringToArray("at 14,15:20 and 5 a.m")).toEqual(["14", "15:20", "5", "a.m"]);
-    });
-});
-
-describe("regexMatchDateTextOrdinal", () => {
+describe("_regexMatchDateTextOrdinal", () => {
     it("should work with isOnRequired = true", () => {
         let map = {
             "on the 3rd": { "day": "3" },
@@ -35,7 +23,7 @@ describe("regexMatchDateTextOrdinal", () => {
             "5 pm": null,
         };
         for (let key in map) {
-            let result = utils.regexMatchDateTextOrdinal(key, true);
+            let result = utils._regexMatchDateTextOrdinal(key, true);
             if (map[key] == null) {
                 expect(result).toEqual(null);
             } else {
@@ -75,63 +63,6 @@ describe("_convertDatesTextToNLPObjects", () => {
         };
         for(let key in map) {
             expect(utils._convertDatesTextToNLPObjects(key)).toEqual(map[key]);
-        }
-    });
-});
-
-describe("getDateToTimePartsMapFromReminderDateTimeText", () => {
-    it("should work", () => {
-        let map = {
-            "at 3": {
-                "undefined": "at 3",
-            },
-            "at 3 and at 4": {
-                "undefined": "at 3 at 4",
-            },
-            "7 pm": {
-                "undefined": "7 pm",
-            },
-            "on 02/03 at 3": {
-                "on 02/03": "at 3",
-            },
-            "on 02/03/2019 at 3": {
-                "on 02/03/2019": "at 3",
-            },
-            "on 02/03, 02/04,02/05 at 3, 4 pm and 5 am": {
-                "on 02/03 , 02/04 , 02/05": "at 3 4 pm 5 am",
-            },
-            "every wednesday and thursday at 3, 4 pm and 5 am and every tuesday at 3 pm": {
-                "every wednesday and thursday": "at 3 4 pm 5 am",
-                "every tuesday": "at 3 pm",
-            },
-            "this wednesday at 3, 4 pm and on tuesday at 3 am": {
-                "this wednesday": "at 3 4 pm",
-                "on tuesday": "at 3 am",
-            },
-            "every monday at 2 am and tuesday at 3 pm": {
-                "every monday": "at 2 am",
-                "tuesday": "at 3 pm",
-            },
-            "in 2 days at 3, 4 pm and every wednesday at 3 pm": {
-                "in 2 days": "at 3 4 pm",
-                "every wednesday": "at 3 pm",
-            },
-            "in 2 days and in 4 weeks at 3 4 pm and every 2 wednesdays at 3 pm": {
-                "in 2 days and in 4 weeks": "at 3 4 pm",
-                "every 2 wednesdays": "at 3 pm",
-            },
-            "on wednesday": {
-                "on wednesday": [],
-            },
-            "in 5 minutes": {
-                "in 5 minutes": [],
-            },
-            "5 minutes": {
-                "5 minutes": [],
-            }
-        };
-        for (let key in map) {
-            expect(utils.getDateToTimePartsMapFromReminderDateTimeText(key)).toEqual(map[key]);
         }
     });
 });
@@ -190,42 +121,6 @@ describe("getNLPContainersFromReminderDateTimeText", () => {
         };
         for (let key in map) {
             expect(utils.getNLPContainersFromReminderDateTimeText(key)).toEqual(map[key]);
-        }
-    });
-});
-
-
-describe("getDatePartsFromString", () => {
-    it("should work", () => {
-        let map = {
-            "on 02/03 at 3": [
-                "on 02/03",
-            ],
-            "on 02/03 at 3, 4 pm and 5 am": [
-                "on 02/03",
-            ],
-            "every wednesday at 3, 4 pm and 5 am and every tuesday at 3 pm": [
-                "every wednesday",
-                "every tuesday",
-            ],
-            "this wednesday at 3, 4 pm and on tuesday at 3 am": [
-                "this wednesday",
-                "on tuesday",
-            ],
-            "every monday at 2 am and tuesday at 3 pm": [
-                "every monday",
-                "tuesday"
-            ],
-            "in 2 days at 3, 4 pm and every wednesday at 3 pm": [
-                "in 2 days",
-                "every wednesday",
-            ],
-            "on wednesday": [
-                "on wednesday",
-            ]
-        };
-        for (let key in map) {
-            expect(utils.getDatePartsFromString(key)).toEqual(map[key]);
         }
     });
 });

@@ -12,11 +12,11 @@ then
     echo "Tests failed rejecting commit"
     exit 1
 fi
-# look for: 'fit(', 'fit (', 'fdescribe(', 'fdescribe ('
-find tst/ -name '*.js' -exec cat {} \; | egrep '(fit|fdescribe)\s?\('
+# look for: '(x|f)it(', '(x|f)it (', '(x|f)describe(', '(x|f)describe ('
+find tst/ -name '*.js' -exec cat {} \; | egrep '(f|x)(it|describe)\s?\('
 if [ $? = 0 ]
 then
-    echo "Focused it or describe found in tests"
+    echo "(Focused or Excluded) it or describe found in tests"
     exit 1
 fi
 exit 0
