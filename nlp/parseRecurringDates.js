@@ -1,28 +1,22 @@
-const utils = require('./utils.js'),
-    parseNonRecurringSingleDate = require('./parseNonRecurringSingleDate');
+const utils = require('./utils.js');
 
 // convert recurring date to re-processable date
-// every 2 days -> in 2 days
-function _converRecurringDate(dateText) {
-    dateText = dateText.replace(/(,|and)/ig, ' ');
-
-    // try to parse units
-    let unitMatch = dateText.match(new RegExp(`([0-9]+ )?(${utils.UNITS.join("|")})\\b`, 'i'));
-    let date;
-    if (!!unitMatch) {
-        let split = unitMatch[0].split(" ");
-        let frequency, unit;
-        if(split.length == 2) { // frequency is there "every 3 minutes"
-            frequency = parseInt(split[0].trim());
-            unit = split[1];
-        }
-        else { // no frequency "every minute"
-            frequency = 1;
-            unit = split[0];
-        }
-        date = `in ${frequency} ${unit}`;
+// NLPInterval(2, 'days') -> "in 2 days"
+// NLPInterval(undefined, 'wednesday') -> "in wednesday"
+function _convertRecurringDate(nlpContainer) {
+    let nlpInterval = nlpContainer.getNLPInterval();
+    if (!nlpInterval) {
+        return;
     }
-    return date;
+    
+    let text = `in ${nlpInterval.number || 1} ${nlpInterval.unit}`;
+    let nlpTime = nlpContainer.getNLPTime();
+
+    if (!nlpTime) {
+        return text;
+    }
+    text += " at " + nlpTime.getTextRepresentation();
+    return text;
 }
 
 /**
@@ -91,7 +85,8 @@ function _getEndingDateTime(reminderDateTimeText, userTimezone) {
     let endingConditionDate;
     try {
         endingDateTimeText = _convertEndingDateTimeTextToReminderDateTimeText(endingDateTimeText);
-        endingConditionDate = parseNonRecurringSingleDate.parseNonRecurringSingleDate(endingDateTimeText, userTimezone);
+        let nlpContainer = utils.getNLPContainersFromReminderDateTimeText(endingDateTimeText)[0];
+        endingConditionDate = nlpContainer.getMomentDate(userTimezone);
     } catch (err) {
         throw "Couldn't parse ending condition";
     }
@@ -110,36 +105,19 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     if (!reminderDateTimeText.match(/\bevery\b/i)) {
         return null;
     }
-    // check if there is a condition for ending
+    // check if there is a condition for ending and remove it from reminderDateTimeText
     let endingDateTimeResult = _getEndingDateTime(reminderDateTimeText, userTimezone);
     let endingConditionDate;
     if (endingDateTimeResult) {
         reminderDateTimeText = endingDateTimeResult.newReminderDateTimeText;
         endingConditionDate = endingDateTimeResult.endingConditionDate;
     }
-
     let recurringDates = [];
     // /remindme every monday, tuesday at 8am, 3 pm and wednesday at 2 pm -> {"monday, tuesday": ["at 8 am", "at 3 pm"]
     //  , "wednesday": "at 2 pm"}
-    let dateTextToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
-
-    for(let dateText in dateTextToTimesMap) {
-        let times = dateTextToTimesMap[dateText];
-        let date = _converRecurringDate(dateText);
-        if (!date) {
-            continue;
-        }
-        
-        // if there was no time provided, then its just the date
-        if (!times || !times.length) {
-            recurringDates.push(date);
-        }
-        // otherwise return datex[times]
-        else {
-            for (let time of times) {
-                recurringDates.push(date + " " + time);
-            }
-        }
+    let allNLPContainers = utils.getNLPContainersFromReminderDateTimeText(reminderDateTimeText);
+    for(let nlpContainer of allNLPContainers) {
+        recurringDates.push(_convertRecurringDate(nlpContainer));
     }
 
     return {
@@ -150,5 +128,5 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
 module.exports = {
     parseRecurringDates: parseRecurringDates,
     // exported only for unit tests
-    _converRecurringDate: _converRecurringDate,
+    _convertRecurringDate: _convertRecurringDate,
 };

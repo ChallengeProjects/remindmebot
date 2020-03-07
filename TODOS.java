@@ -10,7 +10,6 @@ TODOS:
 * specific error message for tonight/morning
     * if reminder included the word "tonight"/"morning" send this message
 * support time at the end (see Bear for examples)
-* start designing the tree thing using classes and stuff
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
 * month with no day should still work: "/r in august to test"
 * take care of redundancy:

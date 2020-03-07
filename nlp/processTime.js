@@ -1,6 +1,5 @@
 const commonTypos = require("./commonTypos.json"),
     parseRecurringDates = require("./parseRecurringDates.js"),
-    parseNonRecurringSingleDate = require("./parseNonRecurringSingleDate.js"),
     utils = require("./utils.js"),
     errorCodes = require("./errorCodes.js"),
     translationMaps = require("./translationMaps.json"),
@@ -201,22 +200,6 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
     return reminderDateTimeText;
 }
 
-function _getDateTimeCrossProduct(dateToTimesMap) {
-    let dateTimes = [];
-    for (let date in dateToTimesMap) {
-        if (!dateToTimesMap[date].length) {
-            dateTimes.push(date);
-        }
-        else {
-            for (let time of dateToTimesMap[date]) {
-                let dateTimeText = date + " " + time;
-                dateTimes.push(dateTimeText);
-            }
-        }
-    }
-    return dateTimes;
-}
-
 function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
@@ -247,10 +230,10 @@ function getDate(text, userTimezone) {
             }
         };
     } else {
-        let dateToTimesMap = utils.getDateToParsedTimesFromReminderDateTime(reminderDateTimeText);
+        let nlpContainers = utils.getNLPContainersFromReminderDateTimeText(reminderDateTimeText);
 
-        let parsedDates = _getDateTimeCrossProduct(dateToTimesMap)
-            .map(dateTimeText => parseNonRecurringSingleDate.parseNonRecurringSingleDate(dateTimeText, userTimezone));
+        let parsedDates = nlpContainers
+            .map(nlpContainer => nlpContainer.getMomentDate(userTimezone));
 
         if (!parsedDates || !parsedDates.length) {
             throw errorCodes.UNKOWN_ERROR;

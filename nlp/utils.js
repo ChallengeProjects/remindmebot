@@ -1,16 +1,36 @@
-const moment = require('moment-timezone');
+const moment = require('moment-timezone'),
+    {NLPContainer, NLPDate, NLPTime, NLPInterval} = require("./models/date.js");
 
 const TIME_NUMBER_REGEX = '[0-9:]+';
 const MERIDIEM_REGEX = '(a\\.?m\\.?|p\\.?m\\.?)';
 let UNITS = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 UNITS = [...UNITS, ...UNITS.map(u => u + 's')]; // add plural forms too
 
-function _isTimeNumber(word) {
-    return !!word.match(new RegExp(`^${TIME_NUMBER_REGEX}$`));
-}
+// capture "on [time]" and replace the "on" with "at", then make sure a ":" exists
+//  so chrono can parse it as time
+// This is needed because of 2 reasons
+//  1- To be more flexible with users that like to use "on" as a prefix to time
+//  2- More importantly, parseRecurringDates._convertEndingDateTimeTextToReminderDateTimeText
+//      does not differentiate dates and times, it simply prefixes them both with "on"
+function _convertOnTimetoAtTime(reminderDateTimeText) {
+    let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${TIME_NUMBER_REGEX})(\\s(${MERIDIEM_REGEX})?)?$`, 'i'));
+    let timeIndex = 1;
+    let meridiemIndex = 3;
 
-function _isMeridiem(word) {
-    return !!word.match(new RegExp(`^${MERIDIEM_REGEX}$`, 'i'));
+    if (!onTimeMatch) {
+        return reminderDateTimeText;
+    }
+    let timeText = onTimeMatch[timeIndex];
+    if (timeText.indexOf(":") == -1) {
+        timeText += ":00";
+    }
+
+    if (onTimeMatch[meridiemIndex]) {
+        return `at ${timeText} ${onTimeMatch[meridiemIndex]}`;
+    }
+    else {
+        return `at ${timeText}`;
+    }
 }
 
 // "at 3" -> ["3"]
@@ -79,22 +99,31 @@ function getDateToTimePartsMapFromReminderDateTimeText(str) {
             datesToTimeMap[dateParts[i]] = timeParts[i];
         }
     }
-    return _seperateDatesInDatesToTimesMap(datesToTimeMap);
-    // return datesToTimeMap;
+
+    return datesToTimeMap;
 }
 
 // [see tests for examples]
-function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
+function getNLPContainersFromReminderDateTimeText(reminderDateTimeText) {
+    reminderDateTimeText = _convertOnTimetoAtTime(reminderDateTimeText);
     let dateToTimeMap = getDateToTimePartsMapFromReminderDateTimeText(reminderDateTimeText);
-    let dateToParsedTimesMap = {};
 
+    let allNLPContainers = [];
     for (let date in dateToTimeMap) {
+        let allNLPObjects = [];
+        if (date == 'undefined') {
+            allNLPObjects = [null];
+        }
+        else {
+            allNLPObjects = _convertDatesTextToNLPObjects(date);
+        }
+
         let timePart = dateToTimeMap[date];
         if (!timePart.length) {
-            dateToParsedTimesMap[date] = [];
+            allNLPContainers.push(...(allNLPObjects.map(x => new NLPContainer(x))));
             continue;
         }
-        let times = [];
+        let nlpTimes = [];
         let words = _parseTimesStringToArray(timePart);
 
         // Now we just need to assign the meridiem for each time
@@ -108,13 +137,27 @@ function getDateToParsedTimesFromReminderDateTime(reminderDateTimeText) {
         for (let i = 0; i < timesPartsOfWords.length; i++) {
             let timesSplit = timesPartsOfWords[i].split(" ").filter(x => !!x.length);
             let meridiem = meridiemsPartsOfWords.length > i ? (" " + meridiemsPartsOfWords[i]) : ("");
-            times.push(...timesSplit.map(x => `at ${x}${meridiem}`));
+            for(let timeString of timesSplit) {
+                let hour, minute;
+                if (timeString.split(":").length == 2) {
+                    hour = timeString.split(":")[0];
+                    minute = timeString.split(":")[1];
+                }
+                else {
+                    hour = timeString;
+                    minute = undefined;
+                }
+                nlpTimes.push(new NLPTime(hour, minute, meridiem));
+            }
         }
-        dateToParsedTimesMap[date] = times;
-    }
 
-    // return dateToParsedTimesMap;
-    return _seperateDatesInDatesToTimesMap(dateToParsedTimesMap);
+        for (let nlpObject of allNLPObjects) {
+            for (let nlpTime of nlpTimes) {
+                allNLPContainers.push(new NLPContainer(nlpObject, nlpTime));
+            }
+        }
+    }
+    return allNLPContainers;
 }
 
 /**
@@ -176,86 +219,86 @@ function regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
     }
 }
 
-// {"on 02/03 02/04": ["at 3 pm"]} -> {"on 02/03": ["at 3 pm"], "on 02/04": ["at 3 pm"]}
-// {"on march the 2nd april the 1st": ["at 3 pm"]} -> {"on march the 2nd": ["at 3 pm"], "april the 1st": ["at 3 pm"]}
-// {"on the 2nd of march april the 1st": ["at 3 pm"]} -> {"on the 2nd of march": ["at 3 pm"], "april the 1st": ["at 3 pm"]}
-// {"on the 2nd of march 1st of april": ["at 3 pm"]} -> {"on the 2nd of march": ["at 3 pm"], "1st of april": ["at 3 pm"]}
-// {"on monday tuesday": ["at 3 pm"]} -> {"on monday": ["at 3 pm"], "tuesday": ["at 3 pm"]}
-function _seperateDatesInDatesToTimesMap(datesToTimesMap) {
-    /**
-     * Algorithm:
-     *  1- extract out all weekday and remove it
-     *  2- extract out all x(x?)/x(x?) and remove it
-     *  3- extract out all "in/every x? <unit>" and remove it
-     *  4- extract out all "xth of <month>" and remove it
-     *  5- extract out all "<month> the xth" and remove it
-     *  6- extract out all "the xth" and remove it
-     */
+// "on 02/03 02/04" -> [NLPDate]
+// "on march the 2nd april the 1st" -> [NLPDate, NLPDate]
+// "on the 2nd of march april the 1st" -> [NLPDate, NLPDate]
+// "on the 2nd of march 1st of april" -> [NLPDate, NLPDate]
+// "on monday tuesday" -> [NLPInterval, NLPInterval]
+/**
+ * Algorithm:
+ *  1- extract out all weekday and remove it
+ *  2- extract out all x(x?)/x(x?) and remove it
+ *  3- extract out all "in/every x? <unit>" and remove it
+ *  4- extract out all "xth of <month>" and remove it
+ *  5- extract out all "<month> the xth" and remove it
+ *  6- extract out all "the xth" and remove it
+ */
+function _convertDatesTextToNLPObjects(datesText) {
+    let allNLPObjects = [];
+    // the reason im removing any regexMatch I find after I push it is to make sure
+    //  that the ordinal function doesnt match them again
+
+    //////////////////////////////
+    // try to parse units
+    let intervalRegexpString = `\\b(every |in |on |this )?([0-9]+ )?(${UNITS.join("|")})\\b`;
+    let regexMatches = datesText.match(new RegExp(intervalRegexpString, 'ig'));
+    regexMatches = regexMatches || [];
+    for(let regexMatch of regexMatches) {
+        datesText = datesText.replace(regexMatch, '');
+        let match = regexMatch.match(new RegExp(intervalRegexpString, 'i'));
+        let number = match[2];
+        let unit = match[3];
+        allNLPObjects.push(new NLPInterval(number, unit));
+    }
+    //////////////////////////////
     
-    function matchEverything(datesText) {
-        let allParsedDateTexts = [];
-        // the reason im removing any regexMatch I find after I push it is to make sure
-        //  that the ordinal function doesnt match them again
+    /////////////////////////////////
+    let weekDayRegexpString = `\\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\\b`;
+    regexMatches = datesText.match(new RegExp(weekDayRegexpString, 'ig'));
+    regexMatches = regexMatches || [];
+    for(let regexMatch of regexMatches) {
+        datesText = datesText.replace(regexMatch, '');
+        let match = regexMatch.match(new RegExp(weekDayRegexpString, 'i'));
+        let number = 1;
 
-        //////////////////////////////
-        // try to parse units
-        let regexMatches = datesText.match(new RegExp(`\\b(every |in |on |this )?([0-9]+ )?(${UNITS.join("|")})\\b`, 'ig'));
-        regexMatches = regexMatches || [];
-        for(let regexMatch of regexMatches) {
-            datesText = datesText.replace(regexMatch, '');
+        let unit = match[2];
+        if (unit.toLowerCase() == 'tomorrow') {
+            unit = 'day';
         }
-        allParsedDateTexts.push(...regexMatches);
-        //////////////////////////////
-        
-        /////////////////////////////////
-        regexMatches = datesText.match(/\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\b/ig);
-        regexMatches = regexMatches || [];
-        for(let regexMatch of regexMatches) {
-            datesText = datesText.replace(regexMatch, '');
-        }
-        allParsedDateTexts.push(...regexMatches);
-        //////////////////////////////
-        
-        //////////////////////////////
-        // try to match x(x?)/x(x?)
-        regexMatches = datesText.match(/\b(on )?[0-9]([0-9])?\/[0-9]([0-9])?(\/[0-9][0-9]|\/[0-9][0-9][0-9][0-9])?\b/ig);
-        regexMatches = regexMatches || [];
-        for(let regexMatch of regexMatches) {
-            datesText = datesText.replace(regexMatch, '');
-        }
-        allParsedDateTexts.push(...regexMatches);
-        //////////////////////////////
+        allNLPObjects.push(new NLPInterval(number, unit));
 
-        while(true) {
-            let result = regexMatchDateTextOrdinal(datesText, false);
-            if(!result) {
-                break;
-            }
-            let oneDate = result.regexMatch[0];
-            datesText = datesText.replace(oneDate, '');
-            allParsedDateTexts.push(oneDate);
-        }
-        
-        return [...new Set(allParsedDateTexts)];
     }
-    let seperatedDatesToTimesMap = {};
-
-    // if there are no dates in the map (dates = 'undefined', yes apparently
-    //  JS converts it to a string when it's a key)
-    if(Object.keys(datesToTimesMap).length == 1 && Object.keys(datesToTimesMap)[0] == 'undefined') {
-        return datesToTimesMap;
-    }
-
-    for(let datesText in datesToTimesMap) {
-        let times = datesToTimesMap[datesText];
-        let allParsedDateTexts = matchEverything(datesText);
-        if(!!allParsedDateTexts) {
-            for (let dateText of allParsedDateTexts) {
-                seperatedDatesToTimesMap[dateText] = times;
-            }
+    //////////////////////////////
+    
+    //////////////////////////////
+    // try to match x(x?)/x(x?)
+    let dateRegexpString = `\\b(on )?[0-9]([0-9])?/[0-9]([0-9])?(/[0-9][0-9]|/[0-9][0-9]([0-9][0-9])?)?\\b`;
+    regexMatches = datesText.match(new RegExp(dateRegexpString, 'ig'));
+    regexMatches = regexMatches || [];
+    for(let regexMatch of regexMatches) {
+        datesText = datesText.replace(regexMatch, '');
+        let dateString = regexMatch.split(" ").filter(word => word.toLowerCase() != "on").join(" ");
+        if (dateString.split("/").length == 3) {
+            allNLPObjects.push(new NLPDate(dateString.split("/")[2], dateString.split("/")[0], dateString.split("/")[1]));
+        }
+        else {
+            allNLPObjects.push(new NLPDate(null, dateString.split("/")[0], dateString.split("/")[1]));
         }
     }
-    return seperatedDatesToTimesMap;
+    //////////////////////////////
+
+    while(true) {
+        let result = regexMatchDateTextOrdinal(datesText, false);
+        if(!result) {
+            break;
+        }
+        let oneDate = result.regexMatch[0];
+        datesText = datesText.replace(oneDate, '');
+        let { regexMatch, indices } = result;
+        allNLPObjects.push(new NLPDate(null, regexMatch[indices.month], regexMatch[indices.day]));
+    }
+    
+    return allNLPObjects;
 }
 
 /**
@@ -269,15 +312,13 @@ function getDatePartsFromString(reminderDateTimeText) {
 
 module.exports = {
     getDatePartsFromString: getDatePartsFromString,
-    getDateToParsedTimesFromReminderDateTime: getDateToParsedTimesFromReminderDateTime,
     getDateToTimePartsMapFromReminderDateTimeText: getDateToTimePartsMapFromReminderDateTimeText,
-    _isMeridiem: _isMeridiem,
-    _isTimeNumber: _isTimeNumber,
+    getNLPContainersFromReminderDateTimeText: getNLPContainersFromReminderDateTimeText,
     TIME_NUMBER_REGEX: TIME_NUMBER_REGEX,
     MERIDIEM_REGEX: MERIDIEM_REGEX,
     UNITS: UNITS,
     regexMatchDateTextOrdinal: regexMatchDateTextOrdinal,
     // only exported for unit tests
     _parseTimesStringToArray: _parseTimesStringToArray,
-    _seperateDatesInDatesToTimesMap: _seperateDatesInDatesToTimesMap,
+    _convertDatesTextToNLPObjects: _convertDatesTextToNLPObjects,
 };

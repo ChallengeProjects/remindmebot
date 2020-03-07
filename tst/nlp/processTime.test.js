@@ -1859,6 +1859,10 @@ function assertGetDate(map) {
                 let formattedExpectedDates = expectedResult.reminderDates.formattedDates;
                 expect(formattedResultDates.sort()).toEqual(formattedExpectedDates.sort());
             } else if (expectedResult.reminderDates.recurringDates) {
+                if (!result.reminderDates.recurringDates) {
+                    console.error("no result.reminderDates.recurringDates for " + key);
+                    expect(false).toEqual(true);
+                }
                 expect(result.reminderDates.recurringDates.sort()).toEqual(expectedResult.reminderDates.recurringDates.sort());
                 if (!!expectedResult.reminderDates.formattedEndingConditionDate) {
                     expect(result.reminderDates.endingConditionDate.format(DATE_FORMAT))
@@ -1890,6 +1894,19 @@ describe("getDate", () => {
             //         formattedDates: ["06/15/2018:12:00"],
             //     }
             // },
+            // check if same weekday works
+            '/remindme on sunday to ..': {
+                reminderText: "..",
+                reminderDates: {
+                    formattedDates: ["06/10/2018:12:00"]
+                },
+            },
+            '/remindme sunday to ..': {
+                reminderText: "..",
+                reminderDates: {
+                    formattedDates: ["06/10/2018:12:00"]
+                },
+            },
             '/remindme at 2 pm to do my homework': {
                 reminderText: 'do my homework',
                 reminderDates: {
@@ -1938,13 +1955,19 @@ describe("getDate", () => {
                     formattedDates: ["07/01/2018:12:00"],
                 },
             },
+            '/remindme on 3 july to ...': {
+                reminderText: '...',
+                reminderDates: {
+                    formattedDates: ["07/03/2018:12:00"],
+                },
+            },
             '/r in 30 minute to hihi': {
                 reminderText: "hihi",
                 reminderDates: {
                     formattedDates: ["06/03/2018:12:30"],
                 },
             },
-            // missing in
+            // // missing in
             '/r 30 minutes to t': {
                 reminderText: "t",
                 reminderDates: {
@@ -2002,20 +2025,26 @@ describe("getDate", () => {
             '/remindme every weekday at 12 pm to call my son in school to check on him': {
                 reminderText: 'call my son in school to check on him',
                 reminderDates: {
-                    recurringDates: ["in 1 monday at 12:00 pm", "in 1 tuesday at 12:00 pm", "in 1 wednesday at 12:00 pm", "in 1 thursday at 12:00 pm", "in 1 friday at 12:00 pm"],
+                    recurringDates: ["in 1 monday at 12 pm", "in 1 tuesday at 12 pm", "in 1 wednesday at 12 pm", "in 1 thursday at 12 pm", "in 1 friday at 12 pm"],
+                },
+            },
+            '/remindme every hour to log my work': {
+                reminderText: 'log my work',
+                reminderDates: {
+                    recurringDates: ["in 1 hour"],
                 },
             },
             '/remindme every hour until 6 pm to log my work': {
                 reminderText: 'log my work',
                 reminderDates: {
-                    recurringDates: ["in 1 hours"],
+                    recurringDates: ["in 1 hour"],
                     formattedEndingConditionDate: "06/03/2018:18:00",
                 },
             },
             '/remindme every hour until 604 to log my work': {
                 reminderText: 'log my work',
                 reminderDates: {
-                    recurringDates: ["in 1 hours"],
+                    recurringDates: ["in 1 hour"],
                     formattedEndingConditionDate: "06/03/2018:18:04",
                 },
             },
@@ -2035,7 +2064,7 @@ describe("getDate", () => {
                 reminderText: 'open up the store',
                 reminderDates: {
                     recurringDates: ["in 1 monday at 9 am", "in 1 tuesday at 9 am", "in 1 wednesday at 9 am",
-                        "in 1 thursday at 9 am", "in 1 friday at 9 am", "in 1 saturday at 11:00 am", "in 1 sunday at 11:00 am"
+                        "in 1 thursday at 9 am", "in 1 friday at 9 am", "in 1 saturday at 11 am", "in 1 sunday at 11 am"
                     ],
                 }
             },
@@ -2048,13 +2077,13 @@ describe("getDate", () => {
             '/remindme every minute and every hour to test': {
                 reminderText: 'test',
                 reminderDates: {
-                    recurringDates: ['in 1 minute', 'in 1 hours'],
+                    recurringDates: ['in 1 minute', 'in 1 hour'],
                 }
             },
             '/remindme every 2 mondays and every 3 saturdays to test': {
                 reminderText: 'test',
                 reminderDates: {
-                    recurringDates: ['in 2 mondays', 'in 3 saturdays'],
+                    recurringDates: ['in 2 monday', 'in 3 saturday'],
                 }
             },
             // test weird input
