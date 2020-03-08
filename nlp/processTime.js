@@ -44,7 +44,7 @@ function _splitReminderText(text) {
             if (el.match(/\sand\s|[0-9]+|:|-|\/|\.|,/ig)) {
                 lastDelimiters.push(el);
             }
-            else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|a)$/ig)
+            else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|evening|afternoon|a)$/ig)
                 && !el.match(/^(weekday|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday|second|minute|hour|day|week|month|year)s?$/ig)
                 && el != " "
             ) {

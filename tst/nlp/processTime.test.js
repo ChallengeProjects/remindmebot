@@ -1882,18 +1882,54 @@ function assertGetDate(map) {
 describe("getDate", () => {
     it('should work in english for non recurring reminders', () => {
         let map = {
-            // '/r next week to test': {
-            //     reminderText: 'test',
-            //     reminderDates: {
-            //         formattedDates: ["06/10/2018:12:00"],
-            //     }
-            // },
-            // '/r next week on thursday to test': {
-            //     reminderText: 'test',
-            //     reminderDates: {
-            //         formattedDates: ["06/15/2018:12:00"],
-            //     }
-            // },
+            '/r next week to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    formattedDates: ["06/10/2018:12:00"],
+                }
+            },
+            '/r next week on thursday to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    formattedDates: ["06/07/2018:12:00"], // should be 06/14/2018
+                }
+            },
+            '/r in the afternoon to hamada': {
+                reminderText: 'hamada',
+                reminderDates: {
+                    formattedDates: ["06/03/2018:15:00"],
+                }
+            },
+            "/r tomorrow morning hamada": {
+                reminderText: 'hamada',
+                reminderDates: {
+                    formattedDates: ["06/04/2018:09:00"],
+                }
+            },
+            "/r tonight hamada": {
+                reminderText: 'hamada',
+                reminderDates: {
+                    formattedDates: ["06/03/2018:21:00"],
+                }
+            },
+            "/r tomorrow night hamada": {
+                reminderText: 'hamada',
+                reminderDates: {
+                    formattedDates: ["06/04/2018:21:00"],
+                }
+            },
+            "/r tomorrow afternoon to t": {
+                reminderText: 't',
+                reminderDates: {
+                    formattedDates: ["06/04/2018:15:00"],
+                }
+            },
+            "/r on friday the 23rd to t": { // 23rd is not a friday
+                reminderText: 't',
+                reminderDates: {
+                    formattedDates: ["06/23/2018:12:00"],
+                }
+            },
             // check if same weekday works
             '/remindme on sunday to ..': {
                 reminderText: "..",

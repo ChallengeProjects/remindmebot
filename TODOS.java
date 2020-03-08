@@ -7,33 +7,14 @@ TODOS:
         * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur"]
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
-* specific error message for tonight/morning
-    * if reminder included the word "tonight"/"morning" send this message
 * support time at the end (see Bear for examples)
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
-* month with no day should still work: "/r in august to test"
-* take care of redundancy:
-    * take the more accurate information from the 2:
-        * /r on friday the 23rd         [IGNORE "FRIDAY"]   -> /r on the 23rd at 7 pm to ...
-        * /r tonight at 8 pm            [IGNORE "TONIGHT"]  -> /r at 8 pm to ...
-        * /r tomorrow morning/evening at 11 am  [IGNORE "morning"]  -> /r tomorrow at 11 am
-        * /r today at 2 pm              [IGNORE "TODAY"]    -> /r at 2 pm to ...
-        * /r next week on friday -> /r in 1 week on friday [/s/1 week/2/]  -> /r in 2 friday to ...
-        * /r in 2 weeks on friday       [IGNORE "WEEKS ON"] -> /r in 2 friday to ...
-    * but make sure these work:
-        * /r on friday
-        * /r today (when is today?)
-        * /r morning/noon/afternoon/evening/tonight
-            * /r tomorrow morning/evening
-        * /r next week -> /r in 1 week
-        * /r next week on friday -> /r in 2 friday
-    * unit tests:
-        "/r on friday the 23rd", "/r tonight at 8 pm", "/r tomorrow morning at 11 am", "/r tomorrow evening at 6 pm",
-        "/r today at 2 pm", "/r next week on friday", "/r in 2 weeks on friday", "/r today", "/r in the morning",
-        "/r in the afternoon", "/r tonight", "/r next week"
 * add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders
+* unit tests for date.js
+* next week on thursday should be in 2 thursdays not in 1 thursday (only if today is not thursday)
+    * change NLPInterval to have an .addUnit
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
 * [1 hour] remindme every 1st of month

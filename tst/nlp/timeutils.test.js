@@ -63,6 +63,9 @@ describe("getDateToNLPTimesMapFromReminderDateTimeText", () => {
                 ],
                 "every 2 wednesdays": [new NLPTime(3, undefined, "pm")],
             },
+            "at 3 in the morning": {
+                "in the morning": [new NLPTime(3, undefined, undefined)],
+            },
             "on wednesday": {
                 "on wednesday": [],
             },

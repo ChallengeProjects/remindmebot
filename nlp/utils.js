@@ -1,13 +1,21 @@
 const moment = require('moment-timezone'),
-    {NLPContainer, NLPDate, NLPInterval} = require("./models/date.js"),
+    { NLPContainer, NLPDate, NLPTime, NLPInterval } = require("./models/date.js"),
     timeutils = require("./timeutils.js");
 
-let UNITS = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-UNITS = [...UNITS, ...UNITS.map(u => u + 's')]; // add plural forms too
+const LOWERCASE_MONTHS = moment.months().map(m => m.toLowerCase());
+const WEEKDAY_UNITS =  ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const TIME_UNITS = ['second', 'minute', 'hour'];
+const DAY_UNITS = ['day', 'week', 'month', 'year'];
+let LOWERCASE_UNITS = [...TIME_UNITS, ...DAY_UNITS, ...WEEKDAY_UNITS];
+LOWERCASE_UNITS = [...LOWERCASE_UNITS, ...LOWERCASE_UNITS.map(u => u + 's')]; // add plural forms too
 
 // [see tests for examples]
 function getNLPContainersFromReminderDateTimeText(reminderDateTimeText) {
     reminderDateTimeText = timeutils._convertOnTimetoAtTime(reminderDateTimeText);
+    // 1- get {dateText:[NLPTime]}
+    // 2- map dateText to NLPContainer
+    // 3- merge NLPContainer with all [NLPTime]
+    // 4- return NLPContainers
     let dateToTimePartsMap = timeutils.getDateToNLPTimesMapFromReminderDateTimeText(reminderDateTimeText);
 
     let allNLPContainers = [];
@@ -40,150 +48,198 @@ function getNLPContainersFromReminderDateTimeText(reminderDateTimeText) {
     return allNLPContainers;
 }
 
-/**
- * match dates of format "month the nth", "the nth of month"
- */
-// TODO: isOnRequired is a hack and i should get rid of it (see TODOS.java for explanation)
-// TODO: this shouldnt return a regex match, it should return 3 variables:
-//  complete match, day, month
-function _regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
-    const MONTHS = moment.months();
 
-    let onMatch;
-    if(isOnRequired) {
-        onMatch = `(?:on )`;
-    }
-    else {
-        onMatch = `(?:on )?`;
-    }
-    let monthDayOrdinalRegexMatchFormat1 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?(?:(${MONTHS.join("|")}) )?(?:the )?([0-9]+)(?:st|nd|rd|th|$)`, 'i'));
-    
-    let indicesFormat1 = { month: 1, day: 2 };
-    let format1Result = {
-        regexMatch: monthDayOrdinalRegexMatchFormat1,
-        indices: indicesFormat1,
-    };
-
-    let monthDayOrdinalRegexMatchFormat2 = reminderDateText.match(new RegExp(`\\b${onMatch}(?:the )?([0-9]+)(?:st|nd|rd|th)? (?:of )?(${MONTHS.join("|")})\\b`, 'i'));
-    let indicesFormat2 = { day: 1, month: 2 };
-    let format2Result = {
-        regexMatch: monthDayOrdinalRegexMatchFormat2,
-        indices: indicesFormat2,
-    };
-
-
-    let didFormat1Work = !!monthDayOrdinalRegexMatchFormat1;
-    let didFormat2Work = !!monthDayOrdinalRegexMatchFormat2;
-
-    if(!didFormat1Work && !didFormat2Work) {
-        return null;
-    }
-    else if( !didFormat1Work && didFormat2Work) {
-        return format2Result;
-    }
-    else if(!didFormat2Work && didFormat1Work) {
-        return format1Result;
-    }
-    // if they both worked
-    //  1- check if 1 doesnt have a month, then pick 2
-    //  2- check which one comes first in the string using .index and pick that one
-    else if(didFormat1Work && didFormat2Work) {
-        if(!monthDayOrdinalRegexMatchFormat1[indicesFormat1.month]) {
-            return format2Result;
-        }
-
-        if(monthDayOrdinalRegexMatchFormat1.index < monthDayOrdinalRegexMatchFormat2.index) {
-            return format1Result;
-        }
-        return format2Result;
-    }
-}
-
-// "on 02/03 02/04" -> [NLPDate]
-// "on march the 2nd april the 1st" -> [NLPDate, NLPDate]
-// "on the 2nd of march april the 1st" -> [NLPDate, NLPDate]
-// "on the 2nd of march 1st of april" -> [NLPDate, NLPDate]
-// "on monday tuesday" -> [NLPInterval, NLPInterval]
-/**
- * Algorithm:
- *  1- extract out all weekday and remove it
- *  2- extract out all x(x?)/x(x?) and remove it
- *  3- extract out all "in/every x? <unit>" and remove it
- *  4- extract out all "xth of <month>" and remove it
- *  5- extract out all "<month> the xth" and remove it
- *  6- extract out all "the xth" and remove it
- */
 function _convertDatesTextToNLPContainers(datesText) {
-    let allNLPObjects = [];
-    // the reason im removing any regexMatch I find after I push it is to make sure
-    //  that the ordinal function doesnt match them again
+    function annotateWord(word) {
+        if (['a', 'in', 'on', 'the', 'of', 'every', 'this'].indexOf(word) != -1) {
+            return {
+                type: "PREFIX",
+                word: word,
+            };
+        }
+        if (LOWERCASE_MONTHS.indexOf(word) != -1) {
+            return {
+                type: "MONTH",
+                word: word,
+                parsedWord: new NLPDate(undefined, word),
+            };
+        }
+        let dateRegex = new RegExp(`(on )?[0-9]([0-9])?/[0-9]([0-9])?(/[0-9][0-9][0-9][0-9]|/[0-9][0-9])?`, 'ig');
+        let dateRegexMatch = word.match(dateRegex);
+        if (!!dateRegexMatch) {
+            let nlpDate;
+            let dateString = dateRegexMatch[0].split(" ").filter(word => word.toLowerCase() != "on").join(" ");
+            if (dateString.split("/").length == 3) {
+                nlpDate = new NLPDate(dateString.split("/")[2], dateString.split("/")[0], dateString.split("/")[1]);
+            }
+            else {
+                nlpDate = new NLPDate(null, dateString.split("/")[0], dateString.split("/")[1]);
+            }
 
-    //////////////////////////////
-    // try to parse units
-    let intervalRegexpString = `\\b(every |in |on |this )?([0-9]+ )?(${UNITS.join("|")})\\b`;
-    let regexMatches = datesText.match(new RegExp(intervalRegexpString, 'ig'));
-    regexMatches = regexMatches || [];
-    for(let regexMatch of regexMatches) {
-        datesText = datesText.replace(regexMatch, '');
-        let match = regexMatch.match(new RegExp(intervalRegexpString, 'i'));
-        let number = match[2];
-        let unit = match[3];
-        allNLPObjects.push(new NLPInterval(number, unit));
+            return {
+                type: 'DATE',
+                word: word,
+                parsedWord: nlpDate,
+            };
+        }
+        let ordinalRegex = new RegExp('([0-9]+)(st|nd|rd|th)', 'i');
+        let ordinalRegexMatch = word.match(ordinalRegex);
+        if (!!ordinalRegexMatch) {
+            return {
+                type: 'ORDINAL',
+                word: word,
+                parsedWord: ordinalRegexMatch[1],
+            };
+        }
+        if (!isNaN(word) || word == 'next') {
+            let number = word == 'next' ? 1 : parseFloat(word);
+            return {
+                type: 'NUMBER',
+                word: word,
+                parsedWord: number,
+            };
+        }
+        if(LOWERCASE_UNITS.indexOf(word) != -1) {
+            return {
+                type: 'UNIT',
+                word: word,
+            };
+        }
+        if (word == 'tomorrow') {
+            return {
+                type: 'INTERVAL',
+                word: word,
+                parsedWord: new NLPInterval(1, 'day'),
+            };
+        }
+        const TIME_WORDS_MAP = {
+            'morning': new NLPTime(9, undefined, 'am'),
+            'noon': new NLPTime(12, undefined, 'pm'),
+            'afternoon': new NLPTime(3, undefined, 'pm'),
+            'evening': new NLPTime(9, undefined, 'pm'),
+            'tonight': new NLPTime(9, undefined, 'pm'),
+            'night': new NLPTime(9, undefined, 'pm'),
+        };
+        if (word in TIME_WORDS_MAP) {
+            return {
+                type: 'TIME',
+                word: word,
+                parsedWord: TIME_WORDS_MAP[word],
+            };
+        }
+        return {
+            type: "UNKNOWN",
+            word: word,
+        };
     }
-    //////////////////////////////
-    
-    /////////////////////////////////
-    let weekDayRegexpString = `\\b(on |every |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow)\\b`;
-    regexMatches = datesText.match(new RegExp(weekDayRegexpString, 'ig'));
-    regexMatches = regexMatches || [];
-    for(let regexMatch of regexMatches) {
-        datesText = datesText.replace(regexMatch, '');
-        let match = regexMatch.match(new RegExp(weekDayRegexpString, 'i'));
-        let number = 1;
 
-        let unit = match[2];
-        if (unit.toLowerCase() == 'tomorrow') {
-            unit = 'day';
-        }
-        allNLPObjects.push(new NLPInterval(number, unit));
-    }
-    //////////////////////////////
-    
-    //////////////////////////////
-    // try to match x(x?)/x(x?)
-    let dateRegexpString = `\\b(on )?[0-9]([0-9])?/[0-9]([0-9])?(/[0-9][0-9]|/[0-9][0-9]([0-9][0-9])?)?\\b`;
-    regexMatches = datesText.match(new RegExp(dateRegexpString, 'ig'));
-    regexMatches = regexMatches || [];
-    for(let regexMatch of regexMatches) {
-        datesText = datesText.replace(regexMatch, '');
-        let dateString = regexMatch.split(" ").filter(word => word.toLowerCase() != "on").join(" ");
-        if (dateString.split("/").length == 3) {
-            allNLPObjects.push(new NLPDate(dateString.split("/")[2], dateString.split("/")[0], dateString.split("/")[1]));
-        }
-        else {
-            allNLPObjects.push(new NLPDate(null, dateString.split("/")[0], dateString.split("/")[1]));
-        }
-    }
-    //////////////////////////////
+    function mergeAnnotatedWords(annotatedWords) {
+        let getAnnotatedWordWithType = (annotatedWords, type) => {
+            return annotatedWords.filter(aw => aw.type == type)[0];
+        };
 
-    while(true) {
-        let result = _regexMatchDateTextOrdinal(datesText, false);
-        if(!result) {
-            break;
+        let getAllAnnotatedWordsWithType = (annotatedWords, type) => {
+            return annotatedWords.filter(aw => aw.type == type);
+        };
+
+        // DATE done
+        // UNIT -> look for NUMBER, if none then pick 1
+        //      look for a stronger unit (weekdays take priority over other units)
+        // MONTH -> look for NUMBER or ORDINAL
+        let nlpContainer = new NLPContainer();
+        let timeWord = getAnnotatedWordWithType(annotatedWords, 'TIME');
+        if (!!timeWord) {
+            nlpContainer.setNLPTime(timeWord.parsedWord);
+
         }
-        let oneDate = result.regexMatch[0];
-        datesText = datesText.replace(oneDate, '');
-        let { regexMatch, indices } = result;
-        allNLPObjects.push(new NLPDate(null, regexMatch[indices.month], regexMatch[indices.day]));
+
+        let dateWord = getAnnotatedWordWithType(annotatedWords, 'DATE');
+        if (!!dateWord) {
+            nlpContainer.setNLPDate(dateWord.parsedWord);
+            return nlpContainer;
+        }
+
+        let intervalWord = getAnnotatedWordWithType(annotatedWords, 'INTERVAL');
+        if (!!intervalWord) {
+            nlpContainer.setNLPInterval(intervalWord.parsedWord);
+            return nlpContainer;
+        }
+
+        let monthWord = getAnnotatedWordWithType(annotatedWords, 'MONTH');
+        if (!!monthWord) {
+            let dayWord = getAnnotatedWordWithType(annotatedWords, "ORDINAL") || getAnnotatedWordWithType(annotatedWords, "NUMBER");
+            nlpContainer.setNLPDate(new NLPDate(null, monthWord.word, dayWord ? dayWord.parsedWord : undefined));
+            return nlpContainer;
+        }
+
+        let ordinalWord = getAnnotatedWordWithType(annotatedWords, 'ORDINAL');
+        if (!!ordinalWord) {
+            nlpContainer.setNLPDate(new NLPDate(null, null, ordinalWord.parsedWord));
+            return nlpContainer;
+        }
+
+        let unitWords = getAllAnnotatedWordsWithType(annotatedWords, 'UNIT');
+        if (!!unitWords.length) {
+            let unitWord;
+            if (unitWords.length == 1) {
+                unitWord = unitWords[0];
+            }
+            else {
+                // if a weekday unit exists, pick it
+                unitWord = unitWords.filter(uw => WEEKDAY_UNITS.indexOf(uw.word) != -1)[0];
+                // otherwise pick the first one
+                if (!unitWord) {
+                    unitWord = unitWords[0];
+                }
+            }
+            let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER');
+            nlpContainer.setNLPInterval(new NLPInterval(numberWord ? numberWord.word : undefined, unitWord.word));
+            return nlpContainer;
+        }
+
+        let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER');
+        if (!!numberWord) {
+            nlpContainer.setNLPDate(new NLPDate(null, null, numberWord.parsedWord));
+            return nlpContainer;
+        }
+
+        return nlpContainer;
     }
-    
-    return allNLPObjects.map(x => new NLPContainer(x));
+    let allNLPContainers = [];
+    datesText = datesText.toLowerCase();
+    let allDatesTextSplit = datesText.split(/,|and/g).filter(x => !!x.length);
+    for (let dateText of allDatesTextSplit) {
+        let words = dateText.split(/\s/).filter(x => !!x.length);
+        let annotatedWords = words.map(w => annotateWord(w));
+        allNLPContainers.push(mergeAnnotatedWords(annotatedWords));
+    }
+    // look for any month followed by an ordinal:
+    // "march the 5th and the 4th" -> [[march,23],25] -> [NLPDate(null, 3, 23), NLPDate(null, null, 25)]
+    // do this step: -> [NLPDate(null, 3, 23), NLPDate(null, 3, 25)]
+    // same for the other way around: "the 4th and 5th of march"
+    for (let i = 0; i < allNLPContainers.length ; i++) {
+        let nlpDate = allNLPContainers[i].getNLPDate();
+        let previousNLPDate = (allNLPContainers[i-1] || new NLPContainer()).getNLPDate();
+        let nextNLPDate = (allNLPContainers[i+1] || new NLPContainer()).getNLPDate();
+        if (!nlpDate) {
+            continue;
+        }
+        if (!nlpDate.year && !nlpDate.month && !!nlpDate.day) {
+            if (!!previousNLPDate && (!!previousNLPDate.month || !!previousNLPDate.year)) {
+                nlpDate.month = previousNLPDate.month;
+                nlpDate.year = previousNLPDate.year;
+            }
+            else if (!! nextNLPDate && (!!nextNLPDate.month || !!nextNLPDate.year)) {
+                nlpDate.month = nextNLPDate.month;
+                nlpDate.year = nextNLPDate.year;
+            }
+        }
+    }
+    return allNLPContainers;
 }
 
 module.exports = {
     getNLPContainersFromReminderDateTimeText: getNLPContainersFromReminderDateTimeText,
-    UNITS: UNITS,
     // only exported for unit tests
     _convertDatesTextToNLPContainers: _convertDatesTextToNLPContainers,
-    _regexMatchDateTextOrdinal: _regexMatchDateTextOrdinal,
 };

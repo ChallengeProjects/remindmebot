@@ -160,9 +160,10 @@ class NLPTime {
 }
 
 class NLPDate {
-    constructor(year, month, day, weekday) {
-        this.set(year, month, day, weekday);
+    constructor(year, month, day) {
+        this.set(year, month, day);
     }
+
     getMomentDate(timezone) {
         let momentDate = moment.tz(timezone);
         if (!!this.year) {
