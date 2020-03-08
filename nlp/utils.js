@@ -2,8 +2,6 @@ const moment = require('moment-timezone'),
     {NLPContainer, NLPDate, NLPInterval} = require("./models/date.js"),
     timeutils = require("./timeutils.js");
 
-
-
 let UNITS = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 UNITS = [...UNITS, ...UNITS.map(u => u + 's')]; // add plural forms too
 
@@ -14,22 +12,28 @@ function getNLPContainersFromReminderDateTimeText(reminderDateTimeText) {
 
     let allNLPContainers = [];
     for (let date in dateToTimePartsMap) {
-        let allNLPObjects = [];
+        let nlpContainersForDate = [];
         if (date == 'undefined') {
-            allNLPObjects = [null];
+            nlpContainersForDate = [null];
         }
         else {
-            allNLPObjects = _convertDatesTextToNLPObjects(date);
+            nlpContainersForDate = _convertDatesTextToNLPContainers(date);
         }
 
         let nlpTimes = dateToTimePartsMap[date];
 
-        for (let nlpObject of allNLPObjects) {
+        for (let nlpContainer of nlpContainersForDate) {
             if (!nlpTimes.length) {
-                allNLPContainers.push(new NLPContainer(nlpObject));
+                allNLPContainers.push(nlpContainer);
             }
             for (let nlpTime of nlpTimes) {
-                allNLPContainers.push(new NLPContainer(nlpObject, nlpTime));
+                if (!nlpContainer) {
+                    nlpContainer = new NLPContainer();
+                }
+
+                let currentNLPContainer = nlpContainer.clone();
+                currentNLPContainer.mergeNLPTime(nlpTime);
+                allNLPContainers.push(currentNLPContainer);
             }
         }
     }
@@ -109,7 +113,7 @@ function _regexMatchDateTextOrdinal(reminderDateText, isOnRequired) {
  *  5- extract out all "<month> the xth" and remove it
  *  6- extract out all "the xth" and remove it
  */
-function _convertDatesTextToNLPObjects(datesText) {
+function _convertDatesTextToNLPContainers(datesText) {
     let allNLPObjects = [];
     // the reason im removing any regexMatch I find after I push it is to make sure
     //  that the ordinal function doesnt match them again
@@ -142,7 +146,6 @@ function _convertDatesTextToNLPObjects(datesText) {
             unit = 'day';
         }
         allNLPObjects.push(new NLPInterval(number, unit));
-
     }
     //////////////////////////////
     
@@ -174,13 +177,13 @@ function _convertDatesTextToNLPObjects(datesText) {
         allNLPObjects.push(new NLPDate(null, regexMatch[indices.month], regexMatch[indices.day]));
     }
     
-    return allNLPObjects;
+    return allNLPObjects.map(x => new NLPContainer(x));
 }
 
 module.exports = {
     getNLPContainersFromReminderDateTimeText: getNLPContainersFromReminderDateTimeText,
     UNITS: UNITS,
     // only exported for unit tests
-    _convertDatesTextToNLPObjects: _convertDatesTextToNLPObjects,
+    _convertDatesTextToNLPContainers: _convertDatesTextToNLPContainers,
     _regexMatchDateTextOrdinal: _regexMatchDateTextOrdinal,
 };

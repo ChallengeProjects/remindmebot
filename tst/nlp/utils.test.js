@@ -35,34 +35,36 @@ describe("_regexMatchDateTextOrdinal", () => {
     });
 });
 
-describe("_convertDatesTextToNLPObjects", () => {
+describe("_convertDatesTextToNLPContainers", () => {
     it("should work", () => {
         let map = {
-            "every wednesday": [new NLPInterval(undefined, "wednesday")],
-            "every hour": [new NLPInterval(undefined, "hour")],
-            "every wednesday thursday": [new NLPInterval(undefined, "wednesday"), new NLPInterval(undefined, "thursday")],
-            "on 02/03, 02/04": [new NLPDate(null, 2, 3), new NLPDate(null, 2, 4)],
-            "on 02/03/2019": [new NLPDate(2019, 2, 3)],
-            "on 02/03/19": [new NLPDate(2019, 2, 3)],
-            "on march the 2nd, april the 1st": [new NLPDate(null, 3, 2), new NLPDate(null, 4, 1)],
-            "on the 2nd of march, april the 1st": [new NLPDate(null, 3, 2), new NLPDate(null, 4, 1)],
-            "on the 2nd of march, 1st of april": [new NLPDate(null, 3, 2), new NLPDate(null, 4, 1)],
-            "on the 2nd of march, the 1st of april": [new NLPDate(null, 3, 2), new NLPDate(null, 4, 1)],
-            "on march the 2nd, the 1st of april": [new NLPDate(null, 3, 2), new NLPDate(null, 4, 1)],
-            "on monday and tuesday": [new NLPInterval(undefined, "monday"), new NLPInterval(undefined, "tuesday")],
-            "on the 4th": [new NLPDate(null, undefined, 4)],
-            "on the 4th and 5th of march": [new NLPDate(null, 3, 5), new NLPDate(null, undefined, 4)],
-            "on the 4th and march the 5th": [new NLPDate(null, undefined, 4), new NLPDate(null, 3, 5)],
-            "march the 5th, the 4th": [new NLPDate(null, 3, 5), new NLPDate(null, undefined, 4)],
-            "in 10 minutes": [new NLPInterval(10, "minutes")],
-            "10 minutes": [new NLPInterval(10, "minutes")],
-            "tomorrow": [new NLPInterval(1, "day")],
-            "in 2 tuesdays": [new NLPInterval(2, "tuesdays")],
-            "every 2 wednesdays and every thursday": [new NLPInterval(2, "wednesdays"), new NLPInterval(undefined, "thursday")],
-            "every 3 hours until 9 pm": [new NLPInterval(3, 'hours')]
+            "every wednesday": [new NLPContainer(new NLPInterval(undefined, "wednesday"))],
+            "every hour": [new NLPContainer(new NLPInterval(undefined, "hour"))],
+            "every wednesday thursday": [new NLPContainer(new NLPInterval(undefined, "wednesday")), new NLPContainer(new NLPInterval(undefined, "thursday"))],
+            "on 02/03, 02/04": [new NLPContainer(new NLPDate(null, 2, 3)), new NLPContainer(new NLPDate(null, 2, 4))],
+            "on 02/03/2019": [new NLPContainer(new NLPDate(2019, 2, 3))],
+            "on 02/03/19": [new NLPContainer(new NLPDate(2019, 2, 3))],
+            "on march the 2nd, april the 1st": [new NLPContainer(new NLPDate(null, 3, 2)), new NLPContainer(new NLPDate(null, 4, 1))],
+            "on the 2nd of march, april the 1st": [new NLPContainer(new NLPDate(null, 3, 2)), new NLPContainer(new NLPDate(null, 4, 1))],
+            "on the 2nd of march, 1st of april": [new NLPContainer(new NLPDate(null, 3, 2)), new NLPContainer(new NLPDate(null, 4, 1))],
+            "on the 2nd of march, the 1st of april": [new NLPContainer(new NLPDate(null, 3, 2)), new NLPContainer(new NLPDate(null, 4, 1))],
+            "on march the 2nd, the 1st of april": [new NLPContainer(new NLPDate(null, 3, 2)), new NLPContainer(new NLPDate(null, 4, 1))],
+            "on monday and tuesday": [new NLPContainer(new NLPInterval(undefined, "monday")), new NLPContainer(new NLPInterval(undefined, "tuesday"))],
+            "on the 4th": [new NLPContainer(new NLPDate(null, undefined, 4))],
+            "on the 4th and 5th of march": [new NLPContainer(new NLPDate(null, 3, 5)), new NLPContainer(new NLPDate(null, undefined, 4))],
+            "on the 4th and march the 5th": [new NLPContainer(new NLPDate(null, undefined, 4)), new NLPContainer(new NLPDate(null, 3, 5))],
+            "march the 5th, the 4th": [new NLPContainer(new NLPDate(null, 3, 5)), new NLPContainer(new NLPDate(null, undefined, 4))],
+            "march the 5th the 4th": [new NLPContainer(new NLPDate(null, 3, 5)), new NLPContainer(new NLPDate(null, undefined, 4))],
+            "in 10 minutes": [new NLPContainer(new NLPInterval(10, "minutes"))],
+            "10 minutes": [new NLPContainer(new NLPInterval(10, "minutes"))],
+            "tomorrow": [new NLPContainer(new NLPInterval(1, "day"))],
+            "in 2 tuesdays": [new NLPContainer(new NLPInterval(2, "tuesdays"))],
+            "every 2 wednesdays and every thursday": [new NLPContainer(new NLPInterval(2, "wednesdays")), new NLPContainer(new NLPInterval(undefined, "thursday"))],
+            "every 3 hours until 9 pm": [new NLPContainer(new NLPInterval(3, 'hours'))],
+            // "in the morning": [new NLPTime(9, undefined, "am")],
         };
         for(let key in map) {
-            expect(utils._convertDatesTextToNLPObjects(key)).toEqual(map[key]);
+            expect(utils._convertDatesTextToNLPContainers(key)).toEqual(map[key]);
         }
     });
 });

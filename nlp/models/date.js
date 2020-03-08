@@ -20,9 +20,7 @@ class NLPContainer {
         if (nlpObject instanceof NLPInterval) {
             this.setNLPInterval(nlpObject);
         }
-        if (!!nlpTime) {
-            this.setNLPTime(nlpTime);
-        }
+        this.setNLPTime(nlpObject instanceof NLPTime ? nlpObject : null, nlpTime);
     }
 
     getMomentDate(timezone) {
@@ -60,8 +58,34 @@ class NLPContainer {
         this.nlpInterval = nlpInterval;
     }
 
-    setNLPTime(nlpTime) {
-        this.nlpTime = nlpTime;
+    // second gets the highest priority if both exist
+    setNLPTime(first, second) {
+        if (!first && !second) {
+            return;
+        }
+        first = first || new NLPTime();
+        second = second || new NLPTime();
+        function merge(property) {
+            if (!!first[property] && !!second[property]) {
+                return second[property];
+            }
+            else {
+                return first[property] || second[property];
+            }
+        }
+        this.nlpTime = new NLPTime(merge("hour"), merge("minute"), merge("meridiem"));
+    }
+
+    mergeNLPTime(nlpTime) {
+        this.setNLPTime(this.nlpTime, nlpTime);
+    }
+
+    clone() {
+        let newNLPContainer = new NLPContainer();
+        newNLPContainer.nlpTime = this.nlpTime;
+        newNLPContainer.nlpDate = this.nlpDate;
+        newNLPContainer.nlpInterval = this.nlpInterval;
+        return newNLPContainer;
     }
 }
 
