@@ -253,7 +253,7 @@ class NLPInterval {
             // 2-
             momentDate.add(this.number - 1, 'weeks');
         } else {
-            momentDate = moment().add(this.number, this.unit);
+            momentDate = moment.tz(timezone).add(this.number, this.unit);
         }
 
         if (['day', 'week', 'month', 'year', ...LOWER_CASE_WEEKDAYS].indexOf(this.unit) != -1) {

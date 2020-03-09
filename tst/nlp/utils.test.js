@@ -37,6 +37,7 @@ describe("_convertDatesTextToNLPContainers", () => {
             "tomorrow afternoon": [new NLPContainer(new NLPInterval(1, 'day'), new NLPTime(3, undefined, "pm"))],
             "tonight": [new NLPContainer(undefined, new NLPTime(9, undefined, "pm"))],
             "tomorrow night": [new NLPContainer(new NLPInterval(1, 'day'), new NLPTime(9, undefined, "pm"))],
+            "in an hour": [new NLPContainer(new NLPInterval(1, 'hour'))],
         };
         for (let key in map) {
             expect(utils._convertDatesTextToNLPContainers(key)).toEqual(map[key]);

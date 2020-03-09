@@ -13,8 +13,10 @@ TODOS:
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders
 * unit tests for date.js
-* next week on thursday should be in 2 thursdays not in 1 thursday (only if today is not thursday)
-    * change NLPInterval to have an .addUnit
+* "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
+    * nlpInterval should know that "NEXT" was used
+* /r every morning to ...
+    * this is like remind me every 9 am, maybe parseRecurringDates shouldnt only take intervals?
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
 * [1 hour] remindme every 1st of month

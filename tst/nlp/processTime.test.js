@@ -1882,6 +1882,12 @@ function assertGetDate(map) {
 describe("getDate", () => {
     it('should work in english for non recurring reminders', () => {
         let map = {
+            '/r in an hour to x': {
+                reminderText: 'x',
+                reminderDates: {
+                    formattedDates: ["06/03/2018:13:00"],
+                }
+            },
             '/r next week to test': {
                 reminderText: 'test',
                 reminderDates: {

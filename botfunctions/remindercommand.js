@@ -115,7 +115,7 @@ function addToBot(bot) {
         remindmeCallBack(ctx);
     });
 
-    const COMMANDS_VARIANTS = ['r', 'remindme',
+    const COMMANDS_VARIANTS = ['r', 'remindme', 'remind', 'reminder', 
         ...(FRANCO_ARAB_VARIANTS.filter(x => x.indexOf(" ") == -1)),
     ];
     for(let commandVariant of COMMANDS_VARIANTS) {
