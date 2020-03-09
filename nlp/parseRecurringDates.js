@@ -5,17 +5,28 @@ const utils = require('./utils.js');
 // NLPInterval(undefined, 'wednesday') -> "in wednesday"
 function _convertRecurringDate(nlpContainer) {
     let nlpInterval = nlpContainer.getNLPInterval();
-    if (!nlpInterval) {
-        return;
+    let text = "";
+    if (!!nlpInterval) {
+        text = `in ${nlpInterval.number || 1} ${nlpInterval.unit}`;
     }
-    
-    let text = `in ${nlpInterval.number || 1} ${nlpInterval.unit}`;
-    let nlpTime = nlpContainer.getNLPTime();
+    let nlpDate = nlpContainer.getNLPDate();
+    if (!!nlpDate && !!nlpDate.day) {
+        let suffix = "th";
+        let map = {1: "st", 2: "nd", 3: "rd"};
+        if (nlpDate.day in map) {
+            suffix = map[nlpDate.day];
+        }
+        text = `on the ${nlpDate.day}${suffix}`;
+    }
 
+    let nlpTime = nlpContainer.getNLPTime();
     if (!nlpTime) {
         return text;
     }
-    text += " at " + nlpTime.getTextRepresentation();
+    if (!!text) {
+        text += " ";
+    }
+    text += "at " + nlpTime.getTextRepresentation();
     return text;
 }
 
@@ -119,6 +130,7 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     for(let nlpContainer of allNLPContainers) {
         recurringDates.push(_convertRecurringDate(nlpContainer));
     }
+    console.log("recurringDates=", recurringDates, allNLPContainers);
 
     return {
         recurringDates: [... new Set(recurringDates)],

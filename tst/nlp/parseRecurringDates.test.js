@@ -61,6 +61,14 @@ describe("parseRecurringDates", () => {
             "every hour": {
                 recurringDates: ['in 1 hour'],
                 endingConditionDate: undefined,
+            },
+            "every 1st of month": {
+                recurringDates: ['on the 1st'],
+                endingConditionDate: undefined,
+            },
+            "every morning": {
+                recurringDates: ['at 9 am'],
+                endingConditionDate: undefined,
             }
         };
         for (let key in map) {

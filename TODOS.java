@@ -1,6 +1,7 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* need ordinal -> number converter ["first" -> "1st"]
 * bugs:
     * timezone: 
         * timezone: TIMEZONE_LOCATION_ERROR, "TIMEZONE_INVALID:"
@@ -8,6 +9,7 @@ TODOS:
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
 * support time at the end (see Bear for examples)
+---------------
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
 * add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
@@ -15,12 +17,8 @@ TODOS:
 * unit tests for date.js
 * "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
     * nlpInterval should know that "NEXT" was used
-* /r every morning to ...
-    * this is like remind me every 9 am, maybe parseRecurringDates shouldnt only take intervals?
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
-* [1 hour] remindme every 1st of month
-    * note: you also need to process ordinal strings like "first"
 * Remind me 1 week before 09/02
 ------------------
 * Make an actual walkthrough tutorial (see research/tutorial.java)
