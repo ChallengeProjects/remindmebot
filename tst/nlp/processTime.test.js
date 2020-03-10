@@ -1894,6 +1894,12 @@ describe("getDate", () => {
                     formattedDates: ["06/10/2018:12:00"],
                 }
             },
+            'r in 1 thursday at 4 pm to test': {
+                reminderText: 'test',
+                reminderDates: {
+                    formattedDates: ["06/07/2018:16:00"],
+                }
+            },
             '/r next week on thursday to test': {
                 reminderText: 'test',
                 reminderDates: {

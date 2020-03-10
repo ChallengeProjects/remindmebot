@@ -234,7 +234,6 @@ class NLPInterval {
             // Algorithm:
             //  1- compute "on <weekday>"
             //  2- add n-1 weeks to the resulting date
-            //  3- return "on mm/dd"
 
             // 1-
             let weekDay = this.unit;
@@ -249,10 +248,16 @@ class NLPInterval {
             else if (weekdayIndex < currentWeekDayIndex) {
                 offsetDays = weekdayIndex + 7 - currentWeekDayIndex;
             }
+            else {
+                offsetDays = weekdayIndex - currentWeekDayIndex;
+            }
+
             momentDate.add(offsetDays, 'day');
+
             // 2-
             momentDate.add(this.number - 1, 'weeks');
-        } else {
+        }
+        else {
             momentDate = moment.tz(timezone).add(this.number, this.unit);
         }
 
@@ -260,7 +265,7 @@ class NLPInterval {
             setAt12(momentDate);
         }
 
-        return moment.tz(momentDate.format("YYYY-MM-DDTHH:mm:ss"), timezone);
+        return momentDate;
     }
 
     get() {

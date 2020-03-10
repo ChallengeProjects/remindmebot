@@ -130,7 +130,6 @@ function parseRecurringDates(reminderDateTimeText, userTimezone) {
     for(let nlpContainer of allNLPContainers) {
         recurringDates.push(_convertRecurringDate(nlpContainer));
     }
-    console.log("recurringDates=", recurringDates, allNLPContainers);
 
     return {
         recurringDates: [... new Set(recurringDates)],
