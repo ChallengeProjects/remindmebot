@@ -112,14 +112,13 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     }
 
     // x.xx-> x:xx
-    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])]\.([0-5][0-9])\b/g, "$1 $2:$3");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])\.([0-5][0-9])(am|pm|\b)/g, "$1 $2:$3$4");
     // xx.xx->xx:xx
-    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])\.([0-5][0-9])\b/g, "$1 $2:$3");
-
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])\.([0-5][0-9])(am|pm|\b)/g, "$1 $2:$3$4");
     // xxx-> x:xx
-    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])([0-5][0-9])\b/g, "$1 $2:$3");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])([0-5][0-9])(am|pm|\b)/g, "$1 $2:$3$4");
     // xxxx->xx:xx
-    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])\b/g, "$1 $2:$3");
+    reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-1][0-9]|2[0-4])([0-5][0-9])(am|pm|\b)/g, "$1 $2:$3$4");
 
     // "at x"/"at xx" -> "at x:00"/"at xx:00"
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|until) ([0-1][0-9]|2[0-4])([^:]|$)/g, "$1 $2:00$3");
