@@ -73,7 +73,12 @@ function _splitReminderText(text) {
 
     try {
         let preProcessedText = preProcessReminderDateTimeText(text);
+        // remove first word "/r","remind","r","fkrny",..
         preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
+        // remove "me" ("/r me", "remind me")
+        if (!!preProcessedText.match(/^me\s/)) {
+            preProcessedText = preProcessedText.substr(3);
+        }
         let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText);
         reminderDateTimeText = preProcessedText.slice(0, selectedSplitDelimiterIndex);
         // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstWord =".")
