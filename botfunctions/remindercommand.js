@@ -77,7 +77,7 @@ function remindmeCallBack(ctx) {
     if (!UserManager.getUserTimezone(userId)) {
         return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
     }
-    if (utterance == '/remindme') {
+    if (utterance == '/remindme' || utterance == '/r') {
         return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
     }
 
@@ -111,7 +111,6 @@ function addToBot(bot) {
     const VARIANTS = ['r', 'remind me', ...FRANCO_ARAB_VARIANTS];
 
     bot.hears(new RegExp(`^(${VARIANTS.join("|")})(.*)`, 'i'), (ctx) => {
-        ctx.message.text = `/remindme ${ctx.match[2]}`;
         remindmeCallBack(ctx);
     });
 

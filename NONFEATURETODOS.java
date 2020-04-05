@@ -1,3 +1,5 @@
+* unit tests for date.js
+
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
@@ -11,16 +13,6 @@
     * should getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method?
     * processTime.getDate shouldnt have the cross product logic
         * refactor date x time cross product logic somewhere
-
-parsing tokens:
-    number
-    meridiem
-    month
-    weekday
-    ..etc
-
-    class is type and value
-    type is one of the above ^
 
 retention metrics for reminder bot, parse all from the file
 

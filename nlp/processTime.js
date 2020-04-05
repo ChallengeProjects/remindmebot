@@ -41,13 +41,12 @@ function _splitReminderText(text) {
             let el = els[i];
             // save any delimiters in case it was followed by a non datetime word
             // then append it at the end
-            if (el.match(/\sand\s|[0-9]+|:|-|\/|\.|,/ig)) {
+            if (el.match(/^(and|[0-9]+|:|-|\/|\.|,)$/ig)) {
                 lastDelimiters.push(el);
             }
             else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|evening|afternoon|a|an)$/ig)
                 && !el.match(/^(weekday|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday|second|minute|hour|day|week|month|year)s?$/ig)
-                && el != " "
-            ) {
+                && el != " ") {
                 firstNonDateTimeWord = lastDelimiters.join('') + el;
                 break;
             }
@@ -76,8 +75,8 @@ function _splitReminderText(text) {
         // remove first word "/r","remind","r","fkrny",..
         preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
         // remove "me" ("/r me", "remind me")
-        if (!!preProcessedText.match(/^me\s/)) {
-            preProcessedText = preProcessedText.substr(3);
+        if (!!preProcessedText.match(/^me /)) {
+            preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
         }
         let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText);
         reminderDateTimeText = preProcessedText.slice(0, selectedSplitDelimiterIndex);

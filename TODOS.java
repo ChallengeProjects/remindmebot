@@ -1,20 +1,23 @@
 TODOS:
 ----------------------
 [Sorted By Priority]
+* support time at the end (see Bear for examples)
 * need ordinal -> number converter ["first" -> "1st"]
 * bugs:
     * timezone: 
-        * timezone: TIMEZONE_LOCATION_ERROR, "TIMEZONE_INVALID:"
-        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur"]
+        * plan:
+            * dont worry about autocorrecting or fuzzy searching
+            * account for GMT+ and GMT- both formats xx:xx and xx.5 and xx
+            * get all country names and map them to timezones
+        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur", "asia Beijing"]
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
-* support time at the end (see Bear for examples)
+* reminder bot for text sms?
 ---------------
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
 * add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders
-* unit tests for date.js
 * "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
     * nlpInterval should know that "NEXT" was used
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm

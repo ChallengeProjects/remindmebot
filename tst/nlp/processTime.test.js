@@ -25,7 +25,11 @@ describe("_splitReminderText", () => {
             '/r to test': {
                 reminderDateTimeText: '',
                 reminderText: 'test',
-            }
+            },
+            'remindme every 15th day of the month at 2 pm to Pay bapak 1 mil': {
+                reminderDateTimeText: 'every 15th days of the months at 2 pm',
+                reminderText: 'Pay bapak 1 mil',
+            },
         };
         for (let text in map) {
             let expectedResult = map[text];
@@ -35,6 +39,10 @@ describe("_splitReminderText", () => {
     });
     it("should work when there isn't a delimiter", () => {
         let map = {
+            '/r on april 6 at 5 pm  HelpWithCovid.com': {
+                reminderDateTimeText: 'on april 6 at 5 pm',
+                reminderText: 'HelpWithCovid.com',
+            },
             '/r in 40 minutes hand dry the ted baker': {
                 reminderDateTimeText: 'in 40 minute',
                 reminderText: 'hand dry the ted baker',
@@ -2087,6 +2095,12 @@ describe("getDate", () => {
     });
     it('should work in english for recurring reminders', () => {
         let map = {
+            'remindme every 15th day of the month at 2 pm to Pay bapak 1 mil': {
+                reminderText: 'Pay bapak 1 mil',
+                reminderDates: {
+                    recurringDates: ["on the 15th at 2 pm"],
+                },
+            },
             '/remindme every weekday at 12 pm to call my son in school to check on him': {
                 reminderText: 'call my son in school to check on him',
                 reminderDates: {
