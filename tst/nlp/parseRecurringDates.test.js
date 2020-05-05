@@ -26,6 +26,10 @@ describe("_convertRecurringDate", () => {
 describe("parseRecurringDates", () => {
     it('should work', () => {
         let map = {
+            'daily': {
+                recurringDates: ['in 1 day'],
+                endingConditionDate: undefined
+            },
             'every 2 days': {
                 recurringDates: ['in 2 day'],
                 endingConditionDate: undefined

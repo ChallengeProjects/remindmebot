@@ -4,8 +4,8 @@ const moment = require('moment-timezone'),
 
 const LOWERCASE_MONTHS = moment.months().map(m => m.toLowerCase());
 const WEEKDAY_UNITS =  ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-const TIME_UNITS = ['second', 'minute', 'hour'];
-const DAY_UNITS = ['day', 'week', 'month', 'year'];
+const TIME_UNITS = ['second', 'minute', 'hour', 'hourly'];
+const DAY_UNITS = ['day', 'week', 'month', 'year', 'daily', 'weekly', 'monthly'];
 let LOWERCASE_UNITS = [...TIME_UNITS, ...DAY_UNITS, ...WEEKDAY_UNITS];
 LOWERCASE_UNITS = [...LOWERCASE_UNITS, ...LOWERCASE_UNITS.map(u => u + 's')]; // add plural forms too
 
@@ -70,12 +70,12 @@ function _convertDatesTextToNLPContainers(datesText) {
             let nlpDate;
             let dateString = dateRegexMatch[0].split(" ").filter(word => word.toLowerCase() != "on").join(" ");
             if (dateString.split("/").length == 3) {
-                nlpDate = new NLPDate(dateString.split("/")[2], dateString.split("/")[0], dateString.split("/")[1]);
+                let year = dateString.split("/")[2];
+                nlpDate = new NLPDate(year, null, null, dateString.split("/")[0], dateString.split("/")[1]);
             }
             else {
-                nlpDate = new NLPDate(null, dateString.split("/")[0], dateString.split("/")[1]);
+                nlpDate = new NLPDate(null, null, null, dateString.split("/")[0], dateString.split("/")[1]);
             }
-
             return {
                 type: 'DATE',
                 word: word,
@@ -92,17 +92,18 @@ function _convertDatesTextToNLPContainers(datesText) {
             };
         }
         if (!isNaN(word) || word == 'next') {
-            let number = word == 'next' ? 1 : parseFloat(word);
+            let number = word == 'next' ? 'next' : parseFloat(word);
             return {
-                type: 'NUMBER',
+                type: 'NUMBER_OR_NEXT',
                 word: word,
-                parsedWord: number,
+                parsedWord: word == 'next' ? 'next' : number,
             };
         }
         if(LOWERCASE_UNITS.indexOf(word) != -1) {
             return {
                 type: 'UNIT',
                 word: word,
+                parsedWord: _parseUnit(word),
             };
         }
         if (word == 'tomorrow') {
@@ -167,7 +168,7 @@ function _convertDatesTextToNLPContainers(datesText) {
 
         let monthWord = getAnnotatedWordWithType(annotatedWords, 'MONTH');
         if (!!monthWord) {
-            let dayWord = getAnnotatedWordWithType(annotatedWords, "ORDINAL") || getAnnotatedWordWithType(annotatedWords, "NUMBER");
+            let dayWord = getAnnotatedWordWithType(annotatedWords, 'ORDINAL') || getAnnotatedWordWithType(annotatedWords, 'NUMBER_OR_NEXT');
             nlpContainer.setNLPDate(new NLPDate(null, monthWord.word, dayWord ? dayWord.parsedWord : undefined));
             return nlpContainer;
         }
@@ -192,12 +193,12 @@ function _convertDatesTextToNLPContainers(datesText) {
                     unitWord = unitWords[0];
                 }
             }
-            let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER');
-            nlpContainer.setNLPInterval(new NLPInterval(numberWord ? numberWord.word : undefined, unitWord.word));
+            let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER_OR_NEXT');
+            nlpContainer.setNLPInterval(new NLPInterval(numberWord ? numberWord.word : undefined, unitWord.parsedWord));
             return nlpContainer;
         }
 
-        let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER');
+        let numberWord = getAnnotatedWordWithType(annotatedWords, 'NUMBER_OR_NEXT');
         if (!!numberWord) {
             nlpContainer.setNLPDate(new NLPDate(null, null, numberWord.parsedWord));
             return nlpContainer;
@@ -213,8 +214,10 @@ function _convertDatesTextToNLPContainers(datesText) {
         let annotatedWords = words.map(w => annotateWord(w));
         allNLPContainers.push(mergeAnnotatedWords(annotatedWords));
     }
+    // some NLPContainers might need to get data from neighboring NLPContainers
+
     // look for any month followed by an ordinal:
-    // "march the 5th and the 4th" -> [[march,23],25] -> [NLPDate(null, 3, 23), NLPDate(null, null, 25)]
+    // "march the 23rd and the 25th" -> [[march,23],25] -> [NLPDate(null, 3, 23), NLPDate(null, null, 25)]
     // do this step: -> [NLPDate(null, 3, 23), NLPDate(null, 3, 25)]
     // same for the other way around: "the 4th and 5th of march"
     for (let i = 0; i < allNLPContainers.length ; i++) {
@@ -229,13 +232,26 @@ function _convertDatesTextToNLPContainers(datesText) {
                 nlpDate.month = previousNLPDate.month;
                 nlpDate.year = previousNLPDate.year;
             }
-            else if (!! nextNLPDate && (!!nextNLPDate.month || !!nextNLPDate.year)) {
+            else if (!!nextNLPDate && (!!nextNLPDate.month || !!nextNLPDate.year)) {
                 nlpDate.month = nextNLPDate.month;
                 nlpDate.year = nextNLPDate.year;
             }
         }
     }
     return allNLPContainers;
+}
+
+function _parseUnit(unit) {
+    let map = {
+        'hourly': 'hour',
+        'daily': 'day',
+        'weekly': 'week',
+        'monthly': 'month',
+    };
+    if(unit in map) {
+        return map[unit];
+    }
+    return unit;
 }
 
 module.exports = {

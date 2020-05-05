@@ -23,13 +23,13 @@ class NLPContainer {
         this.setNLPTime(nlpObject instanceof NLPTime ? nlpObject : null, nlpTime);
     }
 
-    getMomentDate(timezone) {
+    getMomentDate(timezone, dateFormat) {
         let momentDate = moment.tz(timezone);
         if (!!this.nlpInterval) {
             momentDate = this.nlpInterval.getMomentDate(timezone);
         }
         else if (!!this.nlpDate) {
-            momentDate = this.nlpDate.getMomentDate(timezone);
+            momentDate = this.nlpDate.getMomentDate(timezone, dateFormat);
         }
 
         if (!!this.nlpTime) {
@@ -160,24 +160,43 @@ class NLPTime {
 }
 
 class NLPDate {
-    constructor(year, month, day) {
-        this.set(year, month, day);
+    constructor(year, month, day, n1, n2) {
+        this.set(year, month, day, n1, n2);
     }
 
-    getMomentDate(timezone) {
+    getMomentDate(timezone, dateFormat) {
+        let month, day;
+        if (!!this.n1 && !!this.n2) {
+            if (dateFormat == "d/m") {
+                month = this.n2;
+                day = this.n1;
+            }
+            else {
+                month = this.n1;
+                day = this.n2;
+            }
+        }
+        else {
+            if(!!this.month) {
+                month = this.month;
+            }
+            if(!!this.day) {
+                day = this.day;
+            }
+        }
         let momentDate = moment.tz(timezone);
         if (!!this.year) {
             momentDate.set({year: this.year});
         }
-        if (!!this.month) {
-            momentDate.set({month: this.month - 1});
+        if (!!month) {
+            momentDate.set({month: month - 1});
         }
-        if (!!this.day) {
-            momentDate.set({date: this.day});
+        if (!!day) {
+            momentDate.set({date: day});
         }
         setAt12(momentDate);
         if (momentDate.isBefore(moment.tz(timezone))) {
-            if (!this.month) {
+            if (!month) {
                 momentDate.add(1, 'month');
             }
             else if (!this.year) {
@@ -193,10 +212,12 @@ class NLPDate {
             year: this.year,
             month: this.month,
             day: this.day,
+            n1: this.n1,
+            n2: this.n2,
         };
     }
 
-    set(year, month, day) {
+    set(year, month, day, n1, n2) {
         if(typeof year == typeof '') {
             year = parseInt(year);
             // 19 -> 2019
@@ -217,6 +238,14 @@ class NLPDate {
         if(typeof day == typeof '') {
             day = parseInt(day);
         }
+        if (typeof n1 == typeof '') {
+            n1 = parseInt(n1);
+        }
+        if (typeof n2 == typeof '') {
+            n2 = parseInt(n2);
+        }
+        this.n1 = n1;
+        this.n2 = n2;
         this.year = year;
         this.month = month;
         this.day = day;
@@ -224,8 +253,8 @@ class NLPDate {
 }
 
 class NLPInterval {
-    constructor(number, unit) {
-        this.set(number, unit);
+    constructor(numberOrNext, unit) {
+        this.set(numberOrNext, unit);
     }
 
     getMomentDate(timezone) {
@@ -254,11 +283,27 @@ class NLPInterval {
 
             momentDate.add(offsetDays, 'day');
 
+            let number = this.numberOrNext;
+            if(this.numberOrNext == "next") {
+                if (weekdayIndex % 7 == currentWeekDayIndex % 7) {
+                    number = 1;
+                }
+                else {
+                    number = 2;
+                }
+            }
+
             // 2-
-            momentDate.add(this.number - 1, 'weeks');
+            momentDate.add(number - 1, 'weeks');
         }
         else {
-            momentDate = moment.tz(timezone).add(this.number, this.unit);
+            // if it's not a week day, 'next' can be interpreted as 1
+            // i.e next hour = in 1 hour
+            let number = this.numberOrNext;
+            if (this.numberOrNext == "next") {
+                number = 1;
+            }
+            momentDate = moment.tz(timezone).add(number, this.unit);
         }
 
         if (['day', 'week', 'month', 'year', ...LOWER_CASE_WEEKDAYS].indexOf(this.unit) != -1) {
@@ -270,16 +315,19 @@ class NLPInterval {
 
     get() {
         return {
-            number: this.number,
+            numberOrNext: this.numberOrNext,
             unit: this.unit,
         };
     }
 
-    set(number, unit) {
-        if (typeof number == typeof '') {
-            number = parseFloat(number);
+    set(numberOrNext, unit) {
+        if(numberOrNext == 'next') {
+            this.numberOrNext = numberOrNext;
         }
-        this.number = number || 1;
+        else if (typeof numberOrNext == typeof '') {
+            numberOrNext = parseFloat(numberOrNext);
+        }
+        this.numberOrNext = numberOrNext || 1;
         if (!!unit) {
             unit = unit.toLowerCase();
             if (unit[unit.length -1] == 's') {

@@ -7,7 +7,14 @@ function _convertRecurringDate(nlpContainer) {
     let nlpInterval = nlpContainer.getNLPInterval();
     let text = "";
     if (!!nlpInterval) {
-        text = `in ${nlpInterval.number || 1} ${nlpInterval.unit}`;
+        if (nlpInterval.numberOrNext == 'next') {
+            // this should never happen
+            text = `next ${nlpInterval.unit}`;
+        }
+        else {
+            text = `in ${nlpInterval.numberOrNext || 1} ${nlpInterval.unit}`;
+        }
+        
     }
     let nlpDate = nlpContainer.getNLPDate();
     if (!!nlpDate && !!nlpDate.day) {
@@ -113,7 +120,7 @@ function _getEndingDateTime(reminderDateTimeText, userTimezone) {
  * @return {[String]} example: ["on sunday at 2 pm", "on sunday at 3 pm", "on monday at 2 pm", "on monday at 3 pm"]
  */
 function parseRecurringDates(reminderDateTimeText, userTimezone) {
-    if (!reminderDateTimeText.match(/\bevery\b/i)) {
+    if (!reminderDateTimeText.match(/\bevery\b/i) && !reminderDateTimeText.match(/\b(hourly|daily|weekly|monthly)\b/i)) {
         return null;
     }
     // check if there is a condition for ending and remove it from reminderDateTimeText

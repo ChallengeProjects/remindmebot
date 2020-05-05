@@ -1,6 +1,17 @@
 TODOS:
+remindme 1 hr to t ---> should work, we dont care about the "in"
+remindme REMINDER_INVALID /r remind me every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to write Tinky re: gentrification
+BUG:
+/r on wednesday
+1- chess
+2- ML lectures
+3- security
 ----------------------
 [Sorted By Priority]
+* mac menu app, no longer need telegram, put it on the appstore for money!
+* recurring reminders: support daily,monthly,weekly: /r at 19:00 daily Sweep Kitchən & Bath 🧽 🧻 
+* "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
+    * nlpInterval should know that "NEXT" was used
 * support time at the end (see Bear for examples)
 * need ordinal -> number converter ["first" -> "1st"]
 * bugs:
@@ -9,17 +20,14 @@ TODOS:
             * dont worry about autocorrecting or fuzzy searching
             * account for GMT+ and GMT- both formats xx:xx and xx.5 and xx
             * get all country names and map them to timezones
-        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur", "asia Beijing"]
+        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur", "asia Beijing", "Moscow", "Asia"]
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
-* reminder bot for text sms?
 ---------------
 * bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
 * add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders
-* "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
-    * nlpInterval should know that "NEXT" was used
 * BUG: "🔄⏱ this should only run at 3:36 pm and 3:36 am" is now being sent at 2:47 am, 2:47 pm
     * when it gets disabled then enabled
 * Remind me 1 week before 09/02
@@ -43,6 +51,7 @@ TODOS:
     * can the bot detect when it has been added to the group and send a message automatically? https://stackoverflow.com/questions/52271498/can-i-detect-my-bots-groups-with-telegram-bot-api
 --------
 LOW PRIORITY:
+* reminder bot for text sms?
 * reminder bot survey
     * ask a question in the recurring reminder and customize buttons
     * example "how was your day?" answers: "good" "normal" "bad"

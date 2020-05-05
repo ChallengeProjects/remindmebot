@@ -68,6 +68,10 @@ module.exports = class User {
         return this.timezone ? this.timezone.getTimezone() : null;
     }
 
+    getDateFormat() {
+        return "m/d";
+    }
+
     getReminders() {
         return this.reminders;
     }

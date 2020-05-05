@@ -1,4 +1,4 @@
-const { NLPContainer, NLPInterval, NLPTime } = require("../../nlp/models/date.js"),
+const { NLPContainer, NLPInterval, NLPTime, NLPDate } = require("../../nlp/models/date.js"),
     timemachine = require("../../timemachine.js");
 
 const DATE_FORMAT = "MM/DD/YYYY:HH:mm";
@@ -19,6 +19,21 @@ afterAll(() => {
 
 describe("NLPContainer.getMomentDate", () => {
     
+    it("should work with n1/n2 format: 'd/m' NLPDate", () => {
+        let nlpContainer = new NLPContainer(new NLPDate(2019, null, null, 3, 4));
+        expect(nlpContainer.getMomentDate(TIME_ZONE, 'd/m').format(DATE_FORMAT)).toEqual("04/03/2019:12:00");
+    });
+
+    it("should work with n1/n2 format: 'm/d' NLPDate", () => {
+        let nlpContainer = new NLPContainer(new NLPDate(2019, null, null, 3, 4));
+        expect(nlpContainer.getMomentDate(TIME_ZONE, 'm/d').format(DATE_FORMAT)).toEqual("03/04/2019:12:00");
+    });
+
+    it("should work with n1/n2 format: undefined NLPDate", () => {
+        let nlpContainer = new NLPContainer(new NLPDate(2019, null, null, 3, 4));
+        expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("03/04/2019:12:00");
+    });
+
     it("should work with hours NLPInterval", () => {
         let nlpContainer = new NLPContainer(new NLPInterval(1, 'hour'));
         expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/03/2018:13:00");
@@ -27,6 +42,16 @@ describe("NLPContainer.getMomentDate", () => {
     it("should work with weekday NLPInterval", () => {
         let nlpContainer = new NLPContainer(new NLPInterval(1, 'tuesday'));
         expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/05/2018:12:00");
+    });
+
+    it("should work with next weekday NLPInterval", () => {
+        let nlpContainer = new NLPContainer(new NLPInterval('next', 'tuesday'));
+        expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/12/2018:12:00");
+    });
+
+    it("should work with next weekday (same day) NLPInterval", () => {
+        let nlpContainer = new NLPContainer(new NLPInterval('next', 'sunday'));
+        expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/10/2018:12:00");
     });
 
     it("should work with weekday and time NLPInterval,NLPTime", () => {
