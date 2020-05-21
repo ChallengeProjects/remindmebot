@@ -78,14 +78,24 @@ function timezoneCommandCallback(ctx, language) {
     let listOfTimezones = [...moment.tz.names(), ...timezoneShortNamesMap.keys()];
     // timezone will be used to confirm with user
     let parsedTimezone = autocorrect.autocorrect(timezoneInput, listOfTimezones, 1/3);
-    if(parsedTimezone == null) {
-        logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
+
+    let timezoneForMoment;
+    if (timezoneInput.toLowerCase() == "kuala lumpur" || timezoneInput.toLowerCase() == "malaysia") {
+        timezoneForMoment = "Asia/Kuala_Lumpur";
     }
-    // timezone will be used to give to moment (moment can't take the short form)
-    let timezoneForMoment = parsedTimezone;
-    if(timezoneShortNamesMap.has(timezoneForMoment)) {
-        timezoneForMoment = timezoneShortNamesMap.get(timezoneForMoment);
+    else if(["india", "asia india", "asia indian standard time", "ist", "asia republic of india", "asia pakistan", "gmt+5.5"].indexOf(timezoneInput.toLowerCase()) != -1) {
+        timezoneForMoment = "Asia/Kolkata";
+    }
+    else {
+        if(parsedTimezone == null) {
+            logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
+            return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
+        }
+        // timezone will be used to give to moment (moment can't take the short form)
+        timezoneForMoment = parsedTimezone;
+        if(timezoneShortNamesMap.has(timezoneForMoment)) {
+            timezoneForMoment = timezoneShortNamesMap.get(timezoneForMoment);
+        }
     }
     
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput}`);
