@@ -111,12 +111,7 @@ module.exports = class User {
     static deserialize(serializedUserObject) {
         let timezone;
         if (serializedUserObject.timezone) {
-            if (typeof serializedUserObject.timezone == 'string') {
-                timezone = new Timezone(serializedUserObject.timezone);
-            }
-            else {
-                timezone = Timezone.deserialize(serializedUserObject.timezone);
-            }
+            timezone = Timezone.deserialize(serializedUserObject.timezone);
         }
         let deserializedReminders = {};
         for (let reminderId in serializedUserObject.reminders) {

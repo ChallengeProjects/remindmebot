@@ -67,21 +67,21 @@ function locationCallback(ctx) {
 function _parseUsingCityTimezone(timezoneInput) {
     // If it's a city
     let cityTimezonesResult = cityTimezones.lookupViaCity(timezoneInput);
-    if(!!cityTimezonesResult && cityTimezonesResult.length != 0) {
+    if (!!cityTimezonesResult && cityTimezonesResult.length != 0) {
         return cityTimezonesResult[0];
     }
 
     // If it's a country
     let countryResults = cityTimezones.cityMapping
         .filter(r => r.country.toLowerCase() == timezoneInput.toLowerCase());
-    if(countryResults.length > 0) {
+    if (countryResults.length > 0) {
         return countryResults[0];
     }
 
     // If it's a "country city"
     let results = cityTimezones.cityMapping
         .filter(r => (r.country + " " + r.city).toLowerCase() == timezoneInput.toLowerCase());
-    if(results.length > 0) {
+    if (results.length > 0) {
         return results[0];
     }
 }
@@ -100,7 +100,7 @@ function _parseTimezone(timezoneInput) {
             timezoneForMoment: "Asia/Kuala_Lumpur",
         };
     }
-    if(["india", "asia india", "asia indian standard time", "ist", "asia republic of india", "asia pakistan", "gmt+5.5"].indexOf(timezoneInput.toLowerCase()) != -1) {
+    if (["india", "asia india", "asia indian standard time", "ist", "asia republic of india", "asia pakistan", "gmt+5.5"].indexOf(timezoneInput.toLowerCase()) != -1) {
         return {
             parsedTimezone: "Indian Standard Time",
             timezoneForMoment: "Asia/Kolkata",
@@ -117,19 +117,17 @@ function _parseTimezone(timezoneInput) {
 
     // Example moment.tz([2012, 5], 'America/Los_Angeles').format('z') == 'PDT'
     // map: {'PDT': 'America/Los_Angeles', ..}
-    let timezoneShortNamesMap = new Map(moment.tz.names().map(timezoneLongName => 
-        [moment.tz([2012, 5], timezoneLongName).format('z').toUpperCase(), timezoneLongName]
-    ));
+    let timezoneShortNamesMap = new Map(moment.tz.names().map(timezoneLongName => [moment.tz([2012, 5], timezoneLongName).format('z').toUpperCase(), timezoneLongName]));
     let listOfTimezones = [...moment.tz.names(), ...timezoneShortNamesMap.keys()];
     // timezone will be used to confirm with user
-    let parsedTimezone = autocorrect.autocorrect(timezoneInput, listOfTimezones, 1/3);
+    let parsedTimezone = autocorrect.autocorrect(timezoneInput, listOfTimezones, 1 / 3);
 
-    if(parsedTimezone == null) {
+    if (parsedTimezone == null) {
         return null;
     }
     // timezone will be used to give to moment (moment can't take the short form)
     let timezoneForMoment = parsedTimezone;
-    if(timezoneShortNamesMap.has(timezoneForMoment)) {
+    if (timezoneShortNamesMap.has(timezoneForMoment)) {
         timezoneForMoment = timezoneShortNamesMap.get(timezoneForMoment);
     }
     return {
@@ -148,8 +146,8 @@ function timezoneCommandCallback(ctx, language) {
         return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
     }
 
-    let {parsedTimezone, timezoneForMoment} = result;
-    
+    let { parsedTimezone, timezoneForMoment } = result;
+
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput} --> ${timezoneForMoment}`);
 
     UserManager.setUserTimezone(userId, timezoneForMoment);
