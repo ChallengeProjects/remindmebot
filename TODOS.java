@@ -19,8 +19,6 @@ BUG:
         * plan:
             * dont worry about autocorrecting or fuzzy searching
             * account for GMT+ and GMT- both formats xx:xx and xx.5 and xx
-            * get all country names and map them to timezones
-        * timezones https://www.npmjs.com/package/city-timezones: ["Asia India","Asia Indian Standard Time","Asia Republic Of India","Asia India","GTM+5.5","Asia pakistan", "Malaysia", "Europe Italy", "Kuala Lumpur", "asia Beijing", "Moscow", "Asia"]
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
 ---------------
@@ -51,6 +49,8 @@ BUG:
     * can the bot detect when it has been added to the group and send a message automatically? https://stackoverflow.com/questions/52271498/can-i-detect-my-bots-groups-with-telegram-bot-api
 --------
 LOW PRIORITY:
+* support links (if you send a hyperlink to the bot it just takes the word and ignores the link)
+* /r every hour from 3 pm to 9 pm to ..
 * reminder bot for text sms?
 * reminder bot survey
     * ask a question in the recurring reminder and customize buttons
