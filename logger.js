@@ -1,5 +1,5 @@
 const winston = require('winston'),
-    config = require("./config.json")[process.env.NODE_ENV];
+    config = require("./"+process.env["config"])[process.env.NODE_ENV];
 
 require('winston-papertrail').Papertrail;
 

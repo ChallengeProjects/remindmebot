@@ -14,7 +14,7 @@
     "autocorrect": "^1.2.0",
     "body-parser": "^1.18.3",
     "city-timezones": "^1.2.0",
-    "express": "^4.16.4",
+    "express": "^4.17.1",
     "fast-levenshtein": "^2.0.6",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.17",

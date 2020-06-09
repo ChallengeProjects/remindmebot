@@ -2,10 +2,12 @@ const Reminder = require('./reminder.js'),
     Timezone = require("./timezone.js");
 
 module.exports = class User {
-    constructor(id, username, timezone) {
+    constructor(id, username, firstName, lastName, timezone) {
         this.id = id;
         this.username = username;
-        this.timezone = timezone;
+        this.setTimezone(timezone);
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.reminders = {}; // reminder.id: reminder
     }
 
@@ -80,6 +82,14 @@ module.exports = class User {
         return this.id;
     }
 
+    getFirstName() {
+        return this.firstName;
+    }
+
+    getLastName() {
+        return this.lastName;
+    }
+
     hasReminder(reminderId) {
         return reminderId in this.reminders;
     }
@@ -103,12 +113,14 @@ module.exports = class User {
         return {
             id: this.id,
             username: this.username,
+            firstName: this.firstName,
+            lastName: this.lastName,
             timezone: serializableTimezoneObject,
             reminders: serializableReminderObject,
         };
     }
 
-    static deserialize(serializedUserObject) {
+    static deserialize(serializedUserObject, reminderCallback) {
         let timezone;
         if (serializedUserObject.timezone) {
             timezone = Timezone.deserialize(serializedUserObject.timezone);
@@ -116,12 +128,12 @@ module.exports = class User {
         let deserializedReminders = {};
         for (let reminderId in serializedUserObject.reminders) {
             try {
-                deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone);
+                deserializedReminders[reminderId] = Reminder.deserialize(serializedUserObject.reminders[reminderId], timezone, reminderCallback);
             } catch (err) {
                 console.log("Couldn't deserialize reminder: ", reminderId);
             }
         }
-        let deserializedUser = new User(serializedUserObject.id, serializedUserObject.username, timezone);
+        let deserializedUser = new User(serializedUserObject.id, serializedUserObject.username, serializedUserObject.firstName, serializedUserObject.lastName, timezone);
         deserializedUser.reminders = deserializedReminders;
         return deserializedUser;
     }

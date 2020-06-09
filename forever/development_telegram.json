@@ -1,0 +1,7 @@
+{
+    // Comments are supported
+    "uid": "remindmebotbeta_telegram",
+    "append": true,
+    "watch": true,
+    "script": "start.js"
+}

@@ -2,7 +2,7 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
     remindercommand = require("./botfunctions/remindercommand.js"),
-    config = require("./config.json")[process.env.NODE_ENV],
+    config = require("./"+process.env["config"])[process.env.NODE_ENV],
     logger = require("./logger.js");
 
 let app = express();

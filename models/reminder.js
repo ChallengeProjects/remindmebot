@@ -19,7 +19,7 @@ module.exports = class Reminder {
      * @param {ReminderDate} reminderDate  reminderDate date when user should be notified
      * @param {string}       userId        id of user
      */
-    constructor(text, reminderDate, userId) {
+    constructor(text, reminderDate, userId, reminderCallback) {
         this.text = text;
         this.setReminderDate(reminderDate);
         this.dateCreated = moment.utc();
@@ -27,6 +27,11 @@ module.exports = class Reminder {
         this.userId = userId;
         this.enabled = true;
         this.timeouts = [];
+        this.reminderCallback = reminderCallback || remindUser;
+    }
+
+    setReminderCallback(reminderCallback) {
+        this.reminderCallback = reminderCallback;
     }
 
     setTimezone(timezone) {
@@ -64,7 +69,7 @@ module.exports = class Reminder {
         if (!this.reminderDate.isRecurring()) {
             let time = this.reminderDate.getMilliSecondsFromNow(this.timezone.getTimezone());
             this._setTimeout(() => {
-                remindUser(this);
+                this.reminderCallback(this);
             }, time);
         }
         // if recurring reminder
@@ -91,7 +96,7 @@ module.exports = class Reminder {
                 this.clearTimeout();
                 return;
             }
-            remindUser(this);
+            this.reminderCallback(this);
 
             recurringDate.nextReminderTime = processTime.getDate("/remindme " + dateString + " to test", this.timezone.getTimezone()).reminderDates.dates[0];
             this._setTimeoutOneRecurringDate(recurringDate);
@@ -165,7 +170,7 @@ module.exports = class Reminder {
     getFormattedReminder(isShortened) {
         let text = encodeHTMLEntities(isShortened ? this.getShortenedText() : this.getText());
 
-        let formattedDate = this.getDateFormatted(this.timezone.getTimezone());
+        let formattedDate = this.getDateFormatted();
         if (formattedDate.length > 70) {
             formattedDate = isShortened ? (formattedDate.slice(0, 70) + "…") : formattedDate;
         }
@@ -205,9 +210,9 @@ module.exports = class Reminder {
         return this.reminderDate.getDateFormatted(this.timezone.getTimezone());
     }
 
-    static deserialize(serializedReminderObject, timezone) {
+    static deserialize(serializedReminderObject, timezone, reminderCallback) {
         let reminderDate = ReminderDate.deserialize(serializedReminderObject.reminderDate);
-        let reminder = new Reminder(serializedReminderObject.text, reminderDate, serializedReminderObject.userId);
+        let reminder = new Reminder(serializedReminderObject.text, reminderDate, serializedReminderObject.userId, reminderCallback);
         reminder.id = serializedReminderObject.id;
         reminder.dateCreated = moment(serializedReminderObject.dateCreated);
         reminder.enabled = serializedReminderObject.enabled;

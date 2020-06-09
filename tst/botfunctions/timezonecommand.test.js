@@ -1,5 +1,6 @@
+process.env["config"] = "tst/config.json";
 const timezonecommand = require("../../botfunctions/timezonecommand.js");
-describe("_parseTimezone", () => {
+describe("parseTimezone", () => {
     it("should work", () => {
         let map = {
             "india": {
@@ -40,7 +41,7 @@ describe("_parseTimezone", () => {
             "Asia Beijing": null,
         };
         for (let key in map) {
-            expect(timezonecommand._parseTimezone(key)).toEqual(map[key]);
+            expect(timezonecommand.parseTimezone(key)).toEqual(map[key]);
         }
     });
 });

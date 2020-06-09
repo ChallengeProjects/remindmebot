@@ -1,11 +1,13 @@
 const User = require('./models/user.js'),
     fs = require('fs'),
     path = require('path'),
-    sendMessageToUser = require("./botutils.js").sendMessageToUser;
+    sendMessageToUser = require("./botutils.js").sendMessageToUser,
+    config = require("./"+process.env["config"])[process.env.NODE_ENV];
 
 let users = {}; // id:user
+let reminderCallback;
 
-const USERS_FILE_NAME = 'users.json';
+const USERS_FILE_NAME = config.usersFileName;
 const USERS_FILE_PATH = path.resolve(__dirname, USERS_FILE_NAME);
 const UPDATES_FILE_PATH = path.resolve(__dirname, 'updates.txt');
 const BACKUP_DIRECTORY_PATH = path.resolve(__dirname, 'users_backup');
@@ -103,17 +105,18 @@ module.exports = class UserManager {
     }
 
     static addReminderForUser(userId, reminder) {
+        reminder.setReminderCallback(reminderCallback);
         if (UserManager.userExists(userId)) {
             users[userId].addReminder(reminder);
         }
     }
 
-    static addUser(id, username) {
+
+    static addUser(id, username, firstName, lastName, timezone) {
         if (UserManager.userExists(id)) {
             return;
         }
-        users[id] = new User(id, username);
-
+        users[id] = new User(id, username, firstName, lastName, timezone);
     }
 
     static deleteUser(id) {
@@ -154,7 +157,8 @@ module.exports = class UserManager {
         );
     }
 
-    static loadUsersDataFromStorage() {
+    static loadUsersDataFromStorage(remindercb) {
+        reminderCallback = remindercb;
         UserManager.backupUsersData();
 
         function deserializeUsers(usersSerialized) {
@@ -162,7 +166,7 @@ module.exports = class UserManager {
             let deserializedUsers = {};
             for (let userId in serializedUsers) {
                 try {
-                    deserializedUsers[userId] = User.deserialize(serializedUsers[userId]);
+                    deserializedUsers[userId] = User.deserialize(serializedUsers[userId], reminderCallback);
                 } catch (err) {
                     console.log("Couldn't deserialize user: ", userId);
                 }

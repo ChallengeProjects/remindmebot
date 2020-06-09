@@ -1,24 +1,19 @@
+* support time at the end (see Bear for examples)
+========
 TODOS:
 remindme 1 hr to t ---> should work, we dont care about the "in"
 remindme REMINDER_INVALID /r remind me every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to write Tinky re: gentrification
 BUG:
-/r on wednesday
-1- chess
-2- ML lectures
-3- security
+`/r on wednesday
+1- chess`
 ----------------------
 [Sorted By Priority]
 * mac menu app, no longer need telegram, put it on the appstore for money!
-* recurring reminders: support daily,monthly,weekly: /r at 19:00 daily Sweep Kitchən & Bath 🧽 🧻 
-* "next week on thursday" and "next thursday" should be in 2 thursdays not in 1 thursday (only if today is not thursday)
-    * nlpInterval should know that "NEXT" was used
-* support time at the end (see Bear for examples)
+* recurring reminders: support daily,monthly,weekly: /r at 19:00 daily clean kitchen
 * need ordinal -> number converter ["first" -> "1st"]
 * bugs:
     * timezone: 
-        * plan:
-            * dont worry about autocorrecting or fuzzy searching
-            * account for GMT+ and GMT- both formats xx:xx and xx.5 and xx
+        * account for GMT+ and GMT- both formats xx:xx and xx.5 and xx
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
 ---------------

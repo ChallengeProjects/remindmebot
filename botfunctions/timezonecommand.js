@@ -4,7 +4,7 @@ const
     logger = require("../logger.js"),
     moment = require("moment-timezone"),
     autocorrect = require("../utils/autocorrect.js"),
-    config = require("../config.json")[process.env.NODE_ENV],
+    config = require("../"+process.env["config"])[process.env.NODE_ENV],
     cityTimezones = require('city-timezones'),
     googleMapsClient = require('@google/maps').createClient({
         key: config.googleMapsClientKey
@@ -89,7 +89,7 @@ function _parseUsingCityTimezone(timezoneInput) {
 /*
  Returns null if no timezone was found
  */
-function _parseTimezone(timezoneInput) {
+function parseTimezone(timezoneInput) {
     if (!timezoneInput || timezoneInput.length == 0) {
         return null;
     }
@@ -139,7 +139,7 @@ function _parseTimezone(timezoneInput) {
 function timezoneCommandCallback(ctx, language) {
     let userId = ctx.chat.id;
     let timezoneInput = ctx.message.text.split(" ").slice(1).join(" "); // remove the first word ("/timezone")
-    let result = _parseTimezone(timezoneInput);
+    let result = parseTimezone(timezoneInput);
 
     if (!result) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
@@ -163,5 +163,5 @@ function addToBot(bot) {
 
 module.exports = {
     addToBot: addToBot,
-    _parseTimezone: _parseTimezone
+    parseTimezone: parseTimezone
 };

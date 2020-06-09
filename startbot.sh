@@ -2,17 +2,27 @@
 
 
 environment=$1
+platform=$2
 
 if [[ $environment == "prod" || $environment == "production" ]]; then
-    prod="true"
     uid="remindmebotprod"
     NODE_ENV="production"
 elif [[ $environment == "test" || $environment == "beta" || $environment == "dev" || $environment == "development" ]]; then
-    prod="false"
     uid="remindmebotbeta"
     NODE_ENV="development"
 else
-    echo "provide prod or beta for environment"
+    echo "provide prod or beta for environment (i.e ./startbot.sh test telegram)"
+    exit 1
+fi
+
+if [[ $platform == "telegram" ]]; then
+    uid="${uid}_telegram"
+    config="config.json"
+elif [[ $platform == "messenger"  ]]; then
+    uid="${uid}_messenger"
+    config="msgrconfig.json"
+else
+    echo "please provide 'telegram' or 'messenger' (i.e ./startbot.sh test telegram)"
     exit 1
 fi
 
@@ -36,9 +46,4 @@ if [[ $? == 0 ]]; then
 fi
 
 echo "starting the forever process"
-if [[ $prod == "true" ]]; then
-    NODE_ENV=production forever start production.json --minUptime 2000 --spinSleepTime 3000
-else
-    # only watch in dev environment
-    NODE_ENV=development forever start development.json --minUptime 2000 --spinSleepTime 3000
-fi    
+NODE_ENV="${NODE_ENV}" config="$config" forever start "forever/${NODE_ENV}_${platform}.json" --minUptime 2000 --spinSleepTime 3000

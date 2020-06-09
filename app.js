@@ -10,7 +10,7 @@ const UserManager = require("./userManager.js"),
     remindercommand = require("./botfunctions/remindercommand.js"),
     timezonecommand = require("./botfunctions/timezonecommand.js"),
     catchBlocks = require("./errorhandling.js").catchBlocks,
-    config = require("./config.json")[process.env.NODE_ENV],
+    config = require("./"+process.env["config"])[process.env.NODE_ENV],
     serverApp = require("./server.js");
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');

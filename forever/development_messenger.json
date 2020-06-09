@@ -1,0 +1,7 @@
+{
+    // Comments are supported
+    "uid": "remindmebotbeta_messenger",
+    "append": true,
+    "watch": true,
+    "script": "msgr/listener.js"
+}

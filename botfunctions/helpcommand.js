@@ -1,7 +1,7 @@
 const logger = require("../logger.js"),
     UserManager = require("../userManager.js"),
     catchBlocks = require("../errorhandling.js").catchBlocks,
-    config = require("../config.json");
+    config = require("../"+process.env["config"]);
 
 
 const HELP_TEXT_ENGLISH = process.env.NODE_ENV == "development" ? `This is an unreliable beta, please use the official bot: @${config["production"]["username"]} instead.` :  `Feel free to contact me @bubakazouba if you have any questions, feature requests or bug reports.
