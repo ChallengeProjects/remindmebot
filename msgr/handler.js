@@ -114,9 +114,11 @@ function listHandler(fbId, text) {
 
 function helpHandler(fbId) {
     return fbutils.sendFBTextMessage(fbId, `You can set a reminder like this:
-/r in 3 minutes to check on the oven
-/r tomorrow to pick up the kids
-/r on june 3rd that i have a dentist appointment`);
+"remind me in 3 minutes to check on the oven"
+"remind me tomorrow to pick up the kids"
+"remind me on june 3rd that i have a dentist appointment"
+
+Make sure you start with "remind me"`);
 }
 
 function timezoneHandler(fbId, text) {

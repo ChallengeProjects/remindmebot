@@ -105,7 +105,9 @@ module.exports = class UserManager {
     }
 
     static addReminderForUser(userId, reminder) {
-        reminder.setReminderCallback(reminderCallback);
+        if (!!reminderCallback) {
+            reminder.setReminderCallback(reminderCallback);
+        }
         if (UserManager.userExists(userId)) {
             users[userId].addReminder(reminder);
         }

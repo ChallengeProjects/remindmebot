@@ -17,71 +17,101 @@ const commonTypos = require("./commonTypos.json"),
  * { reminderText: "abcdef", reminderDateTimeText: "to/every ... at ..."}
  */
 
-function _escapeRegExp(string){
+function _escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
+
 function _splitReminderText(text) {
-    let delimiters = ['[0-9]+', ':', '-', '/', ',', ' '];
+    let delimiters = ['[0-9]+', ':', '-', '/', ',', ' ', '\n'];
+
+    function _removeCommand(text) {
+        // remove first word "/r","remind","r","fkrny",..
+        text = text.split(" ").slice(1).join(" ");
+        // remove "remind" and variations"
+        if (!!text.match(/^(remind|remindme|reminder) /)) {
+            text = text.split(" ").slice(1).join(" ");
+        }
+        // remove "me" ("/r me", "remind me")
+        if (!!text.match(/^me /)) {
+            text = text.split(" ").slice(1).join(" ");
+        }
+        return text;
+    }
+
     function _removeDelimiter(reminderText) {
         let words = reminderText.split(/\s/).filter(x => !(x == ""));
         // if first word is a reminder datetime/text delimiter, skip it
         if (["to", "that", "about"].indexOf(words[0].toLowerCase()) != -1) {
-            return reminderText.substr(words[0].length+1);
-        }
-        else {
+            return reminderText.substr(words[0].length + 1);
+        } else {
             return reminderText;
         }
     }
-    function _guessDelimimterIndex(str) {
+
+    function _guessDelimimterIndex(str, isReverse = false) {
         let delimitersRegex = new RegExp(`(${delimiters.join("|")})`, 'i');
         let els = str.split(delimitersRegex).filter(x => !(x == ""));
+        if (isReverse) {
+            els = els.reverse();
+            str = els.join(""); // delimiter is already in els, I don't need to add a space
+        }
         let firstNonDateTimeWord;
         let lastDelimiters = [];
-        for (let i in els) {
-            let el = els[i];
+        for (let el of els) {
             // save any delimiters in case it was followed by a non datetime word
             // then append it at the end
-            if (el.match(/^(and|[0-9]+|:|-|\/|\.|,)$/ig)) {
+            if (el.match(/^(and|[0-9]+|:|-|\/|\.|,|\n)$/ig)) {
                 lastDelimiters.push(el);
-            }
-            else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|evening|afternoon|a|an)$/ig)
-                && !el.match(/^(weekday|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday|second|minute|hour|day|week|month|year)s?$/ig)
-                && el != " ") {
+            } else if (!el.match(/^(today|tomorrow|tommorrow|tommorow|am|pm|a\.m|p\.m|a\.m\.|p\.m\.|\.|every|everyday|in|on|at|until|the|after|next|this|and|st|nd|rd|th|january|february|march|april|may|june|july|august|september|october|november|december|noon|of|morning|tonight|night|evening|afternoon|a|an)$/ig) &&
+                !el.match(/^(weekday|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday|second|minute|hour|day|week|month|year)s?$/ig) &&
+                el != " ") {
                 firstNonDateTimeWord = lastDelimiters.join('') + el;
                 break;
-            }
-            else {
+            } else {
                 lastDelimiters = [];
             }
         }
-        
+
         if (!firstNonDateTimeWord) {
             throw 'NO_GUESS_FOUND';
         }
-        
+
         let wordMatch = str.match(new RegExp(`(^|\\s)(${_escapeRegExp(firstNonDateTimeWord)})(${delimiters.join("|")}|\\s|$)`, 'i'));
         return {
             // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstNonDateTimeWord =".")
-            selectedSplitDelimiterIndex: wordMatch.index,
+            selectedSplitDelimiterIndex: isReverse ? str.length - wordMatch.index : wordMatch.index,
             firstWord: wordMatch[2],
         };
     }
 
+    text = _removeCommand(text);
+
     let reminderText;
     let reminderDateTimeText;
+    let preProcessedText = preProcessReminderDateTimeText(text);
 
     try {
-        let preProcessedText = preProcessReminderDateTimeText(text);
-        // remove first word "/r","remind","r","fkrny",..
-        preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
-        // remove "me" ("/r me", "remind me")
-        if (!!preProcessedText.match(/^me /)) {
-            preProcessedText = preProcessedText.split(" ").slice(1).join(" ");
-        }
-        let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText);
+        let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText, false);
         reminderDateTimeText = preProcessedText.slice(0, selectedSplitDelimiterIndex);
         // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstWord =".")
         reminderText = text.substr(text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')).index);
+        reminderText = _removeDelimiter(reminderText);
+        if (!reminderDateTimeText.length || !reminderText.length) {
+            throw 'FORWARD DIDNT WORK';
+        }
+        return {
+            reminderText: reminderText.trim(),
+            reminderDateTimeText: reminderDateTimeText.trim()
+        };
+    } catch (err) {
+        console.log(err, "trying backward now");
+    }
+
+    try {
+        let { selectedSplitDelimiterIndex, firstWord } = _guessDelimimterIndex(preProcessedText, true);
+        reminderDateTimeText = preProcessedText.slice(selectedSplitDelimiterIndex);
+        // have to use ^|\\s instead of \b because the word can contain delimiters (for example firstWord =".")
+        reminderText = text.substr(0, text.match(new RegExp(`(^|\\s)${_escapeRegExp(firstWord)}(${delimiters.join("|")}|\\s|$)`, 'i')).index + firstWord.length + 1);
         reminderText = _removeDelimiter(reminderText);
     } catch (err) {
         throw 'NO_GUESS_FOUND';
@@ -207,7 +237,7 @@ function getDate(text, userTimezone) {
     // remove double spaces from text
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
-    
+
     let { reminderText, reminderDateTimeText } = _splitReminderText(text);
     reminderDateTimeText = preProcessReminderDateTimeText(reminderDateTimeText);
 

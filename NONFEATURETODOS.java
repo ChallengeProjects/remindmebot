@@ -1,20 +1,12 @@
-* unit tests for date.js
-
+* refactoring:
+    * .pem file paths shouldnt be hardcoded
+    * create a different msgr bto for prod
+    * reminder.js can take the user as a reference, so it wouldnt need the timezone object anymore
+        * timezone.js is not needed anymore, a string should suffice
 * clean up the mess i made from the server commit, the response function should be abstracted
     * one function to respond to bot
     * one function to respond to alfred
     * every bot -> callback should be split to bot -> callback that calls another callback, the wrapper callback would pass the correct reply function
-
-* refactoring:
-    * `isOnRequired` variable in the `regexMatchDateTextOrdinal` function is a hack.
-        * We need it because when we parse multiple dates we dont always have the `on` (example: on june the 2nd, april the 1st)
-        * solution: propogate "on" or "every" down and get rid of the isOnRequired variable
-        * (probably do this one later) if user says: "on june the 1st and the 2nd" we need to distribute "june" on both dates too
-    * should getDateToParsedTimesFromReminderDateTime and  getDateToTimePartsMapFromReminderDateTimeText be the same method?
-    * processTime.getDate shouldnt have the cross product logic
-        * refactor date x time cross product logic somewhere
-
-retention metrics for reminder bot, parse all from the file
 
 * if NLP takes "/r to test", it just returns an empty list when it should throw an error
     * rather than throwing the error outside

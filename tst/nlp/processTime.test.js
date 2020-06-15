@@ -30,6 +30,10 @@ describe("_splitReminderText", () => {
                 reminderDateTimeText: 'every 15th days of the months at 2 pm',
                 reminderText: 'Pay bapak 1 mil',
             },
+            '/remindme on tuesday\n to hello': {
+                reminderText: 'hello',
+                reminderDateTimeText: 'on tuesday',
+            },
         };
         for (let text in map) {
             let expectedResult = map[text];
@@ -37,8 +41,141 @@ describe("_splitReminderText", () => {
             expect(result).toEqual(expectedResult);
         }
     });
+
+    // it("should work BUT IT DOESNT WORK", () => {
+    //     let map = {
+    //         '/remindme 05/22/2020 5 pm on AZenith wedding, 10 rounds': {
+    //             reminderText: 'AZenith wedding, 10 rounds',
+    //             reminderDateTimeText: '05/22/2020 5 pm on',
+    //         },
+    //         '/remindme Remind me on June 14th that service ends on 15th': {
+    //             reminderText: 'Manjunath\'s ULTRA PRIME service ends on 15th',
+    //             reminderDateTimeText: 'on June 14th',
+    //         },
+    //         '/r hello-asdfa in two hours': {
+    //             reminderText: 'https://drive.google.com/open?id=1Sv-asdfa',
+    //             reminderDateTimeText: 'in 2 hours',
+    //         },
+    //         '/r a2olak tomorrow': {
+    //             reminderText: 'a2olak',
+    //             reminderDateTimeText: 'tomorrow',
+    //         },
+    //         '/r download v2 tomorrow': {
+    //             reminderText: 'download v2',
+    //             reminderDateTimeText: 'tomorrow',
+    //         },
+    //         '/r in 2 minutes a2olak': {
+    //             reminderText: 'a2olak',
+    //             reminderDateTimeText: 'in 2 minutes',
+    //         },
+    //     };
+    //     for (let text in map) {
+    //         let expectedResult = map[text];
+    //         let result = processTime._splitReminderText(text);
+    //         expect(result).toEqual(expectedResult);
+    //     }
+    // });
+
+    it("should work with time at the end", () => {
+        let map = {
+            '/r  eat in 7 minutes': {
+                reminderText: 'eat',
+                reminderDateTimeText: 'in 7 minute'
+            },
+            '/r  come in 2 minutes': {
+                reminderText: 'come',
+                reminderDateTimeText: 'in 2 minute'
+            },
+            '/r  get chicken at 2pm': {
+                reminderText: 'get chicken',
+                reminderDateTimeText: 'at 2pm'
+            },
+            '/r  pick up the kids at 3:20 tomorrow': {
+                reminderText: 'pick up the kids',
+                reminderDateTimeText: 'at 3:20 tomorrow'
+            },
+            '/r  schedule my kids’ appts tomorrow at 3:00 pm': {
+                reminderText: 'schedule my kids’ appts',
+                reminderDateTimeText: 'tomorrow at 3:00 pm'
+            },
+            '/remindme to follow up with hirsh in one hour': {
+                reminderText: 'follow up with hirsh',
+                reminderDateTimeText: 'in 1 hours',
+            },
+            '/remindme Disney+ subscription ends on January 27th': {
+                reminderText: 'Disney+ subscription ends',
+                reminderDateTimeText: 'on January 27th',
+            },
+            '/remindme Agala needs $70 for his field trip at 6am tomorrow': {
+                reminderText: 'Agala needs $70 for his field trip',
+                reminderDateTimeText: 'at 6am tomorrow',
+            },
+            '/r to respond to the professor in one hour': {
+                reminderText: 'respond to the professor',
+                reminderDateTimeText: 'in 1 hours',
+            },
+            '/remindme to Pray and give thanks to God at 6am tomorrow': {
+                reminderText: 'Pray and give thanks to God',
+                reminderDateTimeText: 'at 6am tomorrow',
+            },
+            '/remindme drop off title tomorrow at 8am': {
+                reminderText: 'drop off title',
+                reminderDateTimeText: 'tomorrow at 8am',
+            },
+            '/r me to Sweep Kitchən/Bath 🧽 🧻 everyday at 7 p.m.': {
+                reminderText: 'Sweep Kitchən/Bath 🧽 🧻',
+                reminderDateTimeText: 'every days at 7 p.m.',
+            },
+            '/r me daily to Sweep Kitchən/Bath 🧽 🧻 at 7 p.m.': {
+                reminderText: 'daily to Sweep Kitchən/Bath 🧽 🧻',
+                reminderDateTimeText: 'at 7 p.m.',
+            },
+            '/remindme to reach out to Shanae and Monique tomorrow at noon': {
+                reminderText: 'reach out to Shanae and Monique',
+                reminderDateTimeText: 'tomorrow at noon',
+            },
+            '/remindme to call Shanae and Monique May 10th at 8am': {
+                reminderText: 'call Shanae and Monique',
+                reminderDateTimeText: 'may 10th at 8am',
+            },
+            '/remindme to turn in thing slip at 3:05 pm': {
+                reminderText: 'turn in thing slip',
+                reminderDateTimeText: 'at 3:05 pm',
+            },
+            '/remindme to reach out to tasha and Alejandra on the 30th of April': {
+                reminderText: 'reach out to tasha and Alejandra',
+                reminderDateTimeText: 'on the 30th of April',
+            },
+            '/r to add anups script to workflow at 8': {
+                reminderText: 'add anups script to workflow',
+                reminderDateTimeText: 'at 8',
+            },
+            '/remindme to text grandma in 30 minutes': {
+                reminderText: 'text grandma',
+                reminderDateTimeText: 'in 30 minute',
+            },
+            '/remindme to get passport info at 6pm': {
+                reminderText: 'get passport info',
+                reminderDateTimeText: 'at 6pm',
+            },
+            '/r to wake austin up at 630 am on may 14': {
+                reminderText: 'wake austin up',
+                reminderDateTimeText: 'at 6:30 am on may 14',
+            },
+        };
+        for (let text in map) {
+            let expectedResult = map[text];
+            let result = processTime._splitReminderText(text);
+            expect(result).toEqual(expectedResult);
+        }
+    });
+
     it("should work when there isn't a delimiter", () => {
         let map = {
+            '/r at 3 pm to hello': {
+                reminderDateTimeText: 'at 3 pm',
+                reminderText: 'hello',
+            },
             '/r on april 6 at 5 pm  HelpWithCovid.com': {
                 reminderDateTimeText: 'on april 6 at 5 pm',
                 reminderText: 'HelpWithCovid.com',
@@ -720,14 +857,6 @@ describe("_splitReminderText", () => {
                 reminderText: 'wash face',
                 reminderDateTimeText: 'in 20 minute'
             },
-            '/r  eat in 7 minutes': {
-                reminderText: 'eat in 7 minutes',
-                reminderDateTimeText: ''
-            },
-            '/r  cum in 2 minutes': {
-                reminderText: 'cum in 2 minutes',
-                reminderDateTimeText: ''
-            },
             '/r in 1h https://www.privacytools.io/browsers/#about_config': {
                 reminderText: 'https://www.privacytools.io/browsers/#about_config',
                 reminderDateTimeText: 'in 1 hours'
@@ -751,10 +880,6 @@ describe("_splitReminderText", () => {
             "/r at 8am write up what you're going to say in standup": {
                 reminderText: "write up what you're going to say in standup",
                 reminderDateTimeText: 'at 8am'
-            },
-            '/r  get chicken at 2pm': {
-                reminderText: 'get chicken at 2pm',
-                reminderDateTimeText: ''
             },
             '/r at 2pm get chicken': {
                 reminderText: 'get chicken',
@@ -1003,10 +1128,6 @@ describe("_splitReminderText", () => {
             '/r in two hours reminder bot is great!': {
                 reminderText: 'reminder bot is great!',
                 reminderDateTimeText: 'in 2 hours'
-            },
-            '/r  pick up the kids at 3:20 tomorrow': {
-                reminderText: 'pick up the kids at 3:20 tomorrow',
-                reminderDateTimeText: ''
             },
             '/r tomorrow at 10:10am work on https://minted.atlassian.net/browse/NPD-1083': {
                 reminderText: 'work on https://minted.atlassian.net/browse/NPD-1083',
@@ -1620,10 +1741,6 @@ describe("_splitReminderText", () => {
                 reminderText: 'schedule my kids’ appointments',
                 reminderDateTimeText: ''
             },
-            '/r  schedule my kids’ appts tomorrow at 3:00 pm': {
-                reminderText: 'schedule my kids’ appts tomorrow at 3:00 pm',
-                reminderDateTimeText: ''
-            },
             '/r tomorrow at 3 pm schedule my kids’ appts': {
                 reminderText: 'schedule my kids’ appts',
                 reminderDateTimeText: 'tomorrow at 3 pm'
@@ -1853,12 +1970,11 @@ function assertGetDate(map) {
         let result;
         try {
             result = processTime.getDate(key, TIME_ZONE);
-        }
-        catch (err) {
+        } catch (err) {
             console.log(`'${key}' failed with an exception: ${err}`);
             expect(false).toEqual(true);
         }
-        
+
         expect(result.reminderText).toEqual(expectedResult.reminderText);
         if (expectedResult.reminderDates) {
 
@@ -1890,11 +2006,11 @@ function assertGetDate(map) {
 describe("getDate", () => {
     it('should work in english for non recurring reminders', () => {
         let map = {
-            '/r at 6.59am to x': {reminderText: 'x', reminderDates: {formattedDates: ["06/04/2018:06:59"]}},
-            '/r at 6.59 am to x': {reminderText: 'x', reminderDates: {formattedDates: ["06/04/2018:06:59"]}},
-            '/r at 659 am to x': {reminderText: 'x', reminderDates: {formattedDates: ["06/04/2018:06:59"]}},
-            '/r at 06.59 am to x': {reminderText: 'x', reminderDates: {formattedDates: ["06/04/2018:06:59"]}},
-            '/r at 0659 to x': {reminderText: 'x', reminderDates: {formattedDates: ["06/03/2018:18:59"]}},
+            '/r at 6.59am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
+            '/r at 6.59 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
+            '/r at 659 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
+            '/r at 06.59 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
+            '/r at 0659 to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/03/2018:18:59"] } },
             '/r in an hour to x': {
                 reminderText: 'x',
                 reminderDates: {

@@ -1,11 +1,9 @@
-* support time at the end (see Bear for examples)
-========
 TODOS:
-remindme 1 hr to t ---> should work, we dont care about the "in"
-remindme REMINDER_INVALID /r remind me every tuesday, wednesday at 3 and 4 pm and every saturday at 9 am to write Tinky re: gentrification
-BUG:
-`/r on wednesday
-1- chess`
+NONFEATURETODOS.java
+NLP bugs:
+    * "remindme 1 hr to t" ---> should work, we dont care about the "in"
+    * "/r may 3 pm on the table" ---> it doesnt like "on" at the end
+    * "it("should work BUT IT DOESNT WORK")" in processTime.test.js
 ----------------------
 [Sorted By Priority]
 * mac menu app, no longer need telegram, put it on the appstore for money!
