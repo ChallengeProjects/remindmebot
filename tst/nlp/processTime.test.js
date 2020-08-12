@@ -2011,6 +2011,8 @@ describe("getDate", () => {
             '/r at 659 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
             '/r at 06.59 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
             '/r at 0659 to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/03/2018:18:59"] } },
+            '/r on 6.59am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
+            '/r on 659 am to x': { reminderText: 'x', reminderDates: { formattedDates: ["06/04/2018:06:59"] } },
             '/r in an hour to x': {
                 reminderText: 'x',
                 reminderDates: {
@@ -2236,6 +2238,13 @@ describe("getDate", () => {
                 },
             },
             '/remindme every hour until 6 pm to log my work': {
+                reminderText: 'log my work',
+                reminderDates: {
+                    recurringDates: ["in 1 hour"],
+                    formattedEndingConditionDate: "06/03/2018:18:00",
+                },
+            },
+            '/remindme every hour until 6pm to log my work': {
                 reminderText: 'log my work',
                 reminderDates: {
                     recurringDates: ["in 1 hour"],

@@ -71,7 +71,7 @@ function _getDateToTimePartsMapFromReminderDateTimeText(str) {
 //  2- More importantly, parseRecurringDates._convertEndingDateTimeTextToReminderDateTimeText
 //      does not differentiate dates and times, it simply prefixes them both with "on"
 function _convertOnTimetoAtTime(reminderDateTimeText) {
-    let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${TIME_NUMBER_REGEX})(\\s(${MERIDIEM_REGEX})?)?$`, 'i'));
+    let onTimeMatch = reminderDateTimeText.match(new RegExp(`^on\\s(${TIME_NUMBER_REGEX})(\\s?(${MERIDIEM_REGEX})?)?$`, 'i'));
     let timeIndex = 1;
     let meridiemIndex = 3;
 

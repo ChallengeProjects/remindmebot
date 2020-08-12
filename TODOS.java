@@ -15,7 +15,6 @@ NLP bugs:
     * reminder bot "at 9:30" for "enter time" gave error
 * dont need at for time defined like this 9:30
 ---------------
-* bug: /r every 30m until 6pm to .. doesnt work but /r every 30m until 6 pm to.. works
 * add a command for /complain
 * dont delete previous user reminders, this way we can plot stats for the user
 * /list inline query typeahead search thru reminders

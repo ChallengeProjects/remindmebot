@@ -24,6 +24,7 @@
         * parseNonRecurringSingleDate:
             * add further test coverage of `_fixDatesInThePast`. there are numerous combinations of known and implied values and dates which should also be tested.
     LOW PRIORITY:
+        * decide on a scalable approach to test nlp modules. the number of test case permutations will eventually become unreasonable.
         * move timemachine to "lib" directory and write tests for it
         * parseRecurringDates
             * _convertEndingDateTimeTextToReminderDateTimeText
