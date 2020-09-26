@@ -65,6 +65,10 @@ function locationCallback(ctx) {
 }
 
 function _parseUsingCityTimezone(timezoneInput) {
+    // Remove continent
+    if (!!timezoneInput.match(/(\s?)(Africa|Europe|Asia|America|Australia)/i)) {
+        timezoneInput = timezoneInput.replace(/(\s?)(Africa|Europe|Asia|America|Australia)\s/i, '');
+    }
     // If it's a city
     let cityTimezonesResult = cityTimezones.lookupViaCity(timezoneInput);
     if (!!cityTimezonesResult && cityTimezonesResult.length != 0) {
@@ -121,7 +125,6 @@ function parseTimezone(timezoneInput) {
     let listOfTimezones = [...moment.tz.names(), ...timezoneShortNamesMap.keys()];
     // timezone will be used to confirm with user
     let parsedTimezone = autocorrect.autocorrect(timezoneInput, listOfTimezones, 1 / 3);
-
     if (parsedTimezone == null) {
         return null;
     }

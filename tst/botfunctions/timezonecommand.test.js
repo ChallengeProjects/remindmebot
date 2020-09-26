@@ -3,6 +3,28 @@ const timezonecommand = require("../../botfunctions/timezonecommand.js");
 describe("parseTimezone", () => {
     it("should work", () => {
         let map = {
+            "Dubai": {
+                parsedTimezone: "United Arab Emirates Dubai",
+                timezoneForMoment: "Asia/Dubai",
+            },
+            // TODO
+            "Kuala Lumpur, Malaysia": null,
+            "Kolkata": {
+                parsedTimezone: "India Kolkata",
+                timezoneForMoment: "Asia/Kolkata",
+            },
+            "Europe Italy": {
+                parsedTimezone: "Italy Potenza",
+                timezoneForMoment: "Europe/Rome",
+            },
+            "Italy": {
+                parsedTimezone: "Italy Potenza",
+                timezoneForMoment: "Europe/Rome",
+            },
+            "Asia india": {
+                parsedTimezone: "Indian Standard Time",
+                timezoneForMoment: "Asia/Kolkata",
+            },
             "india": {
                 parsedTimezone: "Indian Standard Time",
                 timezoneForMoment: "Asia/Kolkata",
@@ -13,7 +35,7 @@ describe("parseTimezone", () => {
             },
             "hamada": null,
             "Africa cairo": {
-                parsedTimezone: "Africa/Cairo",
+                parsedTimezone: "Egypt Cairo",
                 timezoneForMoment: "Africa/Cairo",
             },
             "Chicago": {
@@ -36,9 +58,10 @@ describe("parseTimezone", () => {
                 parsedTimezone: "Russia Moscow",
                 timezoneForMoment: "Europe/Moscow",
             },
-            // Shouldn't happen but all we have now unfortunately
-            // maybe try splitting string and testing if each one is a city?
-            "Asia Beijing": null,
+            "Asia Beijing": {
+                parsedTimezone: "China Beijing",
+                timezoneForMoment: "Asia/Shanghai",
+            },
         };
         for (let key in map) {
             expect(timezonecommand.parseTimezone(key)).toEqual(map[key]);
