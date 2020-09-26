@@ -133,13 +133,6 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     reminderDateTimeText = wordsToNumbers(reminderDateTimeText);
     reminderDateTimeText = reminderDateTimeText.replace(SECOND_TEMP_REPLACEMENT, "second");
 
-    // Now fix the typos
-    for (let correctWord in commonTypos) {
-        for (let incorrectWord of commonTypos[correctWord]) {
-            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
-        }
-    }
-
     // x.xx-> x:xx
     reminderDateTimeText = reminderDateTimeText.replace(/\b(at|on|until) ([0-9])\.([0-5][0-9])(am|pm|\b)/g, "$1 $2:$3$4");
     // xx.xx->xx:xx
@@ -157,6 +150,13 @@ function _correctSpellingForDateTimeText(reminderDateTimeText) {
     reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)h\b/ig, "$1 hours");
     reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)m\b/ig, "$1 minutes");
     reminderDateTimeText = reminderDateTimeText.replace(/\b([0-9]+)( ?)s\b/ig, "$1 seconds");
+
+    // Now fix the typos
+    for (let correctWord in commonTypos) {
+        for (let incorrectWord of commonTypos[correctWord]) {
+            reminderDateTimeText = reminderDateTimeText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'ig'), correctWord);
+        }
+    }
     return reminderDateTimeText;
 }
 

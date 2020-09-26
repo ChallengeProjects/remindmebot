@@ -60,4 +60,16 @@ describe("NLPContainer.getMomentDate", () => {
         expect(nlpContainer.getMomentDate(TIME_ZONE).tz()).toEqual(TIME_ZONE);
     });
 
+    it("should work with week interval", () => {
+        let nlpContainer = new NLPContainer(new NLPInterval(1, 'week'), new NLPTime(12, 0, "pm"));
+        expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/10/2018:12:00");
+        expect(nlpContainer.getMomentDate(TIME_ZONE).tz()).toEqual(TIME_ZONE);
+    });
+
+    it("should work with days interval", () => {
+        let nlpContainer = new NLPContainer(new NLPInterval(7, 'days'), new NLPTime(12, 0, "pm"));
+        expect(nlpContainer.getMomentDate(TIME_ZONE).format(DATE_FORMAT)).toEqual("06/10/2018:12:00");
+        expect(nlpContainer.getMomentDate(TIME_ZONE).tz()).toEqual(TIME_ZONE);
+    });
+
 });
