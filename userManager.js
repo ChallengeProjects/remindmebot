@@ -97,6 +97,14 @@ module.exports = class UserManager {
         }
     }
 
+    static getAndDeleteUserTemporaryStore(id) {
+        if (UserManager.userExists(id)) {
+            let temporaryStore = users[id].temporaryStore;
+            delete users[id].temporaryStore;
+            return temporaryStore;
+        }
+    }
+
     static setUserTimezone(userId, timezone) {
         if (!UserManager.userExists(userId)) {
             UserManager.addUser(userId);

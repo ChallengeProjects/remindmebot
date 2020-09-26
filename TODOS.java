@@ -1,4 +1,7 @@
 TODOS:
+----> /r in 7d = /r in 6d, /r in 1w != /r in 7d
+/r a 5, 7, 9 to test
+thinks 5,7,9 are dates instead of times
 NONFEATURETODOS.java
 NLP bugs:
     * "remindme 1 hr to t" ---> should work, we dont care about the "in"

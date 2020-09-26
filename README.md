@@ -19,14 +19,14 @@
         "papertrail": {
             "host": "<value>",
             "port": "<value>"
-        }
+        },
+        "username": "<bot username>",
+        "googleMapsClientKey": "<value>",
+        "port": "<http port>",
+        "usersFileName": "filePath.json"
     },
     "development": {
-        "botToken": "<value>",
-        "papertrail": {
-            "host": "<value>",
-            "port": "<value>"
-        }
+        ....
     }
 }
 ```

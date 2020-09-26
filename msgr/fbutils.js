@@ -1,6 +1,5 @@
 // message tags: https://developers.facebook.com/docs/messenger-platform/send-messages/message-tags/
 const https = require('https'),
-    logger = require("../logger.js"),
     dateutils = require("../utils/dateutils.js"),
     config = require("../"+process.env["config"])[process.env.NODE_ENV];
 
@@ -38,6 +37,7 @@ const sendFBTextMessageWithCards = (fbId, message, messagingType = "UPDATE", tag
         },
         message: message,
     };
+    console.log("<cards> msg=", msg);
 
     let options = {
         host: 'graph.facebook.com',
@@ -52,7 +52,7 @@ const sendFBTextMessageWithCards = (fbId, message, messagingType = "UPDATE", tag
     return new Promise((resolve, reject) => {
         _makeHttpCall(options).then(resp => {
             if ("error" in resp) {
-                logger.info("<cards> couldnt send msg to", fbId, resp);
+                console.log("<cards> couldnt send msg to", fbId, resp);
                 resp["recipient_id"] = fbId;
                 reject(resp);
             }
@@ -94,7 +94,7 @@ const sendFBTextMessageWithRealCards = (fbId, messageWithCard, messagingType = "
     return new Promise((resolve, reject) => {
         _makeHttpCall(options).then(resp => {
             if ("error" in resp) {
-                logger.info("<cards> couldnt send msg to", fbId, resp);
+                console.log("<cards> couldnt send msg to", fbId, resp);
                 resp["recipient_id"] = fbId;
                 reject(resp);
             }
@@ -129,11 +129,27 @@ const sendFBTextMessage = (fbId, text, messagingType = "UPDATE", tag = undefined
 };
 
 function extractText(msg) {
-    return msg.entry[0].messaging[0].message.text;
+    if (msgingZeroExists(msg) && !!msg.entry[0].messaging[0].message) {
+        return msg.entry[0].messaging[0].message.text;
+    }
 }
 
 function extractfbId(msg) {
-    return msg.entry[0].messaging[0].sender.id;
+    if (msgingZeroExists(msg) && !!msg.entry[0].messaging[0].sender) {
+        return msg.entry[0].messaging[0].sender.id;
+    }
+}
+
+function extractPayload(msg) {
+    if (msgingZeroExists(msg) && !!msg.entry[0].messaging[0].postback) {
+        return msg.entry[0].messaging[0].postback.payload;
+    }
+    return false;
+}
+
+function msgingZeroExists(msg) {
+    return !!msg && !!msg.entry && !!msg.entry[0] && !!msg.entry[0].messaging
+        && !!msg.entry[0].messaging[0];
 }
 
 // Get user info from Facebook
@@ -165,4 +181,5 @@ module.exports = {
     sendFBTextMessageWithRealCards: sendFBTextMessageWithRealCards,
     extractText: extractText,
     extractfbId: extractfbId,
+    extractPayload: extractPayload,
 };

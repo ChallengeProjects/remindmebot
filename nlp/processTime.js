@@ -104,7 +104,7 @@ function _splitReminderText(text) {
             reminderDateTimeText: reminderDateTimeText.trim()
         };
     } catch (err) {
-        console.log(err, "trying backward now");
+        // console.log(err, "trying backward now");
     }
 
     try {
