@@ -37,7 +37,7 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
 
     let utterance =`/remindme ${ctx.message.text} to ${reminder.getText()}`;
     
-    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx);
+    let success = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
     logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
 
     return ctx.scene.leave();
@@ -69,7 +69,7 @@ EDIT_TIME_SCENE.on('text', ctx => {
         return ctx.scene.leave();
     }
     let utterance = `/remindme ${ctx.message.text} to ${reminder.getText()}`;
-    let success = remindercommand.addRemindersToUserFromUtterance(utterance, ctx);
+    let success = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
     if (success) {
         UserManager.deleteReminder(ctx.chat.id, reminderId);
     }

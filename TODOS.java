@@ -3,6 +3,7 @@ TODOS:
 thinks 5,7,9 are dates instead of times
 NONFEATURETODOS.java
 NLP bugs:
+    * "/r in 30min to call" ---> doesnt understand that "30min" is "30 min"
     * "remindme 1 hr to t" ---> should work, we dont care about the "in"
     * "/r may 3 pm on the table" ---> it doesnt like "on" at the end
     * "it("should work BUT IT DOESNT WORK")" in processTime.test.js

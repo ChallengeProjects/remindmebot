@@ -235,6 +235,9 @@ function preProcessReminderDateTimeText(reminderDateTimeText) {
 
 function getDate(text, userTimezone) {
     // remove double spaces from text
+    if(!text || !text.replace) {
+        throw errorCodes.UNKOWN_ERROR;
+    }
     text = text.replace(/ {1,}/g, " ");
     text = text.trim();
 
