@@ -1,5 +1,5 @@
 const moment = require('moment'),
-    { remindUser, encodeHTMLEntities } = require("../botutils.js"),
+    { encodeHTMLEntities } = require("../botutils.js"),
     ReminderDate = require("./reminderDate.js"),
     processTime = require('../nlp/processTime.js');
 
@@ -27,7 +27,7 @@ module.exports = class Reminder {
         this.userId = userId;
         this.enabled = true;
         this.timeouts = [];
-        this.reminderCallback = reminderCallback || remindUser;
+        this.reminderCallback = reminderCallback;
     }
 
     setReminderCallback(reminderCallback) {

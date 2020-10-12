@@ -1,8 +1,9 @@
-const User = require('./models/user.js'),
+const User = require('./models/user.js'), 
     fs = require('fs'),
     path = require('path'),
-    sendMessageToUser = require("./botutils.js").sendMessageToUser,
-    config = require("./"+process.env["config"])[process.env.NODE_ENV];
+    bot = require("./bot.js"),
+    config = require("./"+process.env["config"])[process.env.NODE_ENV],
+    logger = require("./logger.js");
 
 let users = {}; // id:user
 let reminderCallback;
@@ -130,7 +131,7 @@ module.exports = class UserManager {
     }
 
     static deleteUser(id) {
-        if (UserManager.userExists(id)) {
+        if (!UserManager.userExists(id)) {
             return;
         }
 
@@ -209,10 +210,21 @@ module.exports = class UserManager {
             return;
         }
         let header = "**Bot updates:** \n\n";
+        let text = header + updatesText;
         for (let userId in users) {
-            sendMessageToUser({ userId: userId, text: header + updatesText });
+            bot.telegram.sendMessage(String(userId), text).catch(UserManager.catchBlocks);
         }
 
         fs.writeFileSync(UPDATES_FILE_PATH, '');
+    }
+
+    static catchBlocks(error) {
+        if (error.code == 403 || error.code == 400) {
+            logger.info("User blocked bot, deleting user: " + error.on.payload.chat_id);
+            UserManager.deleteUser(error.on.payload.chat_id);
+        }
+        else {
+            logger.info("catchBlocks Unkown error: " + JSON.stringify(error));
+        }
     }
 };

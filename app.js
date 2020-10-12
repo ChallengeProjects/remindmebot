@@ -4,34 +4,34 @@ const UserManager = require("./userManager.js"),
     Stage = require('telegraf/stage'),
     Scene = require('telegraf/scenes/base'),
     bot = require('./bot.js'),
+    botutils = require('./botutils.js'),
     logger = require("./logger.js"),
     listcommand = require("./botfunctions/listcommand.js"),
     helpcommand = require("./botfunctions/helpcommand.js"),
     remindercommand = require("./botfunctions/remindercommand.js"),
     timezonecommand = require("./botfunctions/timezonecommand.js"),
-    catchBlocks = require("./errorhandling.js").catchBlocks,
     config = require("./"+process.env["config"])[process.env.NODE_ENV],
     serverApp = require("./server.js");
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
 CUSTOM_SNOOZE_SCENE.enter(ctx => {
-    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(UserManager.catchBlocks);
 });
 
 CUSTOM_SNOOZE_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
-    // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
     if (ctx.message.text == "/cancel") {
         logger.info(`${ctx.chat.id}: CANCEL_CUSTOM_SNOOZE`);
-        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
+    // make sure reminder still exists
     if (!reminder) {
-        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
 
@@ -45,59 +45,62 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
 
 CUSTOM_SNOOZE_SCENE.command('cancel', ctx => {
     logger.info(`${ctx.chat.id}: CANCEL_CUSTOM_SNOOZE`);
-    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
     return ctx.scene.leave();
 });
 
 const EDIT_TIME_SCENE = new Scene('EDIT_TIME_SCENE');
 EDIT_TIME_SCENE.enter(ctx => {
-    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
+    return ctx.reply("Ok enter your new time (or /cancel)", Extra.markup(Markup.forceReply())).catch(UserManager.catchBlocks);
 });
 EDIT_TIME_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
-    // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
     if (ctx.message.text == "/cancel") {
-        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
+    // make sure reminder still exists
     if (!reminder) {
-        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
     let utterance = `/remindme ${ctx.message.text} to ${reminder.getText()}`;
-    let success = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
-    if (success) {
+    let remindersSet = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
+    if (!!remindersSet) {
         UserManager.deleteReminder(ctx.chat.id, reminderId);
     }
-    logger.info(`${ctx.chat.id}: EDIT_TIME_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
+    logger.info(`${ctx.chat.id}: EDIT_TIME_${ !!remindersSet ? "" : "IN"}VALID ${ctx.message.text}`);   
+    for (let reminderSet of remindersSet) {
+        remindercommand.replyWithConfirmation(ctx, reminderSet, ctx.update.message.message_id);
+    }
     
     return ctx.scene.leave();
 });
 EDIT_TIME_SCENE.command('cancel', ctx => {
-    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
     return ctx.scene.leave();
 });
 
 const EDIT_TEXT_SCENE = new Scene('EDIT_TEXT_SCENE');
 EDIT_TEXT_SCENE.enter(ctx => {
-    ctx.reply("Ok enter your new text (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
+    ctx.reply("Ok enter your new text (or /cancel)", Extra.markup(Markup.forceReply())).catch(UserManager.catchBlocks);
 });
 EDIT_TEXT_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
     let reminderId = UserManager.getUserTemporaryStore(userId);
     let reminder = UserManager.getReminder(userId, reminderId);
-    // make sure reminder still exists
     // looks like "/cancel" doesnt get captured in the .command listener
     if (ctx.message.text == "/cancel") {
-        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
+    // make sure reminder still exists
     if (!reminder) {
-        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
     UserManager.updateReminderText(userId, reminderId, ctx.message.text);
@@ -105,13 +108,13 @@ EDIT_TEXT_SCENE.on('text', ctx => {
     return ctx.scene.leave();
 });
 EDIT_TEXT_SCENE.command('cancel', ctx => {
-    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
     return ctx.scene.leave();
 });
 
 const APPEND_LINE_SCENE = new Scene('APPEND_LINE_SCENE');
 APPEND_LINE_SCENE.enter(ctx => {
-    ctx.reply("Ok enter your new line (or /cancel)", Extra.markup(Markup.forceReply())).catch(catchBlocks);
+    ctx.reply("Ok enter your new line (or /cancel)", Extra.markup(Markup.forceReply())).catch(UserManager.catchBlocks);
 });
 APPEND_LINE_SCENE.on('text', ctx => {
     let userId = ctx.chat.id;
@@ -121,11 +124,11 @@ APPEND_LINE_SCENE.on('text', ctx => {
     // looks like "/cancel" doesnt get captured in the command,
     //  make sure it's captured here
     if (ctx.message.text == "/cancel") {
-        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
     if (!reminder) {
-        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+        ctx.reply("Looks like the reminder doesn't exist anymore, canceling transaction", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
         return ctx.scene.leave();
     }
     let newText = reminder.getText() + '\n' + ctx.message.text;
@@ -134,7 +137,7 @@ APPEND_LINE_SCENE.on('text', ctx => {
     return ctx.scene.leave();
 });
 APPEND_LINE_SCENE.command('cancel', ctx => {
-    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(catchBlocks);
+    ctx.reply("Ok nvm!", Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
     return ctx.scene.leave();
 });
 
@@ -164,7 +167,7 @@ bot.action(/SNOOZE_([^_]+)_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: COMMAND_PRESET_SNOOZE_${period}`);
     let reminder = UserManager.getReminder(userId, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(UserManager.catchBlocks);
     }
 
     let snoozedReminder = reminder.getSnoozedReminder(parseInt(period));
@@ -181,11 +184,11 @@ bot.action(/CHECK_OFF_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(UserManager.catchBlocks);
     }
     let reminderText = reminder.getShortenedText(15);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`<code>✅ Reminder checked off: </code>"${reminderText}"`, Extra.HTML().markup()).catch(catchBlocks);
+    return ctx.editMessageText(`<code>✅ Reminder checked off: </code>"${reminderText}"`, Extra.HTML().markup()).catch(UserManager.catchBlocks);
 });
 
 /**
@@ -197,12 +200,12 @@ bot.action(/DELETE_([^_]+)/, ctx => {
     let reminderId = ctx.match[1];
     let reminder = UserManager.getReminder(ctx.chat.id, reminderId);
     if (!reminder) {
-        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(catchBlocks);
+        return ctx.editMessageText("<code>Reminder was already deleted.</code>", Extra.HTML().markup()).catch(UserManager.catchBlocks);
     }
     let reminderText = reminder.getShortenedText();
     UserManager.deleteReminder(ctx.chat.id, reminderId);
     ctx.answerCbQuery();
-    return ctx.editMessageText(`<code>🗑️ Reminder deleted: </code>"${reminderText}"`, Extra.HTML().markup()).catch(catchBlocks);
+    return ctx.editMessageText(`<code>🗑️ Reminder deleted: </code>"${reminderText}"`, Extra.HTML().markup()).catch(UserManager.catchBlocks);
 });
 
 /**
@@ -219,7 +222,7 @@ bot.action(/VIEW_([^_]+)/, ctx => {
 
     let markup = remindercommand.getReminderMarkup(reminder);
     ctx.answerCbQuery();
-    return ctx.reply(reminder.getFormattedReminder(false), markup).catch(catchBlocks);
+    return ctx.reply(reminder.getFormattedReminder(false), markup).catch(UserManager.catchBlocks);
 });
 
 
@@ -227,11 +230,11 @@ bot.action(/EDIT-TIME_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(UserManager.catchBlocks);
     }
     if (reminder.isRecurring()) {
         ctx.answerCbQuery();
-        return ctx.replyWithHTML("<code>Sorry you cant the edit time of recurring reminders</code>").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Sorry you cant the edit time of recurring reminders</code>").catch(UserManager.catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TIME_SCENE");
@@ -242,7 +245,7 @@ bot.action(/EDIT-TEXT_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted. </code>").catch(UserManager.catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("EDIT_TEXT_SCENE");
@@ -253,7 +256,7 @@ bot.action(/APPEND-LINE_([^_]+)/, ctx => {
     logger.info(`${ctx.chat.id}: ${ctx.match[0]}`);
     let reminder = UserManager.getReminder(ctx.chat.id, ctx.match[1]);
     if (!reminder) {
-        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted.</code>").catch(catchBlocks);
+        return ctx.replyWithHTML("<code>Can't edit reminder. Reminder was deleted.</code>").catch(UserManager.catchBlocks);
     }
     UserManager.setUserTemporaryStore(ctx.chat.id, ctx.match[1]);
     ctx.scene.enter("APPEND_LINE_SCENE");
@@ -271,12 +274,12 @@ bot.action(/(DISABLE|ENABLE)_([^_]+)/, ctx => {
     if (shouldEnable) {
         UserManager.enableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("🔔 Reminder enabled.").catch(catchBlocks);
+        return ctx.reply("🔔 Reminder enabled.").catch(UserManager.catchBlocks);
     }
     else {
         UserManager.disableReminder(ctx.chat.id, ctx.match[2]);
         ctx.answerCbQuery();
-        return ctx.reply("🔕 Reminder disabled.").catch(catchBlocks);
+        return ctx.reply("🔕 Reminder disabled.").catch(UserManager.catchBlocks);
     }
 });
 
@@ -286,7 +289,7 @@ function botStartup() {
         c.addToBot(bot);
     }
 
-    UserManager.loadUsersDataFromStorage();
+    UserManager.loadUsersDataFromStorage(botutils.remindUser);
     bot.startPolling();
     UserManager.sendFeatureUpdates();
 

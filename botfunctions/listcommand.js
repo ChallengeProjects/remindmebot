@@ -1,7 +1,6 @@
 const UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
     remindercommand = require("./remindercommand.js"),
-    catchBlocks = require("../errorhandling.js").catchBlocks,
     Extra = require('telegraf/extra');
 
 const NUMBER_OF_REMINDERS_PER_PAGE = 7;
@@ -47,7 +46,7 @@ function _displayOneReminderToTheUser(ctx, allReminders, allRecurringReminders, 
     }
     
     let text = headerText + '\n\n' + reminder.getFormattedReminder(false);
-    return ctx.reply(text, markup).catch(catchBlocks);
+    return ctx.reply(text, markup).catch(UserManager.catchBlocks);
 }
 
 function _getReminderButtonsMarkup(allReminders, currentPageReminders, pageNumber, b64EncodedSearchTerm, isRecurring, nRecurring, nNoneRecurring) {

@@ -1,5 +1,4 @@
 const
-    catchBlocks = require("../errorhandling.js").catchBlocks,
     UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
     moment = require("moment-timezone"),
@@ -146,7 +145,7 @@ function timezoneCommandCallback(ctx, language) {
 
     if (!result) {
         logger.info(`${ctx.chat.id}: timezone: TIMEZONE_INVALID:${timezoneInput}`);
-        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(catchBlocks);
+        return ctx.replyWithHTML(INVALID_TIMEZONE_ERROR_MESSAGE[language]).catch(UserManager.catchBlocks);
     }
 
     let { parsedTimezone, timezoneForMoment } = result;
@@ -154,7 +153,7 @@ function timezoneCommandCallback(ctx, language) {
     logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID:${timezoneInput} --> ${timezoneForMoment}`);
 
     UserManager.setUserTimezone(userId, timezoneForMoment);
-    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + parsedTimezone + "<code>. You can now start setting reminders!</code>").catch(catchBlocks);
+    return ctx.replyWithHTML("<code>Ok your timezone now is </code>" + parsedTimezone + "<code>. You can now start setting reminders!</code>").catch(UserManager.catchBlocks);
 }
 
 function addToBot(bot) {

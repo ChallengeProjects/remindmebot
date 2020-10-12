@@ -5,7 +5,6 @@ const
     processTime = require('../nlp/processTime.js'),
     UserManager = require("../userManager.js"),
     logger = require("../logger.js"),
-    catchBlocks = require("../errorhandling.js").catchBlocks,
     errorCodes = require("../nlp/errorCodes.js"),
     constants = require("../utils/constants.js"),
     { encodeHTMLEntities } = require("../botutils.js");
@@ -61,7 +60,7 @@ function replyWithConfirmation(ctx, reminder, replyToMessageId) {
         markup.reply_to_message_id = replyToMessageId;
     }
     let isRecurringText = reminder.isRecurring() ? "🔄⏱" : "⏱";
-    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(catchBlocks);
+    return ctx.reply(`<code>${isRecurringText} Alright I will remind you ${reminder.getDateFormatted()} to </code>${encodeHTMLEntities(reminder.getShortenedText())}`, markup).catch(UserManager.catchBlocks);
 }
 
 function remindmeCallBack(ctx) {
@@ -70,10 +69,10 @@ function remindmeCallBack(ctx) {
     logger.info(`${ctx.chat.id}: COMMAND_REMINDME`, utterance);
 
     if (!UserManager.getUserTimezone(userId)) {
-        return ctx.reply("You need to set a timezone first with /timezone").catch(catchBlocks);
+        return ctx.reply("You need to set a timezone first with /timezone").catch(UserManager.catchBlocks);
     }
     if (utterance == '/remindme' || utterance == '/r') {
-        return ctx.reply('/remindme what? (/help)').catch(catchBlocks);
+        return ctx.reply('/remindme what? (/help)').catch(UserManager.catchBlocks);
     }
 
     try {
@@ -86,10 +85,10 @@ function remindmeCallBack(ctx) {
     } catch(err) {
         logger.info(`${ctx.chat.id}: remindme REMINDER_INVALID ${utterance}`);
         if(err == errorCodes.NO_DELIMITER_PROVIDED) {
-            ctx.replyWithHTML("Sorry, I wasn't able to understand.\n<b>Looks like your reminder was missing a 'to' or a 'that'.</b>\nTry /help").catch(catchBlocks);
+            ctx.replyWithHTML("Sorry, I wasn't able to understand.\n<b>Looks like your reminder was missing a 'to' or a 'that'.</b>\nTry /help").catch(UserManager.catchBlocks);
         }
         else {
-            ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(catchBlocks);
+            ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(UserManager.catchBlocks);
         }
     }
 

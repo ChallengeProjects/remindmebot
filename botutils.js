@@ -1,7 +1,6 @@
 const bot = require("./bot.js"),
     Extra = require('telegraf/extra'),
-    logger = require("./logger.js");
-// catchBlocks = require("./errorhandling.js").catchBlocks;
+    UserManager = require("./userManager.js");
 
 function remindUser(reminder) {
     let reminderId = reminder.getId();
@@ -29,30 +28,14 @@ function remindUser(reminder) {
     });
 
     let isRecurringText = isRecurring ? "🔄⏱" : "⏱";
-    bot.telegram.sendMessage(String(userId), `<code>${isRecurringText}</code> ${encodeHTMLEntities(reminderText)} \n\n <code>Remind me again in:</code>`, markup).catch(catchBlocks);
-}
-
-
-function sendMessageToUser({ userId, text }) {
-    bot.telegram.sendMessage(String(userId), text); //.catch(catchBlocks);
+    bot.telegram.sendMessage(String(userId), `<code>${isRecurringText}</code> ${encodeHTMLEntities(reminderText)} \n\n <code>Remind me again in:</code>`, markup).catch(UserManager.catchBlocks);
 }
 
 function encodeHTMLEntities(text) {
     return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function catchBlocks(error) {
-    if (error.code == 403) {
-        logger.info("User blocked bot, deleting user, but I cant delete it");
-        // UserManager.deleteUser(error.on.payload.chat_id);
-    }
-    else {
-        logger.info("Unkown error: ", JSON.stringify(error));
-    }
-}
-
 module.exports = {
     remindUser: remindUser,
-    sendMessageToUser: sendMessageToUser,
     encodeHTMLEntities: encodeHTMLEntities,
 };

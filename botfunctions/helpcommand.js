@@ -1,6 +1,5 @@
 const logger = require("../logger.js"),
     UserManager = require("../userManager.js"),
-    catchBlocks = require("../errorhandling.js").catchBlocks,
     config = require("../"+process.env["config"]);
 
 
@@ -53,21 +52,21 @@ const ABOUT_TEXT = `This bot was created by @bubakazouba. The source code is ava
 function addToBot(bot) {
     bot.command('help', ctx => {
         logger.info(`${ctx.chat.id}: COMMAND_HELP`);
-        return ctx.replyWithHTML(HELP_TEXT_ENGLISH).catch(catchBlocks);
+        return ctx.replyWithHTML(HELP_TEXT_ENGLISH).catch(UserManager.catchBlocks);
     });
 
     bot.command('help_with_recurring_reminders', ctx => {
-        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT_ENGLISH).catch(catchBlocks);
+        return ctx.replyWithHTML(HELP_WITH_RECURRING_REMINDERS_TEXT_ENGLISH).catch(UserManager.catchBlocks);
     });
 
     bot.command('start', ctx => {
         logger.info(`${ctx.chat.id}: COMMAND_START`);
         UserManager.addUser(ctx.chat.id, ctx.chat.username);
-        return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things.' + '\n' + HELP_TEXT_ENGLISH).catch(catchBlocks);
+        return ctx.replyWithHTML('Hi there 👋! This is a simple bot that helps you remember things.' + '\n' + HELP_TEXT_ENGLISH).catch(UserManager.catchBlocks);
     });
 
     bot.command('about', ctx => {
-        return ctx.replyWithHTML(ABOUT_TEXT).catch(catchBlocks);
+        return ctx.replyWithHTML(ABOUT_TEXT).catch(UserManager.catchBlocks);
     });
 }
 
