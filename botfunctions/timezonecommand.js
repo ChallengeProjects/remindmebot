@@ -54,11 +54,11 @@ function locationCallback(ctx) {
         UserManager.setUserTimezone(userId, timezoneId);
         if (timezoneId) {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_VALID_LOCATION:${timezoneId}`);
-            ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`);
+            ctx.replyWithHTML(`<code>Your timezone has been set to ${timezoneId}. You can now start setting reminders!</code>`).catch(UserManager.catchBlocks);
         }
         else {
             logger.info(`${ctx.chat.id}: timezone: TIMEZONE_LOCATION_ERROR`);
-            ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>");
+            ctx.replyWithHTML("<code>Something went wrong. Please try again at a later time</code>").catch(UserManager.catchBlocks);
         }
     });
 }

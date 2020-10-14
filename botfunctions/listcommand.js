@@ -118,7 +118,7 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
     let allReminders = isRecurring ? allRecurringReminders : allNoneRecurringReminders;
 
     if (!allReminders) {
-        return ctx.reply("You need to /start first");
+        return ctx.reply("You need to /start first").catch(UserManager.catchBlocks);
     }
 
     // if we just have one, display it to the user
@@ -165,10 +165,10 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
         }
         let noRemindersMessage = `You have no ${reminderType}reminders ${searchTerm.length != 0 ? `with the search query '${searchTerm}'` : ""}`;
         if (isFirstInTransaction) {
-            return ctx.reply(noRemindersMessage, markup);
+            return ctx.reply(noRemindersMessage, markup).catch(UserManager.catchBlocks);
         }
         else {
-            return ctx.editMessageText(noRemindersMessage, markup);
+            return ctx.editMessageText(noRemindersMessage, markup).catch(UserManager.catchBlocks);
         }
     }
 
@@ -178,10 +178,10 @@ function _displayList(ctx, userId, searchTerm, pageNumber, isRecurring, isFirstI
         (searchTerm.length != 0 ? `Search query ${searchTerm}` : "") + "\n\n";
 
     if (isFirstInTransaction) {
-        return ctx.reply(header + body + footer, markup);
+        return ctx.reply(header + body + footer, markup).catch(UserManager.catchBlocks);
     }
     else {
-        return ctx.editMessageText(header + body + footer, markup);
+        return ctx.editMessageText(header + body + footer, markup).catch(UserManager.catchBlocks);
     }
 }
 
