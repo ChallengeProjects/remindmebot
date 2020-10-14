@@ -1,5 +1,4 @@
 const moment = require('moment'),
-    { encodeHTMLEntities } = require("../botutils.js"),
     ReminderDate = require("./reminderDate.js"),
     processTime = require('../nlp/processTime.js');
 
@@ -10,6 +9,10 @@ function generateGUID() {
             .substring(1);
     }
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
+function encodeHTMLEntities(text) {
+    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 module.exports = class Reminder {
