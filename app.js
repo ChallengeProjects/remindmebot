@@ -11,6 +11,7 @@ const UserManager = require("./userManager.js"),
     remindercommand = require("./botfunctions/remindercommand.js"),
     timezonecommand = require("./botfunctions/timezonecommand.js"),
     config = require("./"+process.env["config"])[process.env.NODE_ENV],
+    constants = require("./utils/constants.js"),
     serverApp = require("./server.js");
 
 const CUSTOM_SNOOZE_SCENE = new Scene('CUSTOM_SNOOZE_SCENE');
@@ -37,8 +38,16 @@ CUSTOM_SNOOZE_SCENE.on('text', ctx => {
 
     let utterance =`/remindme ${ctx.message.text} to ${reminder.getText()}`;
     
-    let success = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
-    logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_${ success ? "" : "IN"}VALID ${ctx.message.text}`);   
+    let success;
+    try {
+        success = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
+    } catch (err) {
+        logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE ${ctx.message.text} error was thrown: ${err}`);
+        ctx.replyWithHTML(constants.USER_ERROR_MESSAGES.GENERIC_INVALID_REMINDER, Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
+        return ctx.scene.leave();
+    }
+    
+    logger.info(`${ctx.chat.id}: CUSTOM_SNOOZE_${ success ? "" : "IN"}VALID ${ctx.message.text}`);
 
     return ctx.scene.leave();
 });
@@ -69,7 +78,16 @@ EDIT_TIME_SCENE.on('text', ctx => {
         return ctx.scene.leave();
     }
     let utterance = `/remindme ${ctx.message.text} to ${reminder.getText()}`;
-    let remindersSet = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
+    
+    let remindersSet;
+    try {
+        remindersSet = remindercommand.addRemindersToUserFromUtterance(userId, utterance);
+    } catch (err) {
+        logger.info(`${ctx.chat.id}: EDIT_TIME ${ctx.message.text} error was thrown: ${err}`);
+        ctx.replyWithHTML(constants.USER_ERROR_MESSAGES.GENERIC_INVALID_REMINDER, Extra.markup(Markup.removeKeyboard(true))).catch(UserManager.catchBlocks);
+        return ctx.scene.leave();
+    }
+
     if (!!remindersSet) {
         UserManager.deleteReminder(ctx.chat.id, reminderId);
     }
@@ -290,7 +308,13 @@ function botStartup() {
     }
 
     UserManager.loadUsersDataFromStorage(botutils.remindUser);
-    bot.startPolling();
+    const TIMEOUT = 30;
+    const LIMIT = 100;
+    const ALLOWED_UPDATES = [];
+    const STOP_CALLBACK = () => {
+        console.log("I stopped polling " + new Date());
+    };
+    bot.startPolling(TIMEOUT, LIMIT, ALLOWED_UPDATES, STOP_CALLBACK);
     UserManager.sendFeatureUpdates();
 
     // start the server

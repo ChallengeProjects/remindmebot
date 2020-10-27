@@ -9,6 +9,8 @@ const
     constants = require("../utils/constants.js"),
     { encodeHTMLEntities } = require("../botutils.js");
 
+// Throws errors from processTime
+// Returns [reminders]
 function addRemindersToUserFromUtterance(userId, utterance) {
     try {
         var { reminderText, reminderDates } = processTime.getDate(utterance, UserManager.getUserTimezone(userId));
@@ -88,7 +90,7 @@ function remindmeCallBack(ctx) {
             ctx.replyWithHTML("Sorry, I wasn't able to understand.\n<b>Looks like your reminder was missing a 'to' or a 'that'.</b>\nTry /help").catch(UserManager.catchBlocks);
         }
         else {
-            ctx.replyWithHTML("Sorry, I wasn't able to understand.\nRemember the command is /remindme [in/on/at] [some date/time] to [something].\n<b>Note: date comes BEFORE the reminder text and not after</b>.\nYou can also try /help.").catch(UserManager.catchBlocks);
+            ctx.replyWithHTML(constants.USER_ERROR_MESSAGES.GENERIC_INVALID_REMINDER).catch(UserManager.catchBlocks);
         }
     }
 

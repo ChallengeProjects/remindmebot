@@ -29,7 +29,7 @@ function updateStorage() {
 //  can happen from within the reminder.js file asynchronously (see research/problem2.txt)
 // Other alternative would be object watching, which doesnt look that much better to
 //  me than a periodic save
-setInterval(updateStorage, 1000);
+setInterval(updateStorage, 2000);
 
 
 module.exports = class UserManager {

@@ -18,7 +18,7 @@ fi
 if [[ $platform == "telegram" ]]; then
     uid="${uid}_telegram"
     config="config.json"
-elif [[ $platform == "messenger"  ]]; then
+elif [[ $platform == "messenger" || $platform == "msgr" ]]; then
     uid="${uid}_messenger"
     config="msgrconfig.json"
 else
