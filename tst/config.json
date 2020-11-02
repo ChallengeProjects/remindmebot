@@ -1,0 +1,9 @@
+{
+    "test": {
+        "botToken": "some token",
+        "username": "chemistrybot",
+        "googleMapsClientKey": "google maps key",
+        "port": "1456",
+        "usersFileName": "users.json"
+    }
+}

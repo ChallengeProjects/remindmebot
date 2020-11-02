@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "echo use startbot.sh to start script",
-    "test": "jest",
+    "test": "env TZ='America/Los_Angeles' jest",
     "eslint": "./node_modules/.bin/eslint ."
   },
   "author": "",
